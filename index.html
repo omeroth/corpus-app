@@ -1271,6 +1271,7 @@
 </div>
 
 <script>
+// Script Version: 1.3 - GitHub Pages Migration
 // ═══════════════════════════════════════════════════════════
 // SUPABASE AUTH & PROGRESS SYNC
 // ═══════════════════════════════════════════════════════════
@@ -4631,31 +4632,35 @@ function renderHome() {
   const rb = document.getElementById('reader-back-btn');
   if (wb) wb.textContent = ui.backArrow;
   if (rb) rb.textContent = ui.backArrow;
-  // Static modal labels
-  document.getElementById('stat-streak-label').textContent = ui.streak;
-  document.getElementById('stat-level-label').textContent = ui.level;
-  document.getElementById('home-thinkers-title').textContent = ui.thinkers;
-  document.getElementById('home-weeks-title').textContent = ui.weeks;
-  document.getElementById('modal-xp-earned-label').textContent = ui.xpEarned;
-  document.getElementById('modal-streak-label').textContent = ui.answerStreak;
-  document.getElementById('modal-unlock-label').textContent = ui.unlockLabel;
-  document.getElementById('modal-continue-btn').textContent = ui.continueBtn;
-  document.getElementById('modal-levelup-title').textContent = ui.levelupTitle;
-  document.getElementById('modal-amazing-btn').textContent = ui.amazingBtn;
-  document.getElementById('modal-close-btn').textContent = ui.closeBtn;
+  // Static modal labels + stats + level
+  try {
+    document.getElementById('stat-streak-label').textContent = ui.streak;
+    document.getElementById('stat-level-label').textContent = ui.level;
+    document.getElementById('home-thinkers-title').textContent = ui.thinkers;
+    document.getElementById('home-weeks-title').textContent = ui.weeks;
+    document.getElementById('modal-xp-earned-label').textContent = ui.xpEarned;
+    document.getElementById('modal-streak-label').textContent = ui.answerStreak;
+    document.getElementById('modal-unlock-label').textContent = ui.unlockLabel;
+    document.getElementById('modal-continue-btn').textContent = ui.continueBtn;
+    document.getElementById('modal-levelup-title').textContent = ui.levelupTitle;
+    document.getElementById('modal-amazing-btn').textContent = ui.amazingBtn;
+    document.getElementById('modal-close-btn').textContent = ui.closeBtn;
 
-  // Stats
-  document.getElementById('stat-streak').textContent = state.dailyStreak;
-  document.getElementById('stat-xp').textContent = state.xp;
-  document.getElementById('stat-level').textContent = getLevel(state.xp);
+    // Stats
+    document.getElementById('stat-streak').textContent = state.dailyStreak;
+    document.getElementById('stat-xp').textContent = state.xp;
+    document.getElementById('stat-level').textContent = getLevel(state.xp);
 
-  // Level
-  const ld = getLevelData(state.xp);
-  document.getElementById('level-name-home').textContent = ld.name;
-  document.getElementById('level-badge-home').textContent = ui.levelBadge(ld.level);
-  document.getElementById('level-bar').style.width = ld.pct + '%';
-  document.getElementById('level-progress-label').textContent =
-    ld.level < getLvls().length ? ui.xpProgress(ld.xpInLevel, ld.needed) : ui.maxLevel;
+    // Level
+    const ld = getLevelData(state.xp);
+    document.getElementById('level-name-home').textContent = ld.name;
+    document.getElementById('level-badge-home').textContent = ui.levelBadge(ld.level);
+    document.getElementById('level-bar').style.width = ld.pct + '%';
+    document.getElementById('level-progress-label').textContent =
+      ld.level < getLvls().length ? ui.xpProgress(ld.xpInLevel, ld.needed) : ui.maxLevel;
+  } catch(labelErr) {
+    console.error('renderHome: label/stats DOM error (element missing?)', labelErr);
+  }
 
   // Thinkers
   console.log('renderCards called, thinkers:', getT().length);
@@ -5126,6 +5131,8 @@ function launchConfetti() {
 
 // loadState and dir setup run immediately — script is at end of <body>
 // so DOM is fully parsed and no DOMContentLoaded wrapper is needed.
+console.log('Script loaded, corpusData weeks:', corpusData?.weeks?.length);
+console.log('Script loaded, THINKERS length:', THINKERS?.length);
 loadState();
 document.documentElement.dir = 'rtl';
 document.documentElement.lang = 'he';
