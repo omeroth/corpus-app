@@ -1402,11 +1402,11 @@ async function handleAuthSubmit() {
 }
 
 async function authWithGoogle() {
-  await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://corpus-philosophy.netlify.app' } });
+  await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://omeroth.github.io/corpus-app/' } });
 }
 
 async function authWithApple() {
-  await sb.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: 'https://corpus-philosophy.netlify.app' } });
+  await sb.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: 'https://omeroth.github.io/corpus-app/' } });
 }
 
 async function authLogout() {
