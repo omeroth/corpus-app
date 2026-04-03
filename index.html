@@ -553,6 +553,15 @@
   }
 
   /* ── Quiz ── */
+  .quiz-intro {
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+  }
   .quiz-question {
     font-family: 'Nunito', sans-serif;
     font-size: 18px;
@@ -651,6 +660,22 @@
     border-right-color: #EF5350;
     display: block;
   }
+
+  /* ── Quiz Summary ── */
+  .quiz-summary { text-align: center; padding: 20px 0; }
+  .quiz-summary-stars { font-size: 36px; letter-spacing: 6px; margin-bottom: 12px; }
+  .quiz-summary-score {
+    font-size: 52px; font-weight: 900; font-family: 'Nunito', sans-serif;
+    color: var(--accent); margin-bottom: 4px;
+  }
+  .quiz-summary-label { font-size: 15px; color: var(--text-muted); margin-bottom: 20px; }
+  .quiz-summary-msg {
+    font-size: 15px; font-weight: 700; padding: 12px 20px;
+    border-radius: 14px; display: inline-block; margin-top: 4px;
+  }
+  .quiz-summary-msg.perfect { background: #E8F5E9; color: #1B5E20; }
+  .quiz-summary-msg.good    { background: #E3F2FD; color: #0D47A1; }
+  .quiz-summary-msg.ok      { background: #FFF8E1; color: #E65100; }
 
   /* ── XP Float animation ── */
   .xp-float {
@@ -1525,26 +1550,34 @@ const corpusData = {
             },
             {
               type: 'quiz',
-              question: 'מה היא השיטה הסוקרטית?',
-              questionEn: 'What is the Socratic method?',
-              options: ['הרצאה שיטתית של ידע פילוסופי', 'כתיבת דיאלוגים פילוסופיים', 'שאילת שאלות שמובילות את האדם לגלות את האמת בעצמו'],
-              optionsEn: ['A systematic lecture of philosophical knowledge', 'Writing philosophical dialogues', 'Asking questions that lead the person to discover the truth themselves'],
-              correctIndex: 2,
-              explanation: 'סוקרטס השווה את עצמו למיילדת — הוא לא לימד ישירות אלא שאל שאלות שעזרו לאדם ללדת רעיונות בעצמו. זו ה"מאיאוטיקה". מקור: אפלטון, האפולוגיה, תרגום יוסף גרהרד ליבס, הוצאת שוקן.',
-              explanationEn: 'Socrates compared himself to a midwife — he didn\'t teach directly but asked questions that helped people give birth to ideas themselves. This is "maieutics." Source: Plato, The Apology, trans. Yosef Gerhard Liebs, Schocken.',
+              intro: 'סוקרטס פוגש את לכס וניקיאס לאחר שצפו יחד במופע של לחימה בשריון. הוא מחליט לשאול דווקא אותם מהו אומץ.',
+              question: 'מדוע בחר סוקרטס לשאול דווקא את המצביאים על מושג האומץ?',
+              options: ['כי הוא ידע שהם פחדנים ורצה להביך אותם בפומבי', 'כיוון שהם מצביאים מפורסמים מקובל להניח שהם יודעים מהו אומץ', 'כי הוא רצה ללמוד מהם טכניקות לחימה חדשות'],
+              correctIndex: 1,
+              explanation: 'סוקרטס רוצה להראות שמי שנחשבים מומחים לא יודעים להגדיר מושג בסיסי בתחומם. כך הוא מעביר את הנקודה שלו בצורה מרשימה.',
             },
             {
-              type: 'reflection',
-              title: 'שאלות לחשיבה', titleEn: 'Questions for Reflection',
-              questions: [
-                'שאלה פילוסופית: סוקרטס אומר ש״חיים שאינם נבחנים אינם ראויים לאדם.״ האם אתה מסכים? האם יש מחיר לחיים הנבחנים תמיד?',
-                'שאלה מסכמת: מה השאלה שהכי קשה לך לשאול את עצמך — ולמה?',
-              ],
-              questionsEn: [
-                'Philosophical question: Socrates says "the unexamined life is not worth living." Do you agree? Is there a cost to a life always under examination?',
-                'Closing question: What is the question that is hardest for you to ask yourself — and why?',
-              ],
+              type: 'quiz',
+              question: 'לכס אמר "אומץ הוא להישאר בעמדה בקרב". מה הייתה תגובת סוקרטס?',
+              options: ['הוא חשב שזו הגדרה טובה', 'הוא חשב שזו הגדרה שגויה לגמרי', 'הוא חשב שזו דוגמה להתנהגות אמיצה אך לא הגדרה שלה'],
+              correctIndex: 2,
+              explanation: 'סוקרטס הסביר שלכס נתן דוגמה למעשה אמיץ, אבל לא הגדיר את מהות האומץ. יש עוד מקרים של אומץ חוץ מלא לברוח בשדה הקרב.',
             },
+            {
+              type: 'quiz',
+              question: 'לכס הציע "אומץ הוא עמידה איתנה של הנפש". מה הייתה תגובת סוקרטס?',
+              options: ['הוא חשב שזו הגדרה טובה', 'הוא חשב שזו הגדרה צרה מדי', 'הוא חשב שזו הגדרה רחבה מדי'],
+              correctIndex: 2,
+              explanation: 'סוקרטס שאל "האם כל עמידה איתנה של הנפש היא אומץ? מה עם אדם שעומד על שלו ומתעקש לבזבז כסף בצורה טיפשית?" לכס מודה שלא.',
+            },
+            {
+              type: 'quiz',
+              question: 'ניקיאס הציע "אומץ הוא הידע של ממה לפחד". מה הייתה תגובת סוקרטס?',
+              options: ['הוא חשב שזו הגדרה טובה', 'הוא חשב שזו הגדרה צרה מדי', 'הוא חשב שזו הגדרה רחבה מדי — קרובה מדי להגדרה של חוכמה'],
+              correctIndex: 2,
+              explanation: 'סוקרטס הגיע למסקנה שהגדרה זו קרובה מדי לחוכמה. ייתכן אדם חכם שאינו אמיץ, ואמיץ שאינו חכם.',
+            },
+            { type: 'quiz_summary' },
           ],
         },
         {
@@ -1583,26 +1616,26 @@ const corpusData = {
             },
             {
               type: 'quiz',
-              question: 'מה מסמלים הצללים על קיר המערה במשל של אפלטון?',
-              questionEn: 'What do the shadows on the cave wall symbolize in Plato\'s allegory?',
-              options: ['את העולם הרוחני והאלוהי', 'את הדברים שאנחנו חושבים שהם המציאות אך הם רק השתקפויות', 'את הפחדים הפנימיים של בני האדם'],
-              optionsEn: ['The spiritual and divine world', 'The things we think are reality but are only reflections', 'The inner fears of human beings'],
+              question: 'אם היית אסיר במערה ושומע קולות מאחוריך, למי היית מייחס אותם?',
+              options: ['לאנשים הנסתרים שמאחורי הגב שלי', 'לצללים שעל הקיר — עבורי הם יצורים חיים ומדברים כי זה כל מה שהכרתי', 'להד שחוזר מהקירות'],
               correctIndex: 1,
-              explanation: 'הצללים מסמלים את הדברים שאנחנו חושבים שהם המציאות — תפיסות חושים, דעות קדומות, מוסכמות חברתיות. אפלטון טוען שהפילוסוף הוא זה שיוצא מהמערה ורואה את המציאות כפי שהיא באמת. מקור: אפלטון, הרפובליקה ספר 7, תרגום יוסף גרהרד ליבס, הוצאת שוקן.',
-              explanationEn: 'The shadows represent the things we believe are reality — sensory perceptions, prejudices, social conventions. Plato argues that the philosopher is the one who leaves the cave and sees reality as it truly is. Source: Plato, The Republic Book 7, trans. Yosef Gerhard Liebs, Schocken.',
+              explanation: 'עבור האסיר במערה, הצללים הם לא "בבואה" של משהו אחר — הם המציאות עצמה. אפלטון טוען שרובנו חיים כך: אנחנו מסתכלים על העולם דרך החושים שלנו ובטוחים שזהו סוף הפסוק.',
             },
             {
-              type: 'reflection',
-              title: 'שאלות לחשיבה', titleEn: 'Questions for Reflection',
-              questions: [
-                'שאלה פילוסופית: אפלטון אומר שמי שיוצא מהמערה חייב לחזור ולנסות לשחרר אחרים — גם אם יהרגו אותו. האם יש חובה מוסרית להנחיל אמת לאנשים שלא מבקשים אותה?',
-                'שאלה מסכמת: מה ה"מערה" שלך — אמונה, סביבה, או תפיסת עולם שאולי מגבילה אותך?',
-              ],
-              questionsEn: [
-                'Philosophical question: Plato says that whoever leaves the cave must return and try to free the others — even if they kill him. Is there a moral obligation to bring truth to people who aren\'t asking for it?',
-                'Closing question: What is your "cave" — a belief, environment, or worldview that may be limiting you?',
-              ],
+              type: 'quiz',
+              question: 'מה תהיה התגובה הראשונית שלך כשתצא מהמערה ותראה את השמש?',
+              options: ['שמחה גדולה על שגיליתי את האמת', 'כאב וסנוור — האור חזק מדי ואני ארצה לחזור למערה המוכרת', 'כעס על מי שהחזיק אותי כבול'],
+              correctIndex: 1,
+              explanation: 'היציאה אל האמת היא תהליך קשה ומכאיב. קל ונוח יותר להישאר באמונות הישנות. האור המנטלי "מסנוור" אותנו בהתחלה.',
             },
+            {
+              type: 'quiz',
+              question: 'מה חושבים האסירים שנשארו במערה על חברם שחזר מהחוץ?',
+              options: ['הם מעריצים אותו ומתחננים שישחרר גם אותם', 'הם חושבים שהשתגע ושהראייה שלו נהרסה — האמת שלו מאיימת על עולמם', 'הם לא מבינים על מה הוא מדבר ומתעלמים ממנו'],
+              correctIndex: 1,
+              explanation: 'שינוי תפיסת המציאות הוא דבר מאיים. כשמנסים לנפץ לאנשים את האמונות הבסיסיות שלהם — לפעמים הם תוקפים בחזרה. זה בדיוק מה שקרה לסוקרטס.',
+            },
+            { type: 'quiz_summary' },
           ],
         },
         {
@@ -4770,6 +4803,7 @@ function openReader(weekId, dayId) {
   state.currentSection = 0;
   state.readerXP = 0;
   state.quizAnswered = false;
+  state.dayQuizResults = [];
   renderReader();
   showScreen('reader');
 }
@@ -4849,6 +4883,7 @@ function renderReader() {
   else if (sec.type === 'quiz') {
     card.innerHTML = `
       <div class="section-type-label">${ui.labels.quiz}</div>
+      ${sec.intro ? `<div class="quiz-intro">${sec.intro}</div>` : ''}
       <div class="quiz-question">${sec.question}</div>
       <div class="quiz-options" id="quiz-opts"></div>
       <div class="quiz-feedback" id="quiz-feedback"></div>
@@ -4856,21 +4891,15 @@ function renderReader() {
     content.appendChild(card);
 
     const optsEl = card.querySelector('#quiz-opts');
-    const shuffled = sec.options
-      .map((text, i) => ({ text, isCorrect: i === sec.correct }))
-      .sort(() => Math.random() - 0.5);
-    const shuffledCorrect = shuffled.findIndex(o => o.isCorrect);
-    shuffled.forEach((opt, i) => {
+    sec.options.forEach((text, i) => {
       const btn = document.createElement('button');
       btn.className = 'quiz-option';
-      btn.innerHTML = `<span class="option-indicator">${ui.quizLetters[i]}</span>${opt.text}`;
-      btn.onclick = () => handleQuiz(i, shuffledCorrect, sec.explanation, btn);
+      btn.innerHTML = `<span class="option-indicator">${ui.quizLetters[i]}</span>${text}`;
+      btn.onclick = () => handleQuiz(i, sec.correctIndex, sec.explanation, btn);
       optsEl.appendChild(btn);
     });
 
-    const quizIsLast = state.currentSection === sections.length - 1;
-    makeNextBtn(quizIsLast ? ui.finishBtn : ui.nextBtn, quizIsLast, true);
-    document.getElementById('reader-btn-bar').querySelector('.nav-btn').id = 'quiz-next-btn';
+    document.getElementById('reader-btn-bar').innerHTML = '';
   }
   else if (sec.type === 'reflection') {
     card.innerHTML = `
@@ -4882,6 +4911,28 @@ function renderReader() {
     content.appendChild(card);
     const reflectionIsLast = state.currentSection === sections.length - 1;
     makeNextBtn(reflectionIsLast ? ui.finishBtn : ui.nextBtn, reflectionIsLast);
+  }
+  else if (sec.type === 'quiz_summary') {
+    const results = state.dayQuizResults || [];
+    const total = results.length;
+    const correct = results.filter(Boolean).length;
+    const pct = total > 0 ? correct / total : 0;
+    const stars = pct === 1 ? '⭐⭐⭐' : pct >= 0.5 ? '⭐⭐' : '⭐';
+    let msgClass, msgText;
+    if (pct === 1)       { msgClass = 'perfect'; msgText = 'מושלם! שלטת בכל החומר 🏆'; }
+    else if (pct >= 0.5) { msgClass = 'good';    msgText = 'כל הכבוד! הבנת את הרעיון המרכזי 👍'; }
+    else                 { msgClass = 'ok';       msgText = 'כדאי לחזור על הנושא — תמשיך להתאמן! 💪'; }
+    card.innerHTML = `
+      <div class="section-type-label">📊 סיכום</div>
+      <div class="quiz-summary">
+        <div class="quiz-summary-stars">${stars}</div>
+        <div class="quiz-summary-score">${correct}/${total}</div>
+        <div class="quiz-summary-label">תשובות נכונות</div>
+        <div class="quiz-summary-msg ${msgClass}">${msgText}</div>
+      </div>
+    `;
+    content.appendChild(card);
+    makeNextBtn(ui.finishBtn, true);
   }
 }
 
@@ -4947,8 +4998,16 @@ function handleQuiz(chosen, correctIdx, explanation, btn) {
 
   floatXP(earnedXP, btn);
 
-  const nextBtn = document.getElementById('quiz-next-btn');
-  if (nextBtn) nextBtn.disabled = false;
+  if (!state.dayQuizResults) state.dayQuizResults = [];
+  state.dayQuizResults.push(isCorrect);
+
+  const btnBar = document.getElementById('reader-btn-bar');
+  const continueBtn = document.createElement('button');
+  continueBtn.className = 'nav-btn';
+  continueBtn.textContent = 'המשך ←';
+  continueBtn.onclick = nextSection;
+  btnBar.innerHTML = '';
+  btnBar.appendChild(continueBtn);
 }
 
 function finishDay() {
