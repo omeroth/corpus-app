@@ -4503,15 +4503,7 @@ function getW() {
     id: 1,
     title:    lang === 'en' ? cdWeek1.titleEn    : cdWeek1.title,
     subtitle: lang === 'en' ? cdWeek1.subtitleEn : cdWeek1.subtitle,
-    days: [
-      deriveDay(cdWeek1.days[0]),  // Day 1 from corpusData
-      deriveDay(cdWeek1.days[1]),  // Day 2 from corpusData
-      deriveDay(cdWeek1.days[2]),  // Day 3 from corpusData
-      deriveDay(cdWeek1.days[3]),  // Day 4 from corpusData
-      deriveDay(cdWeek1.days[4]),  // Day 5 from corpusData
-      deriveDay(cdWeek1.days[5]),  // Day 6 from corpusData
-      deriveDay(cdWeek1.days[6]),  // Day 7 from corpusData
-    ],
+    days: cdWeek1.days.map(deriveDay),
   };
 
   const cdWeek2  = corpusData.weeks[1];
@@ -4520,15 +4512,7 @@ function getW() {
     id: 2,
     title:    lang === 'en' ? cdWeek2.titleEn    : cdWeek2.title,
     subtitle: lang === 'en' ? cdWeek2.subtitleEn : cdWeek2.subtitle,
-    days: [
-      deriveDay(cdWeek2.days[0]),  // Day 1 from corpusData
-      deriveDay(cdWeek2.days[1]),  // Day 2 from corpusData
-      deriveDay(cdWeek2.days[2]),  // Day 3 from corpusData
-      deriveDay(cdWeek2.days[3]),  // Day 4 from corpusData
-      deriveDay(cdWeek2.days[4]),  // Day 5 from corpusData
-      deriveDay(cdWeek2.days[5]),  // Day 6 from corpusData
-      deriveDay(cdWeek2.days[6]),  // Day 7 from corpusData
-    ],
+    days: cdWeek2.days.map(deriveDay),
   };
 
   const cdWeek3  = corpusData.weeks[2];
@@ -4537,15 +4521,7 @@ function getW() {
     id: 3,
     title:    lang === 'en' ? cdWeek3.titleEn    : cdWeek3.title,
     subtitle: lang === 'en' ? cdWeek3.subtitleEn : cdWeek3.subtitle,
-    days: [
-      deriveDay(cdWeek3.days[0]),  // Day 1 from corpusData
-      deriveDay(cdWeek3.days[1]),  // Day 2 from corpusData
-      deriveDay(cdWeek3.days[2]),  // Day 3 from corpusData
-      deriveDay(cdWeek3.days[3]),  // Day 4 from corpusData
-      deriveDay(cdWeek3.days[4]),  // Day 5 from corpusData
-      deriveDay(cdWeek3.days[5]),  // Day 6 from corpusData
-      deriveDay(cdWeek3.days[6]),  // Day 7 from corpusData
-    ],
+    days: cdWeek3.days.map(deriveDay),
   };
 
   const cdWeek4  = corpusData.weeks[3];
@@ -4554,15 +4530,7 @@ function getW() {
     id: 4,
     title:    lang === 'en' ? cdWeek4.titleEn    : cdWeek4.title,
     subtitle: lang === 'en' ? cdWeek4.subtitleEn : cdWeek4.subtitle,
-    days: [
-      deriveDay(cdWeek4.days[0]),  // Day 1 from corpusData
-      deriveDay(cdWeek4.days[1]),  // Day 2 from corpusData
-      deriveDay(cdWeek4.days[2]),  // Day 3 from corpusData
-      deriveDay(cdWeek4.days[3]),  // Day 4 from corpusData
-      deriveDay(cdWeek4.days[4]),  // Day 5 from corpusData
-      deriveDay(cdWeek4.days[5]),  // Day 6 from corpusData
-      deriveDay(cdWeek4.days[6]),  // Day 7 from corpusData
-    ],
+    days: cdWeek4.days.map(deriveDay),
   } : oldWeek4;
 
   return [week1, week2, week3, week4, ...oldWeeks.slice(4)];
@@ -4588,7 +4556,7 @@ let state = {
 };
 
 function saveStateLocal() {
-  try { localStorage.setItem('corpus_state', JSON.stringify(state)); } catch(e) {}
+  try { localStorage.setItem('corpus_state', JSON.stringify(state)); } catch(e) { console.error('saveStateLocal failed:', e); }
 }
 function saveState() {
   saveStateLocal();
@@ -4598,7 +4566,7 @@ function loadState() {
   try {
     const s = localStorage.getItem('corpus_state');
     if (s) state = { ...state, ...JSON.parse(s), lang: 'he' };
-  } catch(e) {}
+  } catch(e) { console.error('loadState failed:', e); }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -5217,22 +5185,26 @@ async function enterApp(user) {
 
 (async function initApp() {
   console.log('[Auth] initApp started');
+  try {
+    sb.auth.onAuthStateChange(async (event, session) => {
+      console.log('[Auth] onAuthStateChange:', event, session?.user?.email ?? 'no session');
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') && session) {
+        await enterApp(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        appStarted = false;
+      }
+    });
 
-  sb.auth.onAuthStateChange(async (event, session) => {
-    console.log('[Auth] onAuthStateChange:', event, session?.user?.email ?? 'no session');
-    if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') && session) {
+    const { data: { session }, error } = await sb.auth.getSession();
+    console.log('[Auth] getSession result:', session?.user?.email ?? 'none', error ?? '');
+    if (session) {
       await enterApp(session.user);
-    } else if (event === 'SIGNED_OUT') {
-      appStarted = false;
+    } else {
+      console.log('[Auth] No session — showing auth screen');
+      showAuthScreen();
     }
-  });
-
-  const { data: { session }, error } = await sb.auth.getSession();
-  console.log('[Auth] getSession result:', session?.user?.email ?? 'none', error ?? '');
-  if (session) {
-    await enterApp(session.user);
-  } else {
-    console.log('[Auth] No session — showing auth screen');
+  } catch(e) {
+    console.error('[Auth] initApp fatal error (Supabase unavailable?):', e);
     showAuthScreen();
   }
 })();
