@@ -1303,7 +1303,24 @@
 
 const SUPABASE_URL = 'https://xcoikjoatcrjqxzykwlt.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhjb2lram9hdGNyanF4enlrd2x0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMjc5NjYsImV4cCI6MjA4OTcwMzk2Nn0.5EhOsN9M4_kLYoRKO97dPGof8RN7PteXQrtKyx4CcKI';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+console.log('[Init] window.supabase available:', !!window.supabase);
+let sb;
+try {
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  console.log('[Init] Supabase client created OK');
+} catch(e) {
+  console.error('[Init] Supabase createClient FAILED — app will run in guest-only mode:', e);
+  sb = {
+    auth: {
+      getSession:        async () => ({ data: { session: null }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      signInWithOAuth:   async () => {},
+      signOut:           async () => {},
+    },
+    from: () => ({ upsert: async () => {}, select: () => ({ eq: () => ({ single: async () => ({ data: null }) }) }) }),
+  };
+}
 
 let currentUser = null;
 
@@ -1426,6 +1443,7 @@ async function authLogout() {
 function continueAsGuest() {
   currentUser = null;
   hideAuthScreen();
+  console.log('About to call renderHome (guest)');
   renderHome();
 }
 
@@ -4625,6 +4643,9 @@ function goBack() {
 // ═══════════════════════════════════════════════════════════
 
 function renderHome() {
+  console.log('renderHome called');
+  console.log('renderCards running, thinkers count:', corpusData?.thinkers?.length, '| THINKERS array:', THINKERS?.length);
+  console.log('renderWeeks running, weeks count:', corpusData?.weeks?.length);
   const ui = u();
   // Dir + toggle label
   document.documentElement.dir = state.lang === 'en' ? 'ltr' : 'rtl';
@@ -5180,6 +5201,7 @@ async function enterApp(user) {
     console.error('[Auth] loadProgressFromSupabase failed:', e);
   }
   hideAuthScreen();
+  console.log('About to call renderHome (authenticated)');
   renderHome();
 }
 
