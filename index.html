@@ -5154,10 +5154,14 @@ async function enterApp(user) {
   currentUser = user;
   console.log('[Auth] Entering app as:', user ? user.email : 'guest');
   try {
-    await loadProgressFromSupabase();
+    await Promise.race([
+      loadProgressFromSupabase(),
+      new Promise(resolve => setTimeout(resolve, 4000)),
+    ]);
   } catch(e) {
     console.error('[Auth] loadProgressFromSupabase failed:', e);
   }
+  console.log('[Auth] calling renderHome');
   hideAuthScreen();
   renderHome();
 }
