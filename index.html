@@ -4482,6 +4482,7 @@ function getW() {
               body:  lang === 'en' ? s.contentEn : s.content };
           case 'quiz':
             return { ...base,
+              intro:       s.intro,
               question:    lang === 'en' ? s.questionEn    : s.question,
               options:     lang === 'en' ? s.optionsEn     : s.options,
               correct:     s.correctIndex,
@@ -4896,7 +4897,7 @@ function renderReader() {
       const btn = document.createElement('button');
       btn.className = 'quiz-option';
       btn.innerHTML = `<span class="option-indicator">${ui.quizLetters[i]}</span>${text}`;
-      btn.onclick = () => handleQuiz(i, sec.correctIndex, sec.explanation, btn);
+      btn.onclick = () => handleQuiz(i, sec.correct, sec.explanation, btn);
       optsEl.appendChild(btn);
     });
 
