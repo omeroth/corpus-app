@@ -5194,23 +5194,32 @@ async function enterApp(user) {
 (async function initApp() {
   console.log('[Auth] initApp started');
 
+  // onAuthStateChange fires INITIAL_SESSION on load — covers both "has session" and "no session".
+  // We do NOT call getSession() separately: both would hit the same Supabase storage lock
+  // simultaneously and cause "Lock was released because another request stole it".
+  let initialEventReceived = false;
+
   sb.auth.onAuthStateChange(async (event, session) => {
     console.log('[Auth] onAuthStateChange:', event, session?.user?.email ?? 'no session');
     if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') && session) {
+      initialEventReceived = true;
       await enterApp(session.user);
+    } else if (event === 'INITIAL_SESSION' && !session) {
+      initialEventReceived = true;
+      console.log('[Auth] No session — showing auth screen');
+      showAuthScreen();
     } else if (event === 'SIGNED_OUT') {
       appStarted = false;
     }
   });
 
-  const { data: { session }, error } = await sb.auth.getSession();
-  console.log('[Auth] getSession result:', session?.user?.email ?? 'none', error ?? '');
-  if (session) {
-    await enterApp(session.user);
-  } else {
-    console.log('[Auth] No session — showing auth screen');
-    showAuthScreen();
-  }
+  // Fallback: if INITIAL_SESSION never fires (e.g. Supabase CDN blocked), show auth screen
+  setTimeout(() => {
+    if (!initialEventReceived) {
+      console.log('[Auth] onAuthStateChange timeout — showing auth screen');
+      showAuthScreen();
+    }
+  }, 3000);
 })();
 </script>
 </body>
