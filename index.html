@@ -1044,6 +1044,18 @@
     padding: 6px; width: 100%; text-align: center;
   }
   .auth-btn-guest:hover { color: var(--accent); }
+  .guest-banner {
+    display: none;
+    background: #FFF3CD;
+    color: #856404;
+    font-size: 13px;
+    text-align: center;
+    padding: 8px 16px;
+    border-bottom: 1px solid #FFEAA7;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .guest-banner.visible { display: block; }
   .auth-btn-primary {
     background: var(--accent);
     color: #fff;
@@ -1119,7 +1131,7 @@
     <button class="auth-btn auth-btn-social" onclick="authWithApple()">
       <span class="auth-social-icon">🍎</span> Continue with Apple
     </button>
-    <button class="auth-btn auth-btn-guest" onclick="continueAsGuest()">Continue as Guest</button>
+    <button class="auth-btn auth-btn-guest" onclick="continueAsGuest()">המשך כאורח</button>
   </div>
 </div>
 
@@ -1129,6 +1141,7 @@
        HOME SCREEN
   ═══════════════════════════════ -->
   <div id="screen-home" class="screen active">
+    <div id="guest-banner" class="guest-banner">גולש כאורח — ההתקדמות לא תישמר</div>
     <div class="topbar">
       <button class="logout-btn" id="logout-btn" onclick="authLogout()" title="Sign Out">⎋</button>
       <div class="topbar-logo-wrap">
@@ -1400,6 +1413,8 @@ async function authLogout() {
 function continueAsGuest() {
   currentUser = null;
   hideAuthScreen();
+  const banner = document.getElementById('guest-banner');
+  if (banner) banner.classList.add('visible');
   renderHome();
 }
 
