@@ -4803,6 +4803,7 @@ function renderReader() {
     [sections[rIdx], sections[qIdx]] = [sections[qIdx], sections[rIdx]];
   }
   const sec = sections[state.currentSection];
+  const isLast = state.currentSection === sections.length - 1;
 
   const rb = document.getElementById('reader-back-btn');
   if (rb) rb.textContent = u().backArrow;
@@ -4826,7 +4827,7 @@ function renderReader() {
       <div class="section-body">${toParas(sec.body)}</div>
     `;
     content.appendChild(card);
-    makeNextBtn(ui.nextBtn);
+    makeNextBtn(isLast ? ui.finishBtn : ui.nextBtn, isLast);
   }
   else if (sec.type === 'source') {
     card.innerHTML = `
@@ -4836,7 +4837,7 @@ function renderReader() {
       <div class="section-body">${toParas(sec.body)}</div>
     `;
     content.appendChild(card);
-    makeNextBtn(ui.nextBtn);
+    makeNextBtn(isLast ? ui.finishBtn : ui.nextBtn, isLast);
   }
   else if (sec.type === 'explanation') {
     card.innerHTML = `
@@ -4845,7 +4846,7 @@ function renderReader() {
       <div class="section-body">${toParas(sec.body)}</div>
     `;
     content.appendChild(card);
-    makeNextBtn(ui.nextBtn);
+    makeNextBtn(isLast ? ui.finishBtn : ui.nextBtn, isLast);
   }
   else if (sec.type === 'depth') {
     card.innerHTML = `
@@ -4854,7 +4855,7 @@ function renderReader() {
       <div class="section-body">${toParas(sec.body)}</div>
     `;
     content.appendChild(card);
-    makeNextBtn(ui.nextBtn);
+    makeNextBtn(isLast ? ui.finishBtn : ui.nextBtn, isLast);
   }
   else if (sec.type === 'quiz') {
     card.innerHTML = `
@@ -4926,6 +4927,7 @@ function makeNextBtn(label, isFinish = false, disabled = false) {
 }
 
 function nextSection() {
+  console.log('Next button clicked');
   const week = getW().find(w => w.id === state.currentWeek);
   const day = week.days.find(d => d.id === state.currentDay);
   if (state.currentSection < day.sections.length - 1) {
