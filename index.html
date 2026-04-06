@@ -663,6 +663,27 @@
     display: block;
   }
 
+  /* ── Quiz Feedback Modal ── */
+  .qfm-box { text-align: center; padding: 28px 24px; }
+  .qfm-icon { font-size: 52px; margin-bottom: 6px; }
+  .qfm-xp {
+    font-size: 22px; font-weight: 800;
+    font-family: 'Nunito', sans-serif;
+    margin-bottom: 18px;
+  }
+  .qfm-xp.correct { color: #2E7D32; }
+  .qfm-xp.wrong   { color: #C62828; }
+  .qfm-explanation {
+    font-size: 15px; line-height: 1.65;
+    color: var(--text);
+    text-align: start;
+    background: var(--surface-2);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 24px;
+    border-bottom: 2px solid var(--border);
+  }
+
   /* ── Quiz Summary ── */
   .quiz-summary { text-align: center; padding: 20px 0; }
   .quiz-summary-stars { font-size: 36px; letter-spacing: 6px; margin-bottom: 12px; }
@@ -1294,6 +1315,16 @@
     <div class="thinker-detail-bio" id="thinker-modal-bio"></div>
     <div class="thinker-detail-quote" id="thinker-modal-quote"></div>
     <button class="nav-btn" id="modal-close-btn" onclick="closeThinkerModal()" style="margin-top:8px">סגור</button>
+  </div>
+</div>
+
+<!-- Quiz feedback modal -->
+<div class="modal-overlay" id="modal-quiz-feedback">
+  <div class="modal-box qfm-box">
+    <div class="qfm-icon" id="qfm-icon"></div>
+    <div class="qfm-xp" id="qfm-xp"></div>
+    <div class="qfm-explanation" id="qfm-explanation"></div>
+    <button class="nav-btn" id="qfm-continue-btn" onclick="closeQuizFeedbackModal()">המשך ←</button>
   </div>
 </div>
 
@@ -4888,7 +4919,6 @@ function renderReader() {
       ${sec.intro ? `<div class="quiz-intro">${sec.intro}</div>` : ''}
       <div class="quiz-question">${sec.question}</div>
       <div class="quiz-options" id="quiz-opts"></div>
-      <div class="quiz-feedback" id="quiz-feedback"></div>
     `;
     content.appendChild(card);
 
@@ -4975,7 +5005,6 @@ function handleQuiz(chosen, correctIdx, explanation, btn) {
   opts[chosen].classList.add(isCorrect ? 'correct' : 'wrong');
   if (!isCorrect) opts[correctIdx].classList.add('correct');
 
-  const feedback = document.getElementById('quiz-feedback');
   const earnedXP = isCorrect ? 25 : 5;
   state.readerXP += earnedXP;
   document.getElementById('reader-xp-display').textContent = state.readerXP;
@@ -4983,20 +5012,14 @@ function handleQuiz(chosen, correctIdx, explanation, btn) {
   const ui = u();
   if (isCorrect) {
     state.correctInRow = (state.correctInRow || 0) + 1;
-    let bonusMsg = '';
     if (state.correctInRow === 3) {
-      bonusMsg = ' ' + ui.streakBonus(3);
       state.readerXP += 10;
       state.xp += 10;
       document.getElementById('reader-xp-display').textContent = state.readerXP;
       showStreakToast(ui.streakToast);
     }
-    feedback.className = 'quiz-feedback correct';
-    feedback.innerHTML = `${ui.correct(earnedXP)}${bonusMsg}<br><small style="margin-top:6px;display:block;opacity:0.8">${explanation}</small>`;
   } else {
     state.correctInRow = 0;
-    feedback.className = 'quiz-feedback wrong';
-    feedback.innerHTML = `${ui.wrong(earnedXP)}<br><small style="margin-top:6px;display:block;opacity:0.8">${explanation}</small>`;
   }
 
   floatXP(earnedXP, btn);
@@ -5004,13 +5027,19 @@ function handleQuiz(chosen, correctIdx, explanation, btn) {
   if (!state.dayQuizResults) state.dayQuizResults = [];
   state.dayQuizResults.push(isCorrect);
 
-  const btnBar = document.getElementById('reader-btn-bar');
-  const continueBtn = document.createElement('button');
-  continueBtn.className = 'nav-btn';
-  continueBtn.textContent = 'המשך ←';
-  continueBtn.onclick = nextSection;
-  btnBar.innerHTML = '';
-  btnBar.appendChild(continueBtn);
+  // Show feedback modal
+  document.getElementById('qfm-icon').textContent = isCorrect ? '✓' : '✗';
+  document.getElementById('qfm-icon').style.color = isCorrect ? '#2E7D32' : '#C62828';
+  const xpEl = document.getElementById('qfm-xp');
+  xpEl.textContent = '+' + earnedXP + ' XP';
+  xpEl.className = 'qfm-xp ' + (isCorrect ? 'correct' : 'wrong');
+  document.getElementById('qfm-explanation').textContent = explanation;
+  document.getElementById('modal-quiz-feedback').classList.add('active');
+}
+
+function closeQuizFeedbackModal() {
+  document.getElementById('modal-quiz-feedback').classList.remove('active');
+  nextSection();
 }
 
 function finishDay() {
@@ -5110,6 +5139,7 @@ function closeThinkerModal() {
 
 // Close modal on overlay click
 document.querySelectorAll('.modal-overlay').forEach(m => {
+  if (m.id === 'modal-quiz-feedback') return; // only dismiss via המשך button
   m.addEventListener('click', e => {
     if (e.target === m) m.classList.remove('active');
   });
