@@ -1796,7 +1796,7 @@ const corpusData = {
           id: 7,
           title: 'מהי פילוסופיה? — סיכום השבוע', titleEn: 'What is Philosophy? — Week in Review',
           thinker: 'סיכום', thinkerEn: 'Summary',
-          thinkerId: 'descartes', xp: 150,
+          thinkerId: null, xp: 150,
           sections: [
             {
               type: 'idea',
@@ -5009,7 +5009,7 @@ function finishDay() {
 
   // Unlock thinker
   const thinkerId = day.thinkerId;
-  if (!state.unlockedThinkers.includes(thinkerId)) {
+  if (thinkerId && !state.unlockedThinkers.includes(thinkerId)) {
     state.unlockedThinkers.push(thinkerId);
   }
 
