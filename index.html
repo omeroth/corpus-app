@@ -1142,6 +1142,21 @@
     transition: color 0.15s;
   }
   .logout-btn:hover { color: var(--accent); }
+  .lang-toggle-btn {
+    background: none;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Nunito', sans-serif;
+    color: var(--text-2);
+    cursor: pointer;
+    padding: 5px 10px;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
+  }
+  .lang-toggle-btn:hover { background: var(--border); color: var(--text); }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
@@ -1182,6 +1197,7 @@
       <div class="topbar-logo-wrap">
         <div class="topbar-logo">Corpus</div>
       </div>
+      <button class="lang-toggle-btn" id="lang-toggle-btn" onclick="toggleLang()">English</button>
     </div>
     <div class="scroll-content">
       <!-- Stats -->
@@ -4627,7 +4643,7 @@ function saveState() {
 function loadState() {
   try {
     const s = localStorage.getItem('corpus_state');
-    if (s) state = { ...state, ...JSON.parse(s), lang: 'he' };
+    if (s) state = { ...state, ...JSON.parse(s) };
   } catch(e) {}
 }
 
@@ -4686,11 +4702,19 @@ function goBack() {
 // HOME
 // ═══════════════════════════════════════════════════════════
 
+function toggleLang() {
+  state.lang = state.lang === 'he' ? 'en' : 'he';
+  saveState();
+  renderHome();
+}
+
 function renderHome() {
   const ui = u();
   // Dir + toggle label
   document.documentElement.dir = state.lang === 'en' ? 'ltr' : 'rtl';
   document.documentElement.lang = state.lang;
+  const ltBtn = document.getElementById('lang-toggle-btn');
+  if (ltBtn) ltBtn.textContent = ui.langToggleLabel;
 
   // Back buttons
   const wb = document.getElementById('week-back-btn');
