@@ -683,6 +683,31 @@
     margin-bottom: 24px;
     border-bottom: 2px solid var(--border);
   }
+  .share-modal-box { padding: 36px 28px; }
+  .share-modal-text {
+    font-size: 16px; line-height: 1.75;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .share-modal-skip {
+    margin-top: 14px;
+    font-size: 14px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .share-modal-copied {
+    display: none;
+    font-size: 13px;
+    color: var(--accent);
+    margin-top: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+  }
 
   /* ── Quiz Summary ── */
   .quiz-summary { text-align: center; padding: 20px 0; }
@@ -1341,6 +1366,16 @@
     <div class="qfm-xp" id="qfm-xp"></div>
     <div class="qfm-explanation" id="qfm-explanation"></div>
     <button class="nav-btn" id="qfm-continue-btn" onclick="closeQuizFeedbackModal()">המשך ←</button>
+  </div>
+</div>
+
+<!-- Share prompt overlay -->
+<div class="modal-overlay" id="modal-share">
+  <div class="modal-box share-modal-box">
+    <div id="share-text" class="share-modal-text"></div>
+    <button class="nav-btn" id="share-btn" onclick="doShare()"></button>
+    <div id="share-skip" class="share-modal-skip" onclick="skipShare()"></div>
+    <div id="share-copied" class="share-modal-copied"></div>
   </div>
 </div>
 
@@ -5264,8 +5299,54 @@ function finishDay() {
 
 function closeCompleteModal() {
   document.getElementById('modal-complete').classList.remove('active');
+  const shouldShowShare = state.currentWeek === 1 && state.currentDay === 7;
   renderWeek(state.currentWeek);
   showScreen('week');
+  if (shouldShowShare) setTimeout(showSharePrompt, 400);
+}
+
+function showSharePrompt() {
+  if (localStorage.getItem('corpus_share_shown')) return;
+  const isEn = state.lang === 'en';
+  document.getElementById('share-text').textContent = isEn
+    ? 'Philosophy is a conversation, not a monologue. If you enjoyed this week — let a friend discover it too.'
+    : 'פילוסופיה היא שיחה, לא מונולוג. אם נהנית מהשבוע הזה — תן לחבר לגלות אותו גם.';
+  document.getElementById('share-btn').textContent = isEn ? 'Share Corpus' : 'שתף את Corpus';
+  document.getElementById('share-skip').textContent = isEn ? 'Skip' : 'דלג';
+  document.getElementById('share-copied').style.display = 'none';
+  document.getElementById('modal-share').classList.add('active');
+}
+
+async function doShare() {
+  const url = 'https://omeroth.github.io/corpus-app/';
+  const isEn = state.lang === 'en';
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'Corpus', text: 'פילוסופיה ב-10 דקות ביום', url });
+      localStorage.setItem('corpus_share_shown', '1');
+      document.getElementById('modal-share').classList.remove('active');
+    } catch(e) { /* user cancelled — don't dismiss */ }
+  } else {
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch(e) {
+      const ta = document.createElement('textarea');
+      ta.value = url;
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    const copied = document.getElementById('share-copied');
+    copied.textContent = isEn ? 'Link copied!' : 'הקישור הועתק';
+    copied.style.display = 'block';
+    localStorage.setItem('corpus_share_shown', '1');
+    setTimeout(() => document.getElementById('modal-share').classList.remove('active'), 1800);
+  }
+}
+
+function skipShare() {
+  localStorage.setItem('corpus_share_shown', '1');
+  document.getElementById('modal-share').classList.remove('active');
 }
 
 function closeLevelUp() {
@@ -5303,6 +5384,7 @@ function closeThinkerModal() {
 // Close modal on overlay click
 document.querySelectorAll('.modal-overlay').forEach(m => {
   if (m.id === 'modal-quiz-feedback') return; // only dismiss via המשך button
+  if (m.id === 'modal-share') return; // only dismiss via share or skip buttons
   m.addEventListener('click', e => {
     if (e.target === m) m.classList.remove('active');
   });
