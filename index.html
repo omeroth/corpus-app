@@ -5479,14 +5479,6 @@ function launchConfetti() {
 // INIT
 // ═══════════════════════════════════════════════════════════
 
-// loadState and dir setup run immediately — script is at end of <body>
-// so DOM is fully parsed and no DOMContentLoaded wrapper is needed.
-console.log('Script loaded, corpusData weeks:', corpusData && corpusData.weeks && corpusData.weeks.length);
-console.log('Script loaded, THINKERS length:', THINKERS && THINKERS.length);
-loadState();
-document.documentElement.dir = 'rtl';
-document.documentElement.lang = 'he';
-
 // Auth-gated startup — kept at global scope so handleAuthSubmit
 // and continueAsGuest (called from onclick attributes) can access them.
 let appStarted = false;
@@ -5504,36 +5496,64 @@ async function enterApp(user) {
   renderHome();
 }
 
-(async function initApp() {
-  console.log('[Auth] initApp started');
+function initUI() {
+  try {
+    console.log('[Init] initUI started, corpusData weeks:', corpusData && corpusData.weeks && corpusData.weeks.length);
+    console.log('[Init] THINKERS length:', THINKERS && THINKERS.length);
+    loadState();
+    document.documentElement.dir = state.lang === 'en' ? 'ltr' : 'rtl';
+    document.documentElement.lang = state.lang;
+    // Render home immediately from local state so the screen is never blank.
+    // Auth check runs in parallel and calls renderHome() again once resolved.
+    renderHome();
+  } catch(e) {
+    console.error('[Init] initUI failed:', e);
+  }
 
-  // onAuthStateChange fires INITIAL_SESSION on load — covers both "has session" and "no session".
-  // We do NOT call getSession() separately: both would hit the same Supabase storage lock
-  // simultaneously and cause "Lock was released because another request stole it".
-  let initialEventReceived = false;
+  (async function initApp() {
+    try {
+      console.log('[Auth] initApp started');
 
-  sb.auth.onAuthStateChange(async (event, session) => {
-    console.log('[Auth] onAuthStateChange:', event, (session && session.user && session.user.email) || 'no session');
-    if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') && session) {
-      initialEventReceived = true;
-      await enterApp(session.user);
-    } else if (event === 'INITIAL_SESSION' && !session) {
-      initialEventReceived = true;
-      console.log('[Auth] No session — showing auth screen');
+      // onAuthStateChange fires INITIAL_SESSION on load — covers both "has session" and "no session".
+      // We do NOT call getSession() separately: both would hit the same Supabase storage lock
+      // simultaneously and cause "Lock was released because another request stole it".
+      let initialEventReceived = false;
+
+      sb.auth.onAuthStateChange(async (event, session) => {
+        console.log('[Auth] onAuthStateChange:', event, (session && session.user && session.user.email) || 'no session');
+        if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') && session) {
+          initialEventReceived = true;
+          await enterApp(session.user);
+        } else if (event === 'INITIAL_SESSION' && !session) {
+          initialEventReceived = true;
+          console.log('[Auth] No session — showing auth screen');
+          showAuthScreen();
+        } else if (event === 'SIGNED_OUT') {
+          appStarted = false;
+        }
+      });
+
+      // Fallback: if INITIAL_SESSION never fires (e.g. Supabase CDN blocked), show auth screen
+      setTimeout(() => {
+        if (!initialEventReceived) {
+          console.log('[Auth] onAuthStateChange timeout — showing auth screen');
+          showAuthScreen();
+        }
+      }, 3000);
+    } catch(e) {
+      console.error('[Auth] initApp failed:', e);
       showAuthScreen();
-    } else if (event === 'SIGNED_OUT') {
-      appStarted = false;
     }
-  });
+  })();
+}
 
-  // Fallback: if INITIAL_SESSION never fires (e.g. Supabase CDN blocked), show auth screen
-  setTimeout(() => {
-    if (!initialEventReceived) {
-      console.log('[Auth] onAuthStateChange timeout — showing auth screen');
-      showAuthScreen();
-    }
-  }, 3000);
-})();
+// Safari may defer DOMContentLoaded relative to script execution order.
+// Use readyState check with DOMContentLoaded fallback to guarantee initUI runs.
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  initUI();
+} else {
+  document.addEventListener('DOMContentLoaded', initUI);
+}
 </script>
 </body>
 </html>
