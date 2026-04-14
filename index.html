@@ -6,6 +6,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Corpus</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Corpus">
+<link rel="apple-touch-icon" href="images/icon-192.png">
+<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -29,14 +34,18 @@
     --shadow-lg: 0 8px 40px rgba(61,31,122,0.15);
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
+
+  html, body {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
 
   body {
     font-family: 'DM Sans', sans-serif;
     background: var(--bg);
     color: var(--text);
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
+    min-height: 100dvh;
     direction: inherit;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
@@ -49,8 +58,7 @@
   #app {
     max-width: 480px;
     margin: 0 auto;
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
+    min-height: 100dvh;
     position: relative;
     background: var(--bg);
   }
@@ -409,8 +417,6 @@
   /* ── Reader shell ── */
   .reader-screen-shell {
     flex-direction: column;
-    height: -webkit-fill-available;
-    height: 100vh;
     height: 100dvh;
   }
   .screen.active.reader-screen-shell {
@@ -1029,8 +1035,7 @@
   ═══════════════════════════════ */
   .auth-screen {
     display: none;
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
+    min-height: 100dvh;
     background: linear-gradient(150deg, #7B4FD4 0%, #4A2A90 100%);
     padding: 40px 20px 60px;
     align-items: center;
