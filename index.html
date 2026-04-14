@@ -804,6 +804,7 @@
     position: fixed;
     inset: 0;
     background: rgba(61,31,122,0.45);
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
     z-index: 100;
     align-items: center;
@@ -1502,7 +1503,7 @@ async function authLogout() {
     lang, currentScreen: 'home', currentWeek: null, currentDay: null,
     currentSection: 0, readerXP: 0, quizAnswered: false, quizCorrect: false
   };
-  localStorage.removeItem('corpus_state');
+  try { localStorage.removeItem('corpus_state'); } catch(e) {}
   showAuthScreen();
 }
 
@@ -4965,7 +4966,7 @@ function renderHome() {
   }
 
   // Weeks
-  console.log('renderWeeks called, weeks:', corpusData.weeks?.length);
+  console.log('renderWeeks called, weeks:', corpusData.weeks && corpusData.weeks.length);
   const wl = document.getElementById('weeks-list');
   wl.innerHTML = '';
   try {
@@ -5306,7 +5307,7 @@ function closeCompleteModal() {
 }
 
 function showSharePrompt() {
-  if (localStorage.getItem('corpus_share_shown')) return;
+  try { if (localStorage.getItem('corpus_share_shown')) return; } catch(e) {}
   const isEn = state.lang === 'en';
   document.getElementById('share-text').textContent = isEn
     ? 'Philosophy is a conversation, not a monologue. If you enjoyed this week — let a friend discover it too.'
@@ -5323,7 +5324,7 @@ async function doShare() {
   if (navigator.share) {
     try {
       await navigator.share({ title: 'Corpus', text: 'פילוסופיה ב-10 דקות ביום', url });
-      localStorage.setItem('corpus_share_shown', '1');
+      try { localStorage.setItem('corpus_share_shown', '1'); } catch(e) {}
       document.getElementById('modal-share').classList.remove('active');
     } catch(e) { /* user cancelled — don't dismiss */ }
   } else {
@@ -5339,13 +5340,13 @@ async function doShare() {
     const copied = document.getElementById('share-copied');
     copied.textContent = isEn ? 'Link copied!' : 'הקישור הועתק';
     copied.style.display = 'block';
-    localStorage.setItem('corpus_share_shown', '1');
+    try { localStorage.setItem('corpus_share_shown', '1'); } catch(e) {}
     setTimeout(() => document.getElementById('modal-share').classList.remove('active'), 1800);
   }
 }
 
 function skipShare() {
-  localStorage.setItem('corpus_share_shown', '1');
+  try { localStorage.setItem('corpus_share_shown', '1'); } catch(e) {}
   document.getElementById('modal-share').classList.remove('active');
 }
 
@@ -5468,8 +5469,8 @@ function launchConfetti() {
 
 // loadState and dir setup run immediately — script is at end of <body>
 // so DOM is fully parsed and no DOMContentLoaded wrapper is needed.
-console.log('Script loaded, corpusData weeks:', corpusData?.weeks?.length);
-console.log('Script loaded, THINKERS length:', THINKERS?.length);
+console.log('Script loaded, corpusData weeks:', corpusData && corpusData.weeks && corpusData.weeks.length);
+console.log('Script loaded, THINKERS length:', THINKERS && THINKERS.length);
 loadState();
 document.documentElement.dir = 'rtl';
 document.documentElement.lang = 'he';
@@ -5500,7 +5501,7 @@ async function enterApp(user) {
   let initialEventReceived = false;
 
   sb.auth.onAuthStateChange(async (event, session) => {
-    console.log('[Auth] onAuthStateChange:', event, session?.user?.email ?? 'no session');
+    console.log('[Auth] onAuthStateChange:', event, (session && session.user && session.user.email) || 'no session');
     if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') && session) {
       initialEventReceived = true;
       await enterApp(session.user);
