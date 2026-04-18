@@ -1498,7 +1498,20 @@ async function handleAuthSubmit() {
 }
 
 async function authWithGoogle() {
-  await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: 'https://omeroth.github.io/corpus-app/' } });
+  const btn = document.querySelector('.auth-btn-social');
+  if (btn) { btn.disabled = true; btn.textContent = 'Redirecting...'; }
+  try {
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: 'https://omeroth.github.io/corpus-app/' }
+    });
+    if (error) throw error;
+  } catch(e) {
+    console.error('[Auth] Google OAuth error:', e);
+    const errEl = document.getElementById('auth-error');
+    if (errEl) errEl.textContent = 'Sign in failed. Please try again.';
+    if (btn) { btn.disabled = false; btn.innerHTML = '<span class="auth-social-icon">G</span> Continue with Google'; }
+  }
 }
 
 async function authWithApple() {
