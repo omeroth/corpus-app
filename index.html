@@ -13,8 +13,13 @@
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script>
-    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a=e._i.push([i,[s,a]]),u.token=i,u.config=s,u.init=function(t,e,o){var n=this;n._i=[],n.init=function(t,e,o){n.push(["init",t,e,o])},n.push(["init",t,e,o]),n=e.init,u[o]=n},u._i=[],u._i=[],0)},e.__SV=1)}(document,window.posthog||[]);
-    posthog.init('phc_vUupVqSRdBay7mQ4Aswudhu8mFHnych6PKNRpP6BHoS4',{api_host:'https://app.posthog.com'})
+  !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a=e._i.push([i,[s,a]]),u.token=i,u.config=s,u.init=function(t,e,o){var n=this;n._i=[],n.init=function(t,e,o){n.push(["init",t,e,o])},n.push(["init",t,e,o]),n=e.init,u[o]=n},u._i=[],u._i=[],0)},e.__SV=1)}(document,window.posthog||[]);
+  posthog.init('phc_vUupVqSRdBay7mQ4Aswudhu8mFHnych6PKNRpP6BHoS4', {
+    api_host: 'https://app.posthog.com',
+    loaded: function(posthog) {
+      console.log('PostHog loaded successfully');
+    }
+  });
 </script>
 <style>
   :root {
@@ -1403,7 +1408,10 @@
 
 const SUPABASE_URL = 'https://xcoikjoatcrjqxzykwlt.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhjb2lram9hdGNyanF4enlrd2x0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMjc5NjYsImV4cCI6MjA4OTcwMzk2Nn0.5EhOsN9M4_kLYoRKO97dPGof8RN7PteXQrtKyx4CcKI';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+if (!window._supabaseClient) {
+  window._supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+const sb = window._supabaseClient;
 
 let currentUser = null;
 
@@ -5338,7 +5346,7 @@ function finishDay() {
   }
 
   const newLevel = getLevel(state.xp);
-  saveState();
+  try { saveState(); } catch(e) { saveStateLocal(); }
 
   try {
     posthog.capture('day_completed', { week: state.currentWeek, day: state.currentDay });
