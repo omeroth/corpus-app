@@ -12,6 +12,10 @@
 <link rel="apple-touch-icon" href="images/icon-192.png">
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+  !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]);t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a=e._i.push([i,[s,a]]),u.token=i,u.config=s,u.init=function(t,e,o){var n=this;n._i=[],n.init=function(t,e,o){n.push(["init",t,e,o])},n.push(["init",t,e,o]),n=e.init,u[o]=n},u._i=[],u._i=[],0)},e.__SV=1)}(document,window.posthog||[]);
+  posthog.init('phc_vUupVqSRdBay7mQ4Aswudhu8mFHnych6PKNRpP6BHoS4', {api_host: 'https://app.posthog.com'})
+</script>
 <style>
   :root {
     --bg: #F8F5FF;
@@ -1219,6 +1223,7 @@
       <span class="auth-social-icon">G</span> Continue with Google
     </button>
 
+    <button class="auth-btn auth-btn-guest" onclick="continueAsGuest()">Continue as Guest</button>
   </div>
 </div>
 
@@ -5292,6 +5297,8 @@ function handleQuiz(chosen, correctIdx, explanation, btn) {
   if (!state.dayQuizResults) state.dayQuizResults = [];
   state.dayQuizResults.push(isCorrect);
 
+  try { posthog.capture('question_answered', { correct: isCorrect, week: state.currentWeek, day: state.currentDay }); } catch(e) {}
+
   // Show feedback modal
   document.getElementById('qfm-icon').textContent = isCorrect ? '✓' : '✗';
   document.getElementById('qfm-icon').style.color = isCorrect ? '#2E7D32' : '#C62828';
@@ -5332,6 +5339,13 @@ function finishDay() {
 
   const newLevel = getLevel(state.xp);
   saveState();
+
+  try {
+    posthog.capture('day_completed', { week: state.currentWeek, day: state.currentDay });
+    const totalDays = getW().find(w => w.id === state.currentWeek).days.length;
+    const completedInWeek = getW().find(w => w.id === state.currentWeek).days.filter(d => state.completedDays[state.currentWeek + '-' + d.id]).length;
+    if (completedInWeek === totalDays) posthog.capture('week_completed', { week: state.currentWeek });
+  } catch(e) {}
 
   // Show complete modal
   const thinker = getT().find(t => t.id === thinkerId);
@@ -5429,6 +5443,7 @@ function closeLevelUp() {
 function openThinkerModal(id) {
   const t = getT().find(x => x.id === id);
   if (!t) return;
+  try { posthog.capture('thinker_card_opened', { thinker: t.id }); } catch(e) {}
   document.getElementById('thinker-modal-name').textContent = t.name;
   document.getElementById('thinker-modal-era').textContent = t.era;
   document.getElementById('thinker-modal-bio').textContent = t.bio;
@@ -5551,6 +5566,13 @@ async function enterApp(user) {
     await loadProgressFromSupabase();
   } catch(e) {
     console.error('[Auth] loadProgressFromSupabase failed:', e);
+  }
+  if (user) {
+    try {
+      const identities = user.identities || [];
+      const method = identities.length > 0 ? identities[0].provider : 'email';
+      posthog.capture('user_logged_in', { method });
+    } catch(e) {}
   }
   hideAuthScreen();
   renderHome();
