@@ -1486,16 +1486,20 @@ async function handleAuthSubmit() {
       btn.textContent = 'Sign Up';
       return;
     }
-    if (data.session) {
-      // Auto-confirm enabled — session returned immediately
+    if (data.session && data.session.user) {
+      // Auto-confirm enabled — session returned immediately, enter app directly
       appStarted = false;
-      await enterApp(data.user);
-    } else {
+      await enterApp(data.session.user);
+    } else if (data.user && !data.session) {
       // Email confirmation required
       errEl.style.color = '#22c55e';
-      errEl.textContent = 'Check your email to confirm your account.';
+      errEl.textContent = 'Check your email to confirm your account, then sign in.';
       btn.disabled = false;
       btn.textContent = 'Sign Up';
+    } else {
+      // Fallback: try to use whatever user data came back
+      appStarted = false;
+      await enterApp(data.user);
     }
   }
 }
