@@ -1529,8 +1529,12 @@ async function authWithApple() {
 }
 
 async function authLogout() {
-  await sb.auth.signOut();
+  console.log('Logout clicked');
+  if (currentUser) {
+    try { await sb.auth.signOut(); } catch(e) { console.error('[Auth] signOut error:', e); }
+  }
   currentUser = null;
+  appStarted = false;
   const lang = state.lang;
   state = {
     xp: 0, streak: 0, dailyStreak: 0, correctInRow: 0,
