@@ -1545,18 +1545,22 @@ async function authLogout() {
 // ═══════════════════════════════════════════════════════════
 
 const LEVELS = [
-  { name: 'מתחיל', min: 0, max: 100 },
-  { name: 'חושב עצמאי', min: 100, max: 250 },
-  { name: 'תלמיד סוקרטס', min: 250, max: 500 },
-  { name: 'פילוסוף', min: 500, max: 900 },
-  { name: 'סוקרטס', min: 900, max: Infinity },
+  { name: 'מתחיל', min: 0, max: 200 },
+  { name: 'שואל שאלות', min: 200, max: 500 },
+  { name: 'תלמיד סוקרטס', min: 500, max: 1000 },
+  { name: 'חושב עצמאי', min: 1000, max: 2000 },
+  { name: 'פילוסוף', min: 2000, max: 3500 },
+  { name: 'חכם', min: 3500, max: 5000 },
+  { name: 'סוקרטס', min: 5000, max: 99999 },
 ];
 const LEVELS_EN = [
-  { name: 'Beginner', min: 0, max: 100 },
-  { name: 'Independent Thinker', min: 100, max: 250 },
-  { name: 'Student of Socrates', min: 250, max: 500 },
-  { name: 'Philosopher', min: 500, max: 900 },
-  { name: 'Socrates', min: 900, max: Infinity },
+  { name: 'Beginner', min: 0, max: 200 },
+  { name: 'Questioner', min: 200, max: 500 },
+  { name: "Socrates' Student", min: 500, max: 1000 },
+  { name: 'Independent Thinker', min: 1000, max: 2000 },
+  { name: 'Philosopher', min: 2000, max: 3500 },
+  { name: 'Sage', min: 3500, max: 5000 },
+  { name: 'Socrates', min: 5000, max: 99999 },
 ];
 
 // ─── corpusData: bilingual content (migrating week by week) ───────────────────
@@ -1571,7 +1575,7 @@ const corpusData = {
           id: 1,
           title: 'סוקרטס — היילוד של הפילוסופיה', titleEn: 'Why Do We Even Need Philosophy?',
           thinker: 'סוקרטס', thinkerEn: 'Socrates',
-          thinkerId: 'socrates', xp: 125,
+          thinkerId: 'socrates', xp: 50,
           sections: [
             {
               type: 'idea',
@@ -1638,7 +1642,7 @@ const corpusData = {
           id: 2,
           title: 'החוצפה לא לדעת', titleEn: 'Socrates: The Audacity of Not Knowing',
           thinker: 'סוקרטס', thinkerEn: 'Socrates',
-          thinkerId: 'socrates', xp: 125,
+          thinkerId: 'socrates', xp: 50,
           sections: [
             {
               type: 'idea',
@@ -1723,7 +1727,7 @@ const corpusData = {
           id: 3,
           title: 'משל המערה', titleEn: 'The Allegory of the Cave',
           thinker: 'אפלטון', thinkerEn: 'Plato',
-          thinkerId: 'plato', xp: 125,
+          thinkerId: 'plato', xp: 50,
           sections: [
             {
               type: 'idea',
@@ -1794,7 +1798,7 @@ const corpusData = {
           id: 4,
           title: 'למה פילוסופיה שווה?', titleEn: 'What Is Philosophy Worth?',
           thinker: 'ברטרנד ראסל', thinkerEn: 'Bertrand Russell',
-          thinkerId: 'russell', xp: 125,
+          thinkerId: 'russell', xp: 50,
           sections: [
             {
               type: 'idea',
@@ -1855,7 +1859,7 @@ const corpusData = {
           id: 5,
           title: 'ויטגנשטיין: האם אנחנו מבינים על מה אנחנו מדברים?', titleEn: 'Wittgenstein: Is Philosophy Even About Real Questions?',
           thinker: 'לודוויג ויטגנשטיין', thinkerEn: 'Ludwig Wittgenstein',
-          thinkerId: 'wittgenstein', xp: 125,
+          thinkerId: 'wittgenstein', xp: 50,
           sections: [
             {
               type: 'idea',
@@ -1934,7 +1938,7 @@ const corpusData = {
           id: 6,
           title: 'מרקוס אורליוס: פילוסופיה כדרך חיים', titleEn: 'Marcus Aurelius: Philosophy as a Way of Life',
           thinker: 'מרקוס אורליוס', thinkerEn: 'Marcus Aurelius',
-          thinkerId: 'aurelius', xp: 125,
+          thinkerId: 'aurelius', xp: 50,
           sections: [
             {
               type: 'idea',
@@ -2001,7 +2005,7 @@ const corpusData = {
           id: 7,
           title: 'מהי פילוסופיה? — סיכום השבוע', titleEn: 'What is Philosophy? — Weekly Summary',
           thinker: 'סיכום', thinkerEn: 'Summary',
-          thinkerId: null, xp: 150,
+          thinkerId: null, xp: 80,
           sections: [
             {
               type: 'idea',
@@ -2081,7 +2085,7 @@ const corpusData = {
         id: 1,
         title: 'הבעיה המוסרית', titleEn: 'The Moral Problem',
         thinker: 'מבוא', thinkerEn: 'Introduction',
-        thinkerId: null, xp: 125,
+        thinkerId: null, xp: 50,
         sections: [
           {
             type: 'idea',
@@ -2142,7 +2146,7 @@ const corpusData = {
         id: 2,
         title: 'אריסטו: מה הם חיים טובים?', titleEn: 'Aristotle: What is a Good Life?',
         thinker: 'אריסטו', thinkerEn: 'Aristotle',
-        thinkerId: 'aristotle', xp: 125,
+        thinkerId: 'aristotle', xp: 50,
         sections: [
           {
             type: 'idea',
@@ -2215,7 +2219,7 @@ const corpusData = {
         id: 3,
         title: 'קאנט: מה שצריך לעשות', titleEn: 'Kant: What Must Be Done',
         thinker: 'עמנואל קאנט', thinkerEn: 'Immanuel Kant',
-        thinkerId: 'kant', xp: 125,
+        thinkerId: 'kant', xp: 50,
         sections: [
           {
             type: 'idea',
@@ -2288,7 +2292,7 @@ const corpusData = {
         id: 4,
         title: 'מיל: מה שמביא הכי הרבה אושר', titleEn: 'Mill: What Brings the Most Happiness',
         thinker: 'ג\'ון סטיוארט מיל', thinkerEn: 'John Stuart Mill',
-        thinkerId: 'mill', xp: 125,
+        thinkerId: 'mill', xp: 50,
         sections: [
           {
             type: 'idea',
@@ -2361,7 +2365,7 @@ const corpusData = {
         id: 5,
         title: 'ניטשה: מאיפה בא המוסר?', titleEn: 'Nietzsche: Where Does Morality Come From?',
         thinker: 'פרידריך ניטשה', thinkerEn: 'Friedrich Nietzsche',
-        thinkerId: 'nietzsche', xp: 125,
+        thinkerId: 'nietzsche', xp: 50,
         sections: [
           {
             type: 'idea',
@@ -2433,7 +2437,7 @@ const corpusData = {
         id: 6,
         title: 'דילמת הקרונית', titleEn: 'The Trolley Problem',
         thinker: 'ג\'ודית ג\'רביס תומסון', thinkerEn: 'Judith Jarvis Thomson',
-        thinkerId: 'thomson', xp: 125,
+        thinkerId: 'thomson', xp: 50,
         sections: [
           {
             type: 'idea',
@@ -2505,7 +2509,7 @@ const corpusData = {
         id: 7,
         title: 'מוסר ואתיקה — סיכום השבוע', titleEn: 'Morality and Ethics — Week in Review',
         thinker: 'סיכום', thinkerEn: 'Summary',
-        thinkerId: null, xp: 150,
+        thinkerId: null, xp: 80,
         sections: [
           {
             type: 'idea',
@@ -2584,7 +2588,7 @@ const corpusData = {
         id: 1,
         title: 'מה זה לדעת?', titleEn: 'What Does It Mean to Know?',
         thinker: 'רוברט אודי', thinkerEn: 'Robert Audi',
-        thinkerId: 'audi', xp: 125,
+        thinkerId: 'audi', xp: 50,
         sections: [
           {
             type: 'idea',
@@ -2641,7 +2645,7 @@ const corpusData = {
         id: 2,
         title: 'האם אפשר לדעת כלל?', titleEn: 'Can We Know Anything at All?',
         thinker: 'רנה דקארט', thinkerEn: 'René Descartes',
-        thinkerId: 'descartes', xp: 125,
+        thinkerId: 'descartes', xp: 50,
         sections: [
           {
             type: 'idea',
@@ -2698,7 +2702,7 @@ const corpusData = {
         id: 3,
         title: 'האם החושים אמינים?', titleEn: 'Are the Senses Reliable?',
         thinker: 'דיוויד יום', thinkerEn: 'David Hume',
-        thinkerId: 'hume', xp: 125,
+        thinkerId: 'hume', xp: 50,
         sections: [
           {
             type: 'idea',
@@ -2755,7 +2759,7 @@ const corpusData = {
         id: 4,
         title: 'מה השכל מביא לידע?', titleEn: 'What Does the Mind Bring to Knowledge?',
         thinker: 'עמנואל קאנט', thinkerEn: 'Immanuel Kant',
-        thinkerId: 'kant', xp: 125,
+        thinkerId: 'kant', xp: 50,
         sections: [
           {
             type: 'idea',
@@ -2812,7 +2816,7 @@ const corpusData = {
         id: 5,
         title: 'שלושה עמודים ששינו הכל', titleEn: 'Three Pages That Changed Everything',
         thinker: 'אדמונד גטייה', thinkerEn: 'Edmund Gettier',
-        thinkerId: 'gettier', xp: 125,
+        thinkerId: 'gettier', xp: 50,
         sections: [
           {
             type: 'idea',
@@ -2869,7 +2873,7 @@ const corpusData = {
         id: 6,
         title: 'איך המדע מתקדם?', titleEn: 'How Does Science Progress?',
         thinker: 'קרל פופר', thinkerEn: 'Karl Popper',
-        thinkerId: 'popper', xp: 125,
+        thinkerId: 'popper', xp: 50,
         sections: [
           {
             type: 'idea',
@@ -2926,7 +2930,7 @@ const corpusData = {
         id: 7,
         title: 'ספק וידע — סיכום השבוע', titleEn: 'Doubt and Knowledge — Weekly Summary',
         thinker: 'סיכום', thinkerEn: 'Summary',
-        thinkerId: 'audi', xp: 150,
+        thinkerId: 'audi', xp: 80,
         sections: [
           {
             type: 'idea',
@@ -2990,7 +2994,7 @@ const corpusData = {
         id: 1,
         title: 'מה אמיתי?', titleEn: 'What is Real?',
         thinker: 'קונס ופיקוואנס', thinkerEn: 'Koons & Pickavance',
-        thinkerId: 'aristotle', xp: 125,
+        thinkerId: 'aristotle', xp: 50,
         sections: [
           {
             type: 'idea',
@@ -3047,7 +3051,7 @@ const corpusData = {
         id: 2,
         title: 'עולם האידאות', titleEn: 'The World of Forms',
         thinker: 'אפלטון', thinkerEn: 'Plato',
-        thinkerId: 'plato', xp: 125,
+        thinkerId: 'plato', xp: 50,
         sections: [
           {
             type: 'idea',
@@ -3104,7 +3108,7 @@ const corpusData = {
         id: 3,
         title: 'הכל אחד', titleEn: 'Everything is One',
         thinker: 'ברוך שפינוזה', thinkerEn: 'Baruch Spinoza',
-        thinkerId: 'spinoza', xp: 125,
+        thinkerId: 'spinoza', xp: 50,
         sections: [
           {
             type: 'idea',
@@ -3161,7 +3165,7 @@ const corpusData = {
         id: 4,
         title: 'להיות זה להיתפס', titleEn: 'To Be is to Be Perceived',
         thinker: 'ג\'ורג\' ברקלי', thinkerEn: 'George Berkeley',
-        thinkerId: 'berkeley', xp: 125,
+        thinkerId: 'berkeley', xp: 50,
         sections: [
           {
             type: 'idea',
@@ -3218,7 +3222,7 @@ const corpusData = {
         id: 5,
         title: 'ביקורת: איפה כל גישה נכשלת?', titleEn: 'Critique: Where Does Each View Fail?',
         thinker: 'ביקורת', thinkerEn: 'Critique',
-        thinkerId: 'aristotle', xp: 125,
+        thinkerId: 'aristotle', xp: 50,
         sections: [
           {
             type: 'idea',
@@ -3275,7 +3279,7 @@ const corpusData = {
         id: 6,
         title: 'האם אנחנו חיים בתוך סימולציה?', titleEn: 'Are We Living in a Simulation?',
         thinker: 'ניק בוסטרום', thinkerEn: 'Nick Bostrom',
-        thinkerId: 'bostrom', xp: 125,
+        thinkerId: 'bostrom', xp: 50,
         sections: [
           {
             type: 'idea',
@@ -3332,7 +3336,7 @@ const corpusData = {
         id: 7,
         title: 'מהי המציאות? — סיכום השבוע', titleEn: 'What is Reality? — Weekly Summary',
         thinker: 'סיכום', thinkerEn: 'Summary',
-        thinkerId: 'aristotle', xp: 150,
+        thinkerId: 'aristotle', xp: 80,
         sections: [
           {
             type: 'idea',
@@ -3574,7 +3578,7 @@ const WEEKS = [
     subtitle: 'שאלות גדולות, תשובות פתוחות',
     days: [
       {
-        id: 1, title: 'סוקרטס — היילוד של הפילוסופיה', thinker: 'סוקרטס', thinkerId: 'socrates', xp: 125,
+        id: 1, title: 'סוקרטס — היילוד של הפילוסופיה', thinker: 'סוקרטס', thinkerId: 'socrates', xp: 50,
         sections: [
           {
             type: 'idea', title: 'מה פירוש לשאול שאלות?',
@@ -3609,7 +3613,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 2, title: 'אפלטון — מחוץ למערה', thinker: 'אפלטון', thinkerId: 'plato', xp: 125,
+        id: 2, title: 'אפלטון — מחוץ למערה', thinker: 'אפלטון', thinkerId: 'plato', xp: 50,
         sections: [
           {
             type: 'idea', title: 'האם אתה רואה את המציאות?',
@@ -3644,7 +3648,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 3, title: 'ברטרנד ראסל — הפילוסופיה לחיים', thinker: 'ברטרנד ראסל', thinkerId: 'russell', xp: 125,
+        id: 3, title: 'ברטרנד ראסל — הפילוסופיה לחיים', thinker: 'ברטרנד ראסל', thinkerId: 'russell', xp: 50,
         sections: [
           {
             type: 'idea', title: 'מה שווה הפילוסופיה בחיי היומיום?',
@@ -3679,7 +3683,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 4, title: 'ויטגנשטיין — גבולות השפה', thinker: 'לודוויג ויטגנשטיין', thinkerId: 'wittgenstein', xp: 125,
+        id: 4, title: 'ויטגנשטיין — גבולות השפה', thinker: 'לודוויג ויטגנשטיין', thinkerId: 'wittgenstein', xp: 50,
         sections: [
           {
             type: 'idea', title: 'השפה כגבול העולם',
@@ -3714,7 +3718,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 5, title: 'מרקוס אורליוס — פילוסופיה כאורח חיים', thinker: 'מרקוס אורליוס', thinkerId: 'aurelius', xp: 125,
+        id: 5, title: 'מרקוס אורליוס — פילוסופיה כאורח חיים', thinker: 'מרקוס אורליוס', thinkerId: 'aurelius', xp: 50,
         sections: [
           {
             type: 'idea', title: 'קיסר שכתב יומן',
@@ -3749,7 +3753,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 6, title: 'אריסטו — פלא ותמיהה', thinker: 'אריסטו', thinkerId: 'aristotle', xp: 125,
+        id: 6, title: 'אריסטו — פלא ותמיהה', thinker: 'אריסטו', thinkerId: 'aristotle', xp: 50,
         sections: [
           {
             type: 'idea', title: 'כל הפילוסופיה מתחילה בפלא',
@@ -3784,7 +3788,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 7, title: 'שבוע ראשון — מה לקחנו?', thinker: 'כל ההוגים', thinkerId: 'descartes', xp: 150,
+        id: 7, title: 'שבוע ראשון — מה לקחנו?', thinker: 'כל ההוגים', thinkerId: 'descartes', xp: 80,
         sections: [
           {
             type: 'idea', title: 'שבעה ימים, שאלה אחת',
@@ -3826,7 +3830,7 @@ const WEEKS = [
     subtitle: 'שלוש שאלות, שלושה פילוסופים',
     days: [
       {
-        id: 1, title: 'הבעיה המוסרית', thinker: 'מבוא לאתיקה', thinkerId: 'descartes', xp: 125,
+        id: 1, title: 'הבעיה המוסרית', thinker: 'מבוא לאתיקה', thinkerId: 'descartes', xp: 50,
         sections: [
           {
             type: 'idea', title: 'כשהמפות שירשנו מפסיקות לעבוד',
@@ -3865,7 +3869,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 2, title: 'אריסטו — החיים הטובים', thinker: 'אריסטו', thinkerId: 'aristotle', xp: 125,
+        id: 2, title: 'אריסטו — החיים הטובים', thinker: 'אריסטו', thinkerId: 'aristotle', xp: 50,
         sections: [
           {
             type: 'idea', title: 'אושר הוא לא תחושה — הוא אורח חיים',
@@ -3904,7 +3908,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 3, title: 'קאנט — מה עלי לעשות?', thinker: 'עמנואל קאנט', thinkerId: 'kant', xp: 125,
+        id: 3, title: 'קאנט — מה עלי לעשות?', thinker: 'עמנואל קאנט', thinkerId: 'kant', xp: 50,
         sections: [
           {
             type: 'idea', title: 'חובה לא תלויה בתוצאות',
@@ -3943,7 +3947,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 4, title: 'מיל — האושר המרבי', thinker: 'ג\'ון סטיוארט מיל', thinkerId: 'mill', xp: 125,
+        id: 4, title: 'מיל — האושר המרבי', thinker: 'ג\'ון סטיוארט מיל', thinkerId: 'mill', xp: 50,
         sections: [
           {
             type: 'idea', title: 'מה אם המוסר הוא חשבון?',
@@ -3982,7 +3986,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 5, title: 'ניטשה: מאיפה בא המוסר שלנו?', thinker: 'פרידריך ניטשה', thinkerId: 'nietzsche', xp: 125,
+        id: 5, title: 'ניטשה: מאיפה בא המוסר שלנו?', thinker: 'פרידריך ניטשה', thinkerId: 'nietzsche', xp: 50,
         sections: [
           {
             type: 'idea', title: 'השאלה שאף אחד לא שאל',
@@ -4021,7 +4025,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 6, title: 'בעיית העגלה — מוסר ומוח', thinker: 'ג\'ודית ג\'רביס תומסון', thinkerId: 'kant', xp: 125,
+        id: 6, title: 'בעיית העגלה — מוסר ומוח', thinker: 'ג\'ודית ג\'רביס תומסון', thinkerId: 'kant', xp: 50,
         sections: [
           {
             type: 'idea', title: 'חשב מהר — עגלה משתוללת',
@@ -4060,7 +4064,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 7, title: 'שבוע שני — מפת האתיקה', thinker: 'כל ההוגים', thinkerId: 'mill', xp: 150,
+        id: 7, title: 'שבוע שני — מפת האתיקה', thinker: 'כל ההוגים', thinkerId: 'mill', xp: 80,
         sections: [
           {
             type: 'idea', title: 'שלוש שאלות, שלושה פילוסופים',
@@ -4106,7 +4110,7 @@ const WEEKS = [
     subtitle: 'מה אנחנו יכולים לדעת — ואיך?',
     days: [
       {
-        id: 1, title: 'מה זה בכלל לדעת?', thinker: 'רוברט אאודי', thinkerId: 'audi', xp: 125,
+        id: 1, title: 'מה זה בכלל לדעת?', thinker: 'רוברט אאודי', thinkerId: 'audi', xp: 50,
         sections: [
           {
             type: 'idea', title: 'אמונה, הצדקה, ידע',
@@ -4145,7 +4149,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 2, title: 'דקארט: האם אני יכול לדעת כלל?', thinker: 'רנה דקארט', thinkerId: 'descartes', xp: 125,
+        id: 2, title: 'דקארט: האם אני יכול לדעת כלל?', thinker: 'רנה דקארט', thinkerId: 'descartes', xp: 50,
         sections: [
           {
             type: 'idea', title: 'שיטת הספק הרדיקלי',
@@ -4184,7 +4188,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 3, title: 'יום: האם החושים שלנו אמינים?', thinker: 'דייוויד יום', thinkerId: 'hume', xp: 125,
+        id: 3, title: 'יום: האם החושים שלנו אמינים?', thinker: 'דייוויד יום', thinkerId: 'hume', xp: 50,
         sections: [
           {
             type: 'idea', title: 'שני סוגי ידע — ורק אחד ודאי',
@@ -4223,7 +4227,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 4, title: 'קאנט: מה השכל מביא לידע?', thinker: 'עמנואל קאנט', thinkerId: 'kant', xp: 125,
+        id: 4, title: 'קאנט: מה השכל מביא לידע?', thinker: 'עמנואל קאנט', thinkerId: 'kant', xp: 50,
         sections: [
           {
             type: 'idea', title: 'מה השכל מביא לידע?',
@@ -4260,7 +4264,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 5, title: 'גטייה: שלושה עמודים ששינו הכל', thinker: 'אדמונד גטייה', thinkerId: 'gettier', xp: 125,
+        id: 5, title: 'גטייה: שלושה עמודים ששינו הכל', thinker: 'אדמונד גטייה', thinkerId: 'gettier', xp: 50,
         sections: [
           {
             type: 'idea', title: 'גטייה: שלושה עמודים ששינו הכל',
@@ -4297,7 +4301,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 6, title: 'פופר: איך המדע מתקדם?', thinker: 'קרל פופר', thinkerId: 'popper', xp: 125,
+        id: 6, title: 'פופר: איך המדע מתקדם?', thinker: 'קרל פופר', thinkerId: 'popper', xp: 50,
         sections: [
           {
             type: 'idea', title: 'הוכחה בלתי אפשרית — אז מה עושים?',
@@ -4336,7 +4340,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 7, title: 'שבוע שלישי — מפת הידע', thinker: 'סיכום', thinkerId: 'audi', xp: 150,
+        id: 7, title: 'שבוע שלישי — מפת הידע', thinker: 'סיכום', thinkerId: 'audi', xp: 80,
         sections: [
           {
             type: 'idea', title: 'ספק וידע — סיכום השבוע',
@@ -4380,7 +4384,7 @@ const WEEKS = [
     subtitle: 'מה קיים — ומה מציאות?',
     days: [
       {
-        id: 1, title: 'מה אמיתי?', thinker: 'אריסטו', thinkerId: 'aristotle', xp: 125,
+        id: 1, title: 'מה אמיתי?', thinker: 'אריסטו', thinkerId: 'aristotle', xp: 50,
         sections: [
           { type: 'idea', title: 'מה קיים בכלל?', body: 'מטפיזיקה שואלת: מה קיים? ממה עשויה המציאות? מה הקשר בין גוף לנפש? שלוש אסכולות מרכזיות: מטריאליזם (רק חומר קיים), אידיאליזם (המציאות היא מנטלית), דואליזם (שני סוגי מציאות). לכל אחת בעיות קשות. האם מספרים קיימים? האם אהבה קיימת באותו אופן שכיסא קיים?' },
           { type: 'source', title: 'אונטולוגיה: מלאי המציאות', quote: '"מטפיזיקה היא ענף הפילוסופיה שחוקר את הטבע היסודי של הקיום — מה קיים, אילו סוגי דברים קיימים, ומה הקשרים ביניהם."', attr: '— קונס ופיקוונס, מטפיזיקה: היסודות, וויילי (2015)', body: 'כשאתה שואל "מה קיים?" אתה עושה אונטולוגיה. כיסא קיים — ברור. אבל מה עם מספרים? מה עם צדק? מה עם כאב? כולם "קיימים" — אבל לא באותו אופן. הפילוסוף חייב לנסות לארגן את כל מה שיש ביקום לתוך קטגוריות קוהרנטיות.' },
@@ -4390,7 +4394,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 2, title: 'אפלטון: עולם האידאות', thinker: 'אפלטון', thinkerId: 'plato', xp: 125,
+        id: 2, title: 'אפלטון: עולם האידאות', thinker: 'אפלטון', thinkerId: 'plato', xp: 50,
         sections: [
           { type: 'idea', title: 'שני עולמות', body: 'אפלטון הציע שיש שני עולמות: עולם החושים — זמני, משתנה, לא מושלם — ועולם האידאות — נצחי, מושלם, אמיתי יותר. הכיסא שאתה יושב עליו הוא צל בלבד של האידאה המושלמת של "כיסא". אתה מזהה עיגולים מושלמים בגיאומטריה כי נשמתך הכירה את האידאה של עיגול לפני הלידה.' },
           { type: 'source', title: 'אלגוריית המערה', quote: '"דמיין בני אדם כבולים במערה, גבם לאור. הם רואים צללים על הקיר ומאמינים שהם המציאות. הפילוסוף הוא מי שהשתחרר, יצא לאור השמש, וחזר לספר לשאר."', attr: '— אפלטון, הרפובליקה, ספר 7, תרגום יוסף גרהרד ליבס, הוצאת שוקן', body: 'האלגוריה הזו היא אחת המפורסמות בתולדות הפילוסופיה. מה שאנחנו רואים בחיי היום-יום הוא צלליות — ביטויים חלקיים של מציאות עמוקה יותר. הפילוסוף מטפס אל ה"שמש" — ידיעת הטוב המוחלט — ואז חוזר לחנך את שאר האנשים. ביקורת אריסטו: "הטיעון האיש השלישי" — כדי לחבר כיסא לאידאת כיסא צריך אידאה שלישית, וכן לאינסוף.' },
@@ -4400,7 +4404,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 3, title: 'שפינוזה: הכל אחד', thinker: 'שפינוזה', thinkerId: 'spinoza', xp: 125,
+        id: 3, title: 'שפינוזה: הכל אחד', thinker: 'שפינוזה', thinkerId: 'spinoza', xp: 50,
         sections: [
           { type: 'idea', title: 'ישות אחת בלבד', body: 'לא שני עולמות — ישות אחת בלבד. אלוהים והטבע הם אותו הדבר (Deus sive Natura). גוף ונפש הם שתי דרכים לתאר את אותה הישות. הכל פועל לפי חוקים קבועים — אין חופש רצון. שפינוזה הוחרם מקהילתו היהודית בגיל 23. חופש לשפינוזה לא אומר לפעול נגד הטבע — אלא להבין אותו ולפעול בהתאם לו.' },
           { type: 'source', title: 'אלוהים כטבע', quote: '"מלבד אלוהים לא יכולה להיות ולא יכולה להתפס שום ישות."', attr: '— ברוך שפינוזה, האתיקה, חלק א\', תרגום ירמיהו יובל, הוצאת הקיבוץ המאוחד (2003)', body: 'שפינוזה בנה את "האתיקה" שלו כמו מערכת גיאומטרית — הגדרות, אקסיומות, משפטים. הוא טען שכל מה שקיים הוא מודוס של ישות אחת אינסופית. אנחנו חלק מהאינסוף, לא נפרדים ממנו. האמוציות שלנו — שמחה, עצב, אהבה — הן גם פעילות של אותה ישות יחידה שמנסה להבין את עצמה.' },
@@ -4410,7 +4414,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 4, title: 'ברקלי: להיות זה להיתפס', thinker: 'ברקלי', thinkerId: 'berkeley', xp: 125,
+        id: 4, title: 'ברקלי: להיות זה להיתפס', thinker: 'ברקלי', thinkerId: 'berkeley', xp: 50,
         sections: [
           { type: 'idea', title: 'אין חומר כלל', body: 'אין חומר בכלל. קיומו של דבר הוא היתפסותו (esse est percipi). הכיסא קיים כי אתה תופס אותו. כשיצאת מהחדר — אלוהים תופס אותו במקומך. סמואל ג\'ונסון בעט באבן כדי "להפריך" את ברקלי — אבל הכאב שהרגיש היה גם כן תפיסה. קשר לפיזיקה הקוונטית: חלקיקים אין להם מצבים מוגדרים לפני מדידה.' },
           { type: 'source', title: 'להיות הוא להיתפס', quote: '"קיומו של דבר שנתפס על ידי החושים אינו דבר שונה מהיתפסותו; ולפיכך כל עוד לא נתפס על ידי, או לא קיים בתודעה שלי, הוא לא קיים בכלל."', attr: '— ג\'ורג\' ברקלי, מסה על עקרונות דעת האדם, תרגום גיא אלגת, הוצאת רסלינג (2006)', body: 'ברקלי לא היה מטורף — הוא היה ביסקופ. הוא רצה לפתור בעיה: אם כל מה שאנחנו יודעים הוא תפיסות, מאיפה אנחנו יודעים שיש "חומר" מאחורי התפיסות? התשובה שלו: אנחנו לא יודעים — ולכן לא צריך להניח שהוא קיים. אלוהים הוא מה שמבטיח שהעולם ממשיך להתקיים גם כשאיש לא תופס אותו.' },
@@ -4420,7 +4424,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 5, title: 'ביקורת: איפה כל גישה נכשלת', thinker: 'ביקורת', thinkerId: 'wittgenstein', xp: 125,
+        id: 5, title: 'ביקורת: איפה כל גישה נכשלת', thinker: 'ביקורת', thinkerId: 'wittgenstein', xp: 50,
         sections: [
           {
             type: 'idea', title: 'ביקורת: איפה כל גישה נכשלת?',
@@ -4457,7 +4461,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 6, title: 'סימולציה', thinker: 'דקארט', thinkerId: 'descartes', xp: 125,
+        id: 6, title: 'סימולציה', thinker: 'דקארט', thinkerId: 'descartes', xp: 50,
         sections: [
           { type: 'idea', title: 'האם אנחנו בסימולציה?', body: 'ניק בוסטרום (2003): לפחות אחת מהשלוש חייבת להיות נכונה: (1) האנושות נכחדת לפני שהגיעה לשלב פוסט-אנושי, (2) ציביליזציות פוסט-אנושיות לא מריצות סימולציות, (3) אנחנו כמעט בוודאות חיים בסימולציה. אם מיליארדי עולמות מדומים קיימים ועולם אמיתי אחד — מה הסיכויים שאתה בעולם האמיתי?' },
           { type: 'source', title: 'הטיעון הסטטיסטי', quote: '"אם ציביליזציות פוסט-אנושיות יריצו מספר גדול של סימולציות של קדמוניהם, אז הרוב המכריע של כל התודעות שחוו תרבות דומה לשלנו חיות בסימולציה."', attr: '— ניק בוסטרום, "האם אתה חי בסימולציה?", הרבעון הפילוסופי (2003)', body: 'הטיעון של בוסטרום לא אומר שאנחנו בהכרח בסימולציה — הוא אומר שלפחות אחת מהשלוש אמיתית. אם אנחנו לא נכחדים ואם ציביליזציות עתידיות יריצו סימולציות — אז מבחינה סטטיסטית, כמות עולמות מדומים תעלה בהרבה על העולמות האמיתיים. ביקורת: הוספנהלדר קוראת לזה "פסאודומדע" — טענה שלא ניתן להפריך.' },
@@ -4467,7 +4471,7 @@ const WEEKS = [
         ],
       },
       {
-        id: 7, title: 'סיכום', thinker: 'קאנט', thinkerId: 'kant', xp: 150,
+        id: 7, title: 'סיכום', thinker: 'קאנט', thinkerId: 'kant', xp: 80,
         sections: [
           { type: 'idea', title: 'המתח הגדול', body: 'המתח האמיתי: האם המציאות קיימת באופן עצמאי מתודעתנו — או שהתודעה יוצרת אותה? אפלטון, שפינוזה, דקארט האמינו במציאות עצמאית. ברקלי ובוסטרום טוענים שהמציאות תלויה בתפיסה. שאלה זו — שהחלה עם הפרה-סוקרטיים ביוון — נותרת פתוחה. קשר לשבוע 3: מה שקיים מעבר לתפיסתנו, לא נוכל לדעת בוודאות.' },
           { type: 'source', title: 'קאנט כגשר', quote: '"הדברים כשלעצמם (ה-Ding an sich) אינם נגישים לתודעה האנושית. אנחנו רואים רק את הופעתם — כפי שהחושים שלנו מארגנים אותם."', attr: '— עמנואל קאנט, ביקורת התבונה הטהורה, תרגום יוסף אור, הוצאת מאגנס', body: 'קאנט ניסה לגשר בין שתי העמדות: הוא הסכים עם ברקלי שאיננו יכולים לגשת למציאות כפי שהיא "בפני עצמה" — אבל הוא לא הסכים שהיא אינה קיימת. יש מציאות עצמאית (Ding an sich), אבל היא תמיד מגיעה אלינו מסוננת דרך מבנה התודעה שלנו. פתרון חלקי — אבל אולי הכי כנה מכולם.' },
@@ -5254,6 +5258,8 @@ function nextSection() {
   const week = getW().find(w => w.id === state.currentWeek);
   const day = week.days.find(d => d.id === state.currentDay);
   if (state.currentSection < day.sections.length - 1) {
+    state.readerXP += 50;
+    document.getElementById('reader-xp-display').textContent = state.readerXP;
     state.currentSection++;
     state.quizAnswered = false;
     renderReader();
@@ -5273,7 +5279,7 @@ function handleQuiz(chosen, correctIdx, explanation, btn) {
   opts[chosen].classList.add(isCorrect ? 'correct' : 'wrong');
   if (!isCorrect) opts[correctIdx].classList.add('correct');
 
-  const earnedXP = isCorrect ? 25 : 5;
+  const earnedXP = isCorrect ? 15 : 5;
   state.readerXP += earnedXP;
   document.getElementById('reader-xp-display').textContent = state.readerXP;
 
@@ -5325,6 +5331,10 @@ function finishDay() {
 
   const prevLevel = getLevel(state.xp);
 
+  // Day completion bonus + streak bonus
+  state.readerXP += 30;
+  state.readerXP += 10 * Math.max(state.dailyStreak, 0);
+
   state.xp += state.readerXP;
   state.completedDays[key] = true;
   state.dailyStreak++;
@@ -5335,13 +5345,19 @@ function finishDay() {
     state.unlockedThinkers.push(thinkerId);
   }
 
+  // Week completion bonus
+  const totalDays = getW().find(w => w.id === state.currentWeek).days.length;
+  const completedInWeek = getW().find(w => w.id === state.currentWeek).days.filter(d => state.completedDays[state.currentWeek + '-' + d.id]).length;
+  if (completedInWeek === totalDays) {
+    state.xp += 100;
+    state.readerXP += 100;
+  }
+
   const newLevel = getLevel(state.xp);
   try { saveState(); } catch(e) { saveStateLocal(); }
 
   try {
     posthog.capture('day_completed', { week: state.currentWeek, day: state.currentDay });
-    const totalDays = getW().find(w => w.id === state.currentWeek).days.length;
-    const completedInWeek = getW().find(w => w.id === state.currentWeek).days.filter(d => state.completedDays[state.currentWeek + '-' + d.id]).length;
     if (completedInWeek === totalDays) posthog.capture('week_completed', { week: state.currentWeek });
   } catch(e) {}
 
