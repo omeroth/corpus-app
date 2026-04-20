@@ -1132,12 +1132,6 @@
     gap: 8px;
   }
   .auth-btn:disabled { opacity: 0.6; cursor: default; }
-  .auth-btn-guest {
-    background: none; border: none; color: #999; font-size: 0.85rem;
-    margin-top: 4px; text-decoration: underline; cursor: pointer;
-    padding: 6px; width: 100%; text-align: center;
-  }
-  .auth-btn-guest:hover { color: var(--accent); }
   .auth-btn-primary {
     background: var(--accent);
     color: #fff;
@@ -1545,11 +1539,6 @@ async function authLogout() {
   showAuthScreen();
 }
 
-function continueAsGuest() {
-  currentUser = null;
-  hideAuthScreen();
-  renderHome();
-}
 
 // ═══════════════════════════════════════════════════════════
 // DATA
@@ -5563,8 +5552,7 @@ function launchConfetti() {
 // INIT
 // ═══════════════════════════════════════════════════════════
 
-// Auth-gated startup — kept at global scope so handleAuthSubmit
-// and continueAsGuest (called from onclick attributes) can access them.
+// Auth-gated startup — kept at global scope so handleAuthSubmit can access them.
 let appStarted = false;
 async function enterApp(user) {
   if (appStarted) return;
