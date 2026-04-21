@@ -50,7 +50,8 @@
 
   body {
     font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
+    background: linear-gradient(160deg, #F8F5FF 0%, #F0EBFF 100%);
+    background-attachment: fixed;
     color: var(--text);
     min-height: 100dvh;
     direction: inherit;
@@ -67,7 +68,7 @@
     margin: 0 auto;
     min-height: 100dvh;
     position: relative;
-    background: var(--bg);
+    background: transparent;
   }
 
   /* ── Top bar ── */
@@ -328,19 +329,19 @@
 
   /* ── Week list ── */
   .week-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-bottom: 5px solid var(--border-deep);
-    border-radius: var(--radius);
-    padding: 18px;
-    margin-bottom: 12px;
+    background: #fff;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    padding: 16px;
+    margin: 0 16px 10px;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 14px;
     transition: transform 0.15s, box-shadow 0.15s;
   }
-  .week-item:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(123,79,212,0.1); }
+  .week-item:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(123,79,212,0.1); }
   .week-item.locked { opacity: 0.5; cursor: default; }
   .week-num {
     width: 44px;
@@ -368,6 +369,200 @@
   }
   .week-meta { font-size: 12px; color: var(--text-muted); }
   .week-progress-mini { font-size: 20px; }
+
+  /* ── Home: Duolingo-style stats bar ── */
+  .stats-duolingo {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding: 8px 16px;
+  }
+  .stat-duo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    background: white;
+    border-radius: 20px;
+    padding: 6px 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  /* ── Home: thinker carousel ── */
+  .thinker-carousel-wrap {
+    overflow: hidden;
+    padding: 16px 0;
+    mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+    position: relative;
+  }
+  .thinker-carousel {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    cursor: grab;
+    padding: 4px 16px 8px;
+    will-change: scroll-position;
+  }
+  .thinker-carousel::-webkit-scrollbar { display: none; }
+  .thinker-carousel.grabbing { cursor: grabbing; }
+  .thinker-carousel-card {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
+  .thinker-carousel-card img {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center 20%;
+    box-shadow: 0 4px 16px rgba(123,79,212,0.2);
+    border: 2px solid rgba(123,79,212,0.15);
+    transition: all 0.3s ease;
+  }
+  .thinker-carousel-card.unlocked img {
+    border-color: #7B4FD4;
+    box-shadow: 0 4px 20px rgba(123,79,212,0.35);
+  }
+  .thinker-carousel-card.locked img {
+    filter: grayscale(100%) brightness(0.6);
+    opacity: 0.45;
+    border-color: transparent;
+  }
+  .thinker-carousel-name {
+    font-size: 10px;
+    color: var(--text-2);
+    text-align: center;
+    max-width: 64px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Home: hero continue card (glassmorphism) ── */
+  @keyframes gentlePulse {
+    0%, 100% { box-shadow: 0 4px 24px rgba(123,79,212,0.08); }
+    50% { box-shadow: 0 4px 32px rgba(123,79,212,0.18); }
+  }
+  .hero-continue-card {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(123,79,212,0.15);
+    border-radius: 24px;
+    box-shadow: 0 4px 24px rgba(123,79,212,0.08);
+    padding: 24px;
+    margin: 12px 16px 20px;
+    animation: gentlePulse 3s ease-in-out infinite;
+  }
+  .hero-continue-title {
+    font-family: 'Nunito', sans-serif;
+    font-size: 19px;
+    font-weight: 900;
+    color: var(--text);
+    margin-bottom: 5px;
+    line-height: 1.2;
+  }
+  .hero-continue-sub {
+    font-size: 13px;
+    color: var(--text-2);
+    margin-bottom: 18px;
+    min-height: 1em;
+  }
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(123,79,212,0.4), 0 4px 16px rgba(123,79,212,0.2); }
+    50% { box-shadow: 0 0 20px rgba(123,79,212,0.7), 0 4px 24px rgba(123,79,212,0.4); }
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  .btn-hero-continue {
+    display: block;
+    margin: 0 auto;
+    background: linear-gradient(90deg, #7B4FD4, #9B6FE4, #7B4FD4, #9B6FE4);
+    background-size: 200% auto;
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 32px;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    animation: glowPulse 2.5s ease-in-out infinite, shimmer 3s linear infinite;
+  }
+  .btn-hero-continue:active {
+    transform: scale(0.97);
+    animation: none;
+    background: #7B4FD4;
+  }
+
+  /* ── Home: section title ── */
+  .home-section-title {
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text-2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 4px 16px 10px;
+  }
+
+  /* ── Home: week floating cards ── */
+  .week-item.current-week {
+    border-right: 3px solid var(--accent);
+  }
+  [dir="ltr"] .week-item.current-week {
+    border-right: none;
+    border-left: 3px solid var(--accent);
+  }
+  .week-item.completed-week .week-num { background: rgba(46,125,50,0.12); color: #2E7D32; border-color: rgba(46,125,50,0.3); }
+  .week-check { font-size: 16px; color: #2E7D32; flex-shrink: 0; }
+
+  /* ── Home: library pill button ── */
+  .btn-library {
+    display: block;
+    margin: 20px auto 8px;
+    padding: 9px 22px;
+    background: rgba(255,255,255,0.9);
+    border: 1px solid rgba(123,79,212,0.2);
+    border-radius: 100px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    cursor: pointer;
+    transition: background 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 8px rgba(123,79,212,0.07);
+  }
+  .btn-library:hover { background: #fff; box-shadow: 0 4px 16px rgba(123,79,212,0.13); }
+
+  /* ── Library modal ── */
+  .library-modal-box {
+    max-height: 85vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .library-modal-title {
+    font-family: 'Nunito', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--text);
+    margin-bottom: 16px;
+    text-align: center;
+  }
 
   /* ── Week screen ── */
   .day-item {
@@ -536,7 +731,7 @@
     text-align: center;
   }
   .section-body {
-    font-size: 16px;
+    font-size: 1rem;
     line-height: 1.8;
     color: #1A1A2E;
     font-weight: 400;
@@ -559,7 +754,7 @@
   }
   .source-quote p {
     font-family: 'Nunito', sans-serif;
-    font-size: 16px;
+    font-size: 0.95rem;
     font-weight: 700;
     line-height: 1.8;
     color: #1A1A2E;
@@ -574,7 +769,7 @@
 
   /* ── Quiz ── */
   .quiz-intro {
-    font-size: 15px;
+    font-size: 1rem;
     line-height: 1.65;
     color: #2D1B69;
     font-weight: 500;
@@ -586,7 +781,7 @@
   }
   .quiz-question {
     font-family: 'Nunito', sans-serif;
-    font-size: 18px;
+    font-size: 1.1rem;
     line-height: 1.6;
     margin-bottom: 20px;
     font-weight: 800;
@@ -600,7 +795,7 @@
     border-radius: 16px;
     padding: 16px 18px;
     cursor: pointer;
-    font-size: 15px;
+    font-size: 1rem;
     text-align: start;
     transition: all 0.2s;
     font-family: 'DM Sans', sans-serif;
@@ -694,7 +889,7 @@
   .qfm-xp.correct { color: #2E7D32; }
   .qfm-xp.wrong   { color: #C62828; }
   .qfm-explanation {
-    font-size: 15px; line-height: 1.65;
+    font-size: 1rem; line-height: 1.65;
     color: var(--text);
     text-align: start;
     background: var(--surface-2);
@@ -1197,6 +1392,70 @@
     flex-shrink: 0;
   }
   .lang-toggle-btn:hover { background: var(--border); color: var(--text); }
+  .settings-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 6px;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7B4FD4;
+    transition: background 0.2s;
+  }
+  .settings-btn:hover {
+    background: rgba(123,79,212,0.1);
+  }
+  .settings-panel {
+    position: fixed;
+    top: 56px;
+    right: 16px;
+    z-index: 1000;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    padding: 16px;
+    min-width: 200px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .settings-section {
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+  }
+  .settings-label {
+    font-size: 12px;
+    color: var(--text-2);
+    margin-bottom: 8px;
+  }
+  .settings-text-size-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .text-size-btn {
+    background: var(--surface-2);
+    border: none;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-weight: 700;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .text-size-current {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 600;
+    min-width: 40px;
+    text-align: center;
+  }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
@@ -1234,51 +1493,48 @@
       <div class="topbar-logo-wrap">
         <div class="topbar-logo">Corpus</div>
       </div>
-      <button class="lang-toggle-btn" id="lang-toggle-btn" onclick="toggleLang()">English</button>
+      <button class="settings-btn" onclick="toggleSettings()">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B4FD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+  </svg>
+</button>
     </div>
     <div class="scroll-content">
       <!-- Stats -->
-      <div class="stats-row">
-        <div class="stat-pill">
-          <div class="stat-icon">🔥</div>
-          <div class="stat-value" id="stat-streak">0</div>
-          <div class="stat-label" id="stat-streak-label">רצף</div>
-        </div>
-        <div class="stat-pill">
-          <div class="stat-icon">⭐</div>
-          <div class="stat-value" id="stat-xp">0</div>
-          <div class="stat-label">XP</div>
-        </div>
-        <div class="stat-pill">
-          <div class="stat-icon">🏛</div>
-          <div class="stat-value" id="stat-level">1</div>
-          <div class="stat-label" id="stat-level-label">רמה</div>
-        </div>
+      <div class="stats-duolingo">
+        <div class="stat-duo">🔥 <span id="stat-streak">0</span></div>
+        <div class="stat-duo">⭐ <span id="stat-xp">0</span></div>
+        <div class="stat-duo">🏛 <span id="stat-level">1</span></div>
       </div>
 
-      <!-- Level progress -->
-      <div class="level-card">
-        <div class="level-card-header">
-          <div class="level-name" id="level-name-home">מתחיל</div>
-          <div class="level-badge" id="level-badge-home">רמה 1</div>
-        </div>
-        <div class="progress-bar-wrap">
-          <div class="progress-bar-fill" id="level-bar" style="width:0%"></div>
-        </div>
-        <div class="progress-label" id="level-progress-label">0 / 100 XP לרמה הבאה</div>
+      <!-- Thinker carousel -->
+      <div class="thinker-carousel-wrap">
+        <div class="thinker-carousel" id="thinker-carousel"></div>
       </div>
 
-      <!-- Thinker cards -->
-      <div class="section-header">
-        <div class="section-title" id="home-thinkers-title">הוגים שנאספו</div>
+      <!-- Hero continue card -->
+      <div class="hero-continue-card">
+        <div class="hero-continue-title" id="hero-continue-title">המשך מאיפה שעצרת</div>
+        <div class="hero-continue-sub" id="hero-continue-sub"></div>
+        <button class="btn-hero-continue" id="btn-hero-continue" onclick="handleHeroContinue()">המשך ←</button>
       </div>
-      <div class="thinker-scroll" id="thinker-gallery"></div>
 
       <!-- Weeks -->
-      <div class="section-header">
-        <div class="section-title" id="home-weeks-title">שבועות</div>
-      </div>
+      <div class="home-section-title" id="home-weeks-title">שבועות</div>
       <div id="weeks-list"></div>
+
+      <!-- Library button -->
+      <button class="btn-library" onclick="showLibraryModal()">הוגים שצברת 🏛</button>
+    </div>
+  </div>
+
+  <!-- Library modal -->
+  <div class="modal-overlay" id="modal-library">
+    <div class="modal-box library-modal-box">
+      <div class="library-modal-title" id="library-modal-title"></div>
+      <div class="thinker-scroll" id="thinker-gallery"></div>
+      <button class="modal-btn" onclick="closeLibraryModal()" id="library-close-btn"></button>
     </div>
   </div>
 
@@ -1305,6 +1561,12 @@
         <button class="topbar-back" id="reader-back-btn" style="padding:0" onclick="goBack()">→</button>
         <div class="reader-day-label" id="reader-day-label"></div>
         <div class="xp-badge">⭐ <span id="reader-xp-display">0</span> XP</div>
+        <button class="settings-btn" onclick="toggleSettings()">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B4FD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+  </svg>
+</button>
       </div>
       <div class="reader-progress-wrap">
         <div class="reader-progress-fill" id="reader-progress" style="width:0%"></div>
@@ -1314,6 +1576,19 @@
     <div class="reader-btn-bar" id="reader-btn-bar"></div>
   </div>
 
+</div>
+
+<!-- Settings panel (global, fixed position) -->
+<div class="settings-panel" id="settings-panel" style="display:none">
+  <button class="lang-toggle-btn" id="lang-toggle-btn" onclick="toggleLang()">English</button>
+  <div class="settings-section">
+    <div class="settings-label" id="settings-text-size-label">גודל טקסט</div>
+    <div class="settings-text-size-row">
+      <button class="text-size-btn" onclick="changeTextSize(-1)">A-</button>
+      <span class="text-size-current" id="text-size-current">100%</span>
+      <button class="text-size-btn" onclick="changeTextSize(1)">A+</button>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════
@@ -4729,6 +5004,8 @@ const UI = {
     unlockLabel:'🏛 הוגה נפתח!', continueBtn:'המשך',
     levelupTitle:'עלית רמה!', levelupPrefix:'ברכות! עכשיו אתה',
     amazingBtn:'מדהים!', closeBtn:'סגור',
+    heroLabel:'המשך ללמוד', heroAllDone:'סיימת הכל — כל הכבוד!',
+    libraryBtn:'הספרייה שלי 📚',
     langToggleLabel:'English',
   },
   en: {
@@ -4751,6 +5028,8 @@ const UI = {
     unlockLabel:'🏛 Thinker Unlocked!', continueBtn:'Continue',
     levelupTitle:'Level Up!', levelupPrefix:'Congratulations! You are now',
     amazingBtn:'Amazing!', closeBtn:'Close',
+    heroLabel:'Continue Learning', heroAllDone:'All done — great work!',
+    libraryBtn:'My Library 📚',
     langToggleLabel:'עברית',
   },
 };
@@ -4954,10 +5233,54 @@ function goBack() {
 // HOME
 // ═══════════════════════════════════════════════════════════
 
+let textSizeLevel = 100;
+try {
+  const saved = localStorage.getItem('corpus_text_size');
+  if (saved) { textSizeLevel = parseInt(saved); document.documentElement.style.fontSize = textSizeLevel + '%'; }
+} catch(e) {}
+
+function changeTextSize(direction) {
+  textSizeLevel = Math.min(130, Math.max(80, textSizeLevel + direction * 10));
+  document.documentElement.style.fontSize = textSizeLevel + '%';
+  document.body.style.fontSize = textSizeLevel + '%';
+  const el = document.getElementById('text-size-current');
+  if (el) el.textContent = textSizeLevel + '%';
+  try { localStorage.setItem('corpus_text_size', textSizeLevel); } catch(e) {}
+}
+
+function toggleSettings() {
+  const panel = document.getElementById('settings-panel');
+  panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+}
+
+document.addEventListener('click', function(e) {
+  const panel = document.getElementById('settings-panel');
+  if (!panel || panel.style.display === 'none') return;
+  const isSettingsBtn = e.target.closest('.settings-btn');
+  if (!isSettingsBtn && !panel.contains(e.target)) {
+    panel.style.display = 'none';
+  }
+});
+
 function toggleLang() {
   state.lang = state.lang === 'he' ? 'en' : 'he';
   saveState();
-  renderHome();
+
+  // Update lang toggle button text in settings panel
+  const ltBtn = document.getElementById('lang-toggle-btn');
+  if (ltBtn) ltBtn.textContent = state.lang === 'he' ? 'English' : 'עברית';
+
+  // Re-render whichever screen is active
+  if (state.currentScreen === 'reader') {
+    document.documentElement.dir = state.lang === 'en' ? 'ltr' : 'rtl';
+    document.documentElement.lang = state.lang;
+    renderReader();
+  } else if (state.currentScreen === 'week') {
+    renderHome();
+    renderWeek(state.currentWeek);
+  } else {
+    renderHome();
+  }
 }
 
 function renderHome() {
@@ -4973,12 +5296,9 @@ function renderHome() {
   const rb = document.getElementById('reader-back-btn');
   if (wb) wb.textContent = ui.backArrow;
   if (rb) rb.textContent = ui.backArrow;
-  // Static modal labels + stats + level
+
+  // Modal labels
   try {
-    document.getElementById('stat-streak-label').textContent = ui.streak;
-    document.getElementById('stat-level-label').textContent = ui.level;
-    document.getElementById('home-thinkers-title').textContent = ui.thinkers;
-    document.getElementById('home-weeks-title').textContent = ui.weeks;
     document.getElementById('modal-xp-earned-label').textContent = ui.xpEarned;
     document.getElementById('modal-streak-label').textContent = ui.answerStreak;
     document.getElementById('modal-unlock-label').textContent = ui.unlockLabel;
@@ -4986,30 +5306,54 @@ function renderHome() {
     document.getElementById('modal-levelup-title').textContent = ui.levelupTitle;
     document.getElementById('modal-amazing-btn').textContent = ui.amazingBtn;
     document.getElementById('modal-close-btn').textContent = ui.closeBtn;
+  } catch(e) { console.error('renderHome: modal label error', e); }
 
-    // Stats
+  // Stats bar
+  try {
     document.getElementById('stat-streak').textContent = state.dailyStreak;
     document.getElementById('stat-xp').textContent = state.xp;
     document.getElementById('stat-level').textContent = getLevel(state.xp);
+  } catch(e) { console.error('renderHome: stats bar error', e); }
 
-    // Level
-    const ld = getLevelData(state.xp);
-    document.getElementById('level-name-home').textContent = ld.name;
-    document.getElementById('level-badge-home').textContent = ui.levelBadge(ld.level);
-    document.getElementById('level-bar').style.width = ld.pct + '%';
-    document.getElementById('level-progress-label').textContent =
-      ld.level < getLvls().length ? ui.xpProgress(ld.xpInLevel, ld.needed) : ui.maxLevel;
-  } catch(labelErr) {
-    console.error('renderHome: label/stats DOM error (element missing?)', labelErr);
-  }
+  // Hero continue card — find next incomplete day
+  try {
+    document.getElementById('home-weeks-title').textContent = ui.weeks;
+    document.getElementById('library-modal-title').textContent = ui.thinkers;
+    document.getElementById('library-close-btn').textContent = ui.closeBtn;
 
-  // Thinkers
-  console.log('renderCards called, thinkers:', getT().length);
+    let nextWeek = null, nextDay = null;
+    for (const w of getW()) {
+      if (w.locked) continue;
+      for (const d of (w.days || [])) {
+        if (!state.completedDays[w.id + '-' + d.id]) {
+          nextWeek = w; nextDay = d; break;
+        }
+      }
+      if (nextDay) break;
+    }
+    const heroTitle = document.getElementById('hero-continue-title');
+    const heroSub = document.getElementById('hero-continue-sub');
+    const heroBtn = document.getElementById('btn-hero-continue');
+    if (nextDay) {
+      heroTitle.textContent = state.lang === 'he' ? 'המשך מאיפה שעצרת' : 'Continue where you left off';
+      heroSub.textContent = ui.dayLabel(nextDay.id, nextDay.thinker) + ' · ' + nextWeek.title;
+      heroBtn.textContent = state.lang === 'he' ? 'המשך ←' : 'Continue →';
+      heroBtn.style.display = '';
+      heroBtn._nextWeek = nextWeek.id;
+      heroBtn._nextDay = nextDay.id;
+    } else {
+      heroTitle.textContent = state.lang === 'he' ? 'סיימת הכל — כל הכבוד!' : 'All done — great work!';
+      heroSub.textContent = '';
+      heroBtn.style.display = 'none';
+    }
+  } catch(e) { console.error('renderHome: hero card error', e); }
+
+  // Library / thinker gallery (in modal)
   const gallery = document.getElementById('thinker-gallery');
   gallery.innerHTML = '';
   try {
     getT().forEach(t => {
-      if (!t || !t.id) return; // skip any malformed entries
+      if (!t || !t.id) return;
       try {
         const unlocked = state.unlockedThinkers.includes(t.id);
         const card = document.createElement('div');
@@ -5034,43 +5378,180 @@ function renderHome() {
         }
         if (unlocked) card.onclick = () => openThinkerModal(t.id);
         gallery.appendChild(card);
-      } catch(cardErr) {
-        console.error('renderCards: error on thinker', t && t.id, cardErr);
-      }
+      } catch(cardErr) { console.error('renderHome: thinker card error', t && t.id, cardErr); }
     });
-  } catch(e) {
-    console.error('renderCards: fatal error', e);
-  }
+  } catch(e) { console.error('renderHome: gallery error', e); }
 
-  // Weeks
-  console.log('renderWeeks called, weeks:', corpusData.weeks && corpusData.weeks.length);
+  // Weeks list
   const wl = document.getElementById('weeks-list');
   wl.innerHTML = '';
   try {
     getW().forEach(w => {
-      if (!w || !w.id) return; // skip any malformed entries
+      if (!w || !w.id) return;
       try {
         const completedCount = w.days ? w.days.filter(d => state.completedDays[w.id + '-' + d.id]).length : 0;
         const totalDays = w.days ? w.days.length : 0;
+        const allDone = !w.locked && completedCount === totalDays && totalDays > 0;
+        const isCurrent = !w.locked && getW().some(ww => !ww.locked && ww.days &&
+          ww.days.some(d => !state.completedDays[ww.id + '-' + d.id])) &&
+          w.days && w.days.some(d => !state.completedDays[w.id + '-' + d.id]) &&
+          !getW().slice(0, getW().indexOf(w)).some(pw => !pw.locked && pw.days && pw.days.some(d => !state.completedDays[pw.id + '-' + d.id]));
         const div = document.createElement('div');
-        div.className = 'week-item' + (w.locked ? ' locked' : '');
+        let cls = 'week-item';
+        if (w.locked) cls += ' locked';
+        else if (allDone) cls += ' completed-week';
+        else if (isCurrent) cls += ' current-week';
+        div.className = cls;
         div.innerHTML = `
           <div class="week-num">${w.id}</div>
           <div class="week-info">
             <div class="week-title">${w.title}</div>
             <div class="week-meta">${w.locked ? ui.comingSoon : ui.daysOf(completedCount, totalDays)}</div>
           </div>
+          ${allDone ? '<div class="week-check">✓</div>' : ''}
         `;
         if (!w.locked) div.onclick = () => { renderWeek(w.id); showScreen('week'); };
         wl.appendChild(div);
-      } catch(weekErr) {
-        console.error('renderWeeks: error on week', w && w.id, weekErr);
-      }
+      } catch(weekErr) { console.error('renderHome: week row error', w && w.id, weekErr); }
     });
-  } catch(e) {
-    console.error('renderWeeks: fatal error', e);
+  } catch(e) { console.error('renderHome: weeks list error', e); }
+
+  populateCarousel();
+}
+
+function populateCarousel() {
+  const carousel = document.getElementById('thinker-carousel');
+  if (!carousel) return;
+  const thinkers = getT().filter(t => t && t.image);
+  if (!thinkers.length) { carousel.parentElement.style.display = 'none'; return; }
+  carousel.parentElement.style.display = '';
+  carousel.innerHTML = '';
+  thinkers.forEach(t => {
+    const unlocked = state.unlockedThinkers.includes(t.id);
+    const card = document.createElement('div');
+    card.className = 'thinker-carousel-card ' + (unlocked ? 'unlocked' : 'locked');
+    card.innerHTML = `
+      <img src="${t.image}" alt="${t.name}" loading="lazy">
+      <div class="thinker-carousel-name">${t.name}</div>
+    `;
+    if (unlocked) card.onclick = () => openThinkerModal(t.id);
+    carousel.appendChild(card);
+  });
+  startCarouselAutoScroll();
+}
+
+function startCarouselAutoScroll() {
+  const carousel = document.getElementById('thinker-carousel');
+  if (!carousel) return;
+
+  let isDragging = false;
+  let startX = 0;
+  let scrollStart = 0;
+  let lastX = 0;
+  let velocity = 0;
+  let lastTime = 0;
+  let momentumId;
+  let autoScrollId;
+  let userInteracting = false;
+  let resumeTimeout;
+
+  function step() {
+    if (!userInteracting) {
+      if (carousel.scrollLeft + carousel.clientWidth >= carousel.scrollWidth - 1) {
+        carousel.scrollLeft = 0;
+      } else {
+        carousel.scrollLeft += 0.4;
+      }
+    }
+    autoScrollId = requestAnimationFrame(step);
+  }
+  autoScrollId = requestAnimationFrame(step);
+
+  function pauseAndResume() {
+    userInteracting = true;
+    clearTimeout(resumeTimeout);
+    resumeTimeout = setTimeout(() => { userInteracting = false; }, 2000);
   }
 
+  // MOUSE
+  carousel.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    startX = e.clientX;
+    scrollStart = carousel.scrollLeft;
+    lastX = e.clientX;
+    lastTime = Date.now();
+    velocity = 0;
+    carousel.style.cursor = 'grabbing';
+    cancelAnimationFrame(momentumId);
+    pauseAndResume();
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const now = Date.now();
+    const dt = now - lastTime;
+    if (dt > 0) velocity = (e.clientX - lastX) / dt;
+    lastX = e.clientX;
+    lastTime = now;
+    carousel.scrollLeft = scrollStart - (e.clientX - startX);
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    carousel.style.cursor = 'grab';
+    applyMomentum();
+  });
+
+  // TOUCH
+  carousel.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    scrollStart = carousel.scrollLeft;
+    lastX = e.touches[0].clientX;
+    lastTime = Date.now();
+    velocity = 0;
+    cancelAnimationFrame(momentumId);
+    pauseAndResume();
+  }, { passive: true });
+
+  carousel.addEventListener('touchmove', (e) => {
+    const now = Date.now();
+    const dt = now - lastTime;
+    if (dt > 0) velocity = (e.touches[0].clientX - lastX) / dt;
+    lastX = e.touches[0].clientX;
+    lastTime = now;
+    carousel.scrollLeft = scrollStart - (e.touches[0].clientX - startX);
+  }, { passive: true });
+
+  carousel.addEventListener('touchend', () => {
+    applyMomentum();
+  }, { passive: true });
+
+  function applyMomentum() {
+    let v = velocity * 15;
+    function momentum() {
+      if (Math.abs(v) < 0.5) return;
+      carousel.scrollLeft -= v;
+      v *= 0.88;
+      momentumId = requestAnimationFrame(momentum);
+    }
+    momentum();
+  }
+}
+
+function handleHeroContinue() {
+  const btn = document.getElementById('btn-hero-continue');
+  if (btn._nextWeek && btn._nextDay) {
+    openReader(btn._nextWeek, btn._nextDay);
+  }
+}
+
+function showLibraryModal() {
+  document.getElementById('modal-library').classList.add('active');
+}
+
+function closeLibraryModal() {
+  document.getElementById('modal-library').classList.remove('active');
 }
 
 // ═══════════════════════════════════════════════════════════
