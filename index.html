@@ -5493,7 +5493,7 @@ function startCarouselAutoScroll() {
     if (dt > 0) velocity = (e.clientX - lastX) / dt;
     lastX = e.clientX;
     lastTime = now;
-    carousel.scrollLeft = scrollStart - (e.clientX - startX);
+    carousel.scrollLeft = scrollStart - (e.clientX - startX) * 1.5;
   });
 
   window.addEventListener('mouseup', () => {
@@ -5520,7 +5520,7 @@ function startCarouselAutoScroll() {
     if (dt > 0) velocity = (e.touches[0].clientX - lastX) / dt;
     lastX = e.touches[0].clientX;
     lastTime = now;
-    carousel.scrollLeft = scrollStart - (e.touches[0].clientX - startX);
+    carousel.scrollLeft = scrollStart - (e.touches[0].clientX - startX) * 1.5;
   }, { passive: true });
 
   carousel.addEventListener('touchend', () => {
@@ -5528,7 +5528,7 @@ function startCarouselAutoScroll() {
   }, { passive: true });
 
   function applyMomentum() {
-    let v = velocity * 15;
+    let v = velocity * 25;
     function momentum() {
       if (Math.abs(v) < 0.5) return;
       carousel.scrollLeft -= v;
