@@ -402,15 +402,13 @@
     display: flex;
     gap: 16px;
     overflow-x: auto;
-    scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    cursor: grab;
     padding: 4px 16px 8px;
-    will-change: scroll-position;
+    cursor: grab;
   }
   .thinker-carousel::-webkit-scrollbar { display: none; }
-  .thinker-carousel.grabbing { cursor: grabbing; }
+  .thinker-carousel:active { cursor: grabbing; }
   .thinker-carousel-card {
     flex-shrink: 0;
     display: flex;
@@ -5437,106 +5435,6 @@ function populateCarousel() {
     if (unlocked) card.onclick = () => openThinkerModal(t.id);
     carousel.appendChild(card);
   });
-  startCarouselAutoScroll();
-}
-
-function startCarouselAutoScroll() {
-  const carousel = document.getElementById('thinker-carousel');
-  if (!carousel) return;
-
-  let isDragging = false;
-  let startX = 0;
-  let scrollStart = 0;
-  let lastX = 0;
-  let velocity = 0;
-  let lastTime = 0;
-  let momentumId;
-  let autoScrollId;
-  let userInteracting = false;
-  let resumeTimeout;
-
-  function step() {
-    if (!userInteracting) {
-      if (carousel.scrollLeft + carousel.clientWidth >= carousel.scrollWidth - 1) {
-        carousel.scrollLeft = 0;
-      } else {
-        carousel.scrollLeft += 0.4;
-      }
-    }
-    autoScrollId = requestAnimationFrame(step);
-  }
-  autoScrollId = requestAnimationFrame(step);
-
-  function pauseAndResume() {
-    userInteracting = true;
-    clearTimeout(resumeTimeout);
-    resumeTimeout = setTimeout(() => { userInteracting = false; }, 2000);
-  }
-
-  // MOUSE
-  carousel.addEventListener('mousedown', (e) => {
-    isDragging = true;
-    startX = e.clientX;
-    scrollStart = carousel.scrollLeft;
-    lastX = e.clientX;
-    lastTime = Date.now();
-    velocity = 0;
-    carousel.style.cursor = 'grabbing';
-    cancelAnimationFrame(momentumId);
-    pauseAndResume();
-  });
-
-  window.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-    const now = Date.now();
-    const dt = now - lastTime;
-    if (dt > 0) velocity = (e.clientX - lastX) / dt;
-    lastX = e.clientX;
-    lastTime = now;
-    carousel.scrollLeft = scrollStart - (e.clientX - startX) * 1.5;
-  });
-
-  window.addEventListener('mouseup', () => {
-    if (!isDragging) return;
-    isDragging = false;
-    carousel.style.cursor = 'grab';
-    applyMomentum();
-  });
-
-  // TOUCH
-  carousel.addEventListener('touchstart', (e) => {
-    startX = e.touches[0].clientX;
-    scrollStart = carousel.scrollLeft;
-    lastX = e.touches[0].clientX;
-    lastTime = Date.now();
-    velocity = 0;
-    cancelAnimationFrame(momentumId);
-    pauseAndResume();
-  }, { passive: true });
-
-  carousel.addEventListener('touchmove', (e) => {
-    const now = Date.now();
-    const dt = now - lastTime;
-    if (dt > 0) velocity = (e.touches[0].clientX - lastX) / dt;
-    lastX = e.touches[0].clientX;
-    lastTime = now;
-    carousel.scrollLeft = scrollStart - (e.touches[0].clientX - startX) * 1.5;
-  }, { passive: true });
-
-  carousel.addEventListener('touchend', () => {
-    applyMomentum();
-  }, { passive: true });
-
-  function applyMomentum() {
-    let v = velocity * 25;
-    function momentum() {
-      if (Math.abs(v) < 0.5) return;
-      carousel.scrollLeft -= v;
-      v *= 0.88;
-      momentumId = requestAnimationFrame(momentum);
-    }
-    momentum();
-  }
 }
 
 function handleHeroContinue() {
