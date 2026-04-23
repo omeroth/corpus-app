@@ -1801,7 +1801,7 @@ async function handleAuthSubmit() {
     } else if (data.user && !data.session) {
       // Email confirmation required
       errEl.style.color = '#22c55e';
-      errEl.textContent = 'Check your email to confirm your account, then sign in.';
+      errEl.textContent = 'We sent you a verification email. Click the link in the email to enter the app.';
       btn.disabled = false;
       btn.textContent = 'Sign Up';
     } else {
@@ -6044,6 +6044,24 @@ function launchConfetti() {
 // ═══════════════════════════════════════════════════════════
 
 // Auth-gated startup — kept at global scope so handleAuthSubmit can access them.
+async function handleEmailVerification() {
+  const hash = window.location.hash;
+  if (hash && (hash.includes('access_token') || hash.includes('type=signup'))) {
+    try {
+      const { data, error } = await sb.auth.getSession();
+      if (data?.session?.user) {
+        window.location.hash = '';
+        appStarted = false;
+        await enterApp(data.session.user);
+        return true;
+      }
+    } catch(e) {
+      console.error('[Auth] Email verification error:', e);
+    }
+  }
+  return false;
+}
+
 let appStarted = false;
 async function enterApp(user) {
   if (appStarted) return;
@@ -6084,10 +6102,16 @@ function initUI() {
     try {
       console.log('[Auth] initApp started');
 
+      // Handle email verification redirect (access_token in URL hash)
+      let initialEventReceived = false;
+      const verified = await handleEmailVerification();
+      if (verified) {
+        initialEventReceived = true;
+      }
+
       // onAuthStateChange fires INITIAL_SESSION on load — covers both "has session" and "no session".
       // We do NOT call getSession() separately: both would hit the same Supabase storage lock
       // simultaneously and cause "Lock was released because another request stole it".
-      let initialEventReceived = false;
 
       sb.auth.onAuthStateChange(async (event, session) => {
         console.log('[Auth] onAuthStateChange:', event, (session && session.user && session.user.email) || 'no session');
