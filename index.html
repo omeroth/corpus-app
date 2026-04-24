@@ -5878,7 +5878,7 @@ function nextSection() {
   const week = getW().find(w => w.id === state.currentWeek);
   const day = week.days.find(d => d.id === state.currentDay);
   if (state.currentSection < day.sections.length - 1) {
-    state.readerXP += 50;
+    state.readerXP += 10;
     document.getElementById('reader-xp-display').textContent = state.readerXP;
     state.currentSection++;
     state.quizAnswered = false;
@@ -5973,7 +5973,7 @@ function finishDay() {
 
   // Day completion bonus + streak bonus
   state.readerXP += 30;
-  state.readerXP += 10 * Math.max(state.dailyStreak, 0);
+  state.readerXP += Math.min(state.dailyStreak * 5, 30);
 
   state.xp += state.readerXP;
   state.completedDays[key] = true;
