@@ -1489,10 +1489,174 @@
     min-width: 40px;
     text-align: center;
   }
+  /* ── Onboarding ── */
+  .onboarding-backdrop { position: fixed; inset: 0; z-index: 999; pointer-events: all; }
+  .onboarding-owl-float { position: fixed; z-index: 1001; width: 100px; height: 100px; transition: top 0.6s cubic-bezier(0.34,1.56,0.64,1), left 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+  .onboarding-owl-float svg { width: 100%; height: 100%; }
+  @keyframes floaty { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-10px) rotate(1deg); } }
+  .floating { animation: floaty 2.8s ease-in-out infinite; transform-origin: 50% 80%; }
+  .onboarding-speech { position: fixed; z-index: 1001; background: white; border-radius: 20px; padding: 16px 18px; max-width: 240px; font-size: 14px; font-weight: 600; color: #2A1B4A; line-height: 1.5; box-shadow: 0 8px 32px rgba(42,27,74,0.2); transition: top 0.5s cubic-bezier(0.34,1.56,0.64,1), left 0.5s cubic-bezier(0.34,1.56,0.64,1); animation: bubblePop 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+  .onboarding-speech::before { display: none; }
+  .onboarding-speech.tail-top::before { content: ''; display: block; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 10px solid white; }
+  .onboarding-speech.tail-left::before { content: ''; display: block; position: absolute; top: 20px; left: -10px; width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-right: 10px solid white; filter: drop-shadow(-2px 0 2px rgba(42,27,74,0.08)); }
+  .onboarding-speech.tail-bottom::before { content: ''; display: block; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid white; }
+  @keyframes bubblePop { 0% { transform: scale(0.7); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  .onboarding-next-btn { display: block; margin-top: 10px; background: #7B4FD4; color: white; border: none; border-radius: 50px; padding: 8px 20px; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; }
+  .onboarding-dots-float { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); z-index: 1002; display: flex; gap: 8px; align-items: center; }
+  .owl-svg [data-expr] { display: none; }
+  .owl-svg.owl-neutral [data-expr="neutral"] { display: inline; }
+  .owl-svg.owl-determined [data-expr="determined"] { display: inline; }
+  .owl-svg.owl-admiring [data-expr="admiring"] { display: inline; }
+  .owl-svg.owl-action [data-expr="action"] { display: inline; }
+  @keyframes wave { 0%,100%{transform:rotate(-4deg)}50%{transform:rotate(12deg)} }
+  .owl-svg.owl-neutral [data-wave] { animation: wave 1.6s ease-in-out infinite; transform-origin: 60px 110px; }
+  @keyframes lift { 0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)} }
+  .owl-svg.owl-determined [data-lift] { animation: lift 1.4s ease-in-out infinite; }
+  @keyframes bounce { 0%,100%{transform:scale(1)}50%{transform:scale(1.06)} }
+  .owl-svg.owl-admiring [data-bounce] { animation: bounce 1.4s ease-in-out infinite; }
+  @keyframes pointBob { 0%,100%{transform:translateY(0)}50%{transform:translateY(4px)} }
+  .owl-svg.owl-action [data-point] { animation: pointBob 1.1s ease-in-out infinite; }
+  .onboarding-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.4); transition: all 0.3s ease; }
+  .onboarding-dot.active { background: white; width: 24px; border-radius: 4px; box-shadow: 0 0 8px rgba(255,255,255,0.6); }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
+<div id="onboarding-overlay" style="display:none">
+  <canvas id="onboarding-spotlight" style="position:fixed;inset:0;z-index:999;pointer-events:all;"></canvas>
+  <div class="onboarding-owl-float floating" id="onboarding-owl-float">
+<svg class="owl-svg owl-neutral" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs><clipPath id="bodyClip"><path d="M100 22 C 40 22, 22 74, 30 130 C 36 176, 66 192, 100 192 C 134 192, 164 176, 170 130 C 178 74, 160 22, 100 22 Z"/></clipPath></defs>
+  <ellipse cx="100" cy="194" rx="54" ry="4" fill="#2A1B4A" opacity="0.18"/>
+  <g id="silhouette">
+    <path d="M100 18 C 36 18, 18 74, 26 132 C 34 180, 66 194, 100 194 C 134 194, 166 180, 174 132 C 182 74, 164 18, 100 18 Z" fill="#2A1266"/>
+    <path d="M100 22 C 40 22, 22 76, 30 132 C 38 178, 66 190, 100 190 C 134 190, 162 178, 170 132 C 178 76, 160 22, 100 22 Z" fill="#7B4FD4"/>
+    <g clip-path="url(#bodyClip)">
+      <path d="M100 22 Q 60 26 40 80 Q 26 140 50 186 Q 36 150 38 100 Q 52 42 100 22 Z" fill="#5E37A8" opacity=".55"/>
+      <ellipse cx="78" cy="38" rx="22" ry="10" fill="#B995F3" opacity=".75"/>
+    </g>
+  </g>
+  <g>
+    <path d="M58 26 Q54 -2 78 14 Q82 30 80 44 Q68 36 58 26 Z" fill="#5E37A8" stroke="#2A1266" stroke-width="2.4" stroke-linejoin="round"/>
+    <path d="M142 26 Q146 -2 122 14 Q118 30 120 44 Q132 36 142 26 Z" fill="#5E37A8" stroke="#2A1266" stroke-width="2.4" stroke-linejoin="round"/>
+  </g>
+  <g clip-path="url(#bodyClip)">
+    <ellipse cx="100" cy="136" rx="40" ry="46" fill="#FFFFFF"/>
+    <path d="M100 94 Q 132 100 138 136 Q 136 174 112 188 Q 128 170 128 140 Q 124 104 100 94 Z" fill="#EADCFB"/>
+    <g stroke="#C7AFEC" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".9">
+      <path d="M84 118 Q90 124 96 118"/><path d="M104 118 Q110 124 116 118"/>
+      <path d="M80 132 Q88 138 96 132"/><path d="M104 132 Q112 138 120 132"/>
+      <path d="M82 148 Q90 154 98 148"/><path d="M102 148 Q110 154 118 148"/>
+      <path d="M86 164 Q94 170 100 164"/><path d="M100 164 Q106 170 114 164"/>
+    </g>
+  </g>
+  <g id="feet">
+    <g transform="translate(80,188)"><path d="M-13 -5 Q-15 6 -10 7 Q-6 5 -6 0 Z M-4 -6 Q-6 7 -2 7 Q2 6 0 0 Z M5 -5 Q2 6 6 7 Q11 6 9 0 Z" fill="#F59E0B" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/></g>
+    <g transform="translate(120,188)"><path d="M-13 -5 Q-15 6 -10 7 Q-6 5 -6 0 Z M-4 -6 Q-6 7 -2 7 Q2 6 0 0 Z M5 -5 Q2 6 6 7 Q11 6 9 0 Z" fill="#F59E0B" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/></g>
+  </g>
+  <g data-expr="neutral">
+    <g data-wave>
+      <path d="M50 112 Q 22 86 26 50 Q 46 44 62 74 Q 70 96 66 122 Q 58 124 50 112 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M50 112 Q 38 90 36 62 Q 44 58 52 76 Q 62 96 62 118 Q 56 120 50 112 Z" fill="#5E37A8" opacity=".65"/>
+    </g>
+    <g>
+      <path d="M150 112 Q 170 116 168 146 Q 160 170 136 170 Q 130 154 132 132 Q 136 112 150 112 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M150 112 Q 164 116 162 142 Q 158 162 142 164 Q 138 152 140 134 Q 144 114 150 112 Z" fill="#5E37A8" opacity=".55"/>
+    </g>
+  </g>
+  <g data-expr="determined">
+    <g data-lift>
+      <g>
+        <path d="M58 112 Q 38 94 44 62 Q 64 56 74 84 Q 80 102 74 122 Q 66 122 58 112 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+        <rect x="46" y="56" width="20" height="7" rx="3" fill="#F59E0B" stroke="#2A1266" stroke-width="1.6"/>
+      </g>
+      <g>
+        <path d="M142 112 Q 162 94 156 62 Q 136 56 126 84 Q 120 102 126 122 Q 134 122 142 112 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+        <rect x="134" y="56" width="20" height="7" rx="3" fill="#F59E0B" stroke="#2A1266" stroke-width="1.6"/>
+      </g>
+      <rect x="56" y="45" width="88" height="6" rx="3" fill="#4A2A8F" stroke="#2A1266" stroke-width="1.6"/>
+      <rect x="42" y="38" width="10" height="20" rx="2" fill="#2A1266"/>
+      <rect x="148" y="38" width="10" height="20" rx="2" fill="#2A1266"/>
+    </g>
+    <path d="M48 58 Q100 44 152 58 L 152 70 Q 100 56 48 70 Z" fill="#9B6FE4" stroke="#2A1266" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="100" cy="62" r="5" fill="#F59E0B" stroke="#2A1266" stroke-width="1.4"/>
+  </g>
+  <g data-expr="admiring">
+    <g data-bounce>
+      <g>
+        <path d="M62 106 Q 44 88 48 66 Q 68 60 78 86 Q 82 104 78 122 Q 68 122 62 106 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      </g>
+      <g>
+        <path d="M138 106 Q 156 88 152 66 Q 132 60 122 86 Q 118 104 122 122 Q 132 122 138 106 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      </g>
+    </g>
+  </g>
+  <g data-expr="action">
+    <g>
+      <path d="M54 112 Q 36 116 40 146 Q 48 172 68 170 Q 74 154 72 134 Q 66 114 54 112 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+    </g>
+    <g data-point>
+      <path d="M146 114 Q 172 124 174 158 Q 170 180 154 184 Q 144 176 142 156 Q 138 134 146 114 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      <circle cx="162" cy="186" r="7" fill="#7B4FD4" stroke="#2A1266" stroke-width="2"/>
+    </g>
+  </g>
+  <g id="eyepatch">
+    <path d="M60 78 C 60 54, 140 54, 140 78 C 140 100, 122 108, 100 104 C 78 108, 60 100, 60 78 Z" fill="#4A2A8F" stroke="#2A1266" stroke-width="2" stroke-linejoin="round"/>
+  </g>
+  <g id="eyeWhites">
+    <circle cx="76" cy="82" r="15" fill="#FFFFFF" stroke="#2A1266" stroke-width="2"/>
+    <circle cx="124" cy="82" r="15" fill="#FFFFFF" stroke="#2A1266" stroke-width="2"/>
+  </g>
+  <g data-expr="neutral">
+    <circle cx="76" cy="82" r="9" fill="#2A1266"/>
+    <circle cx="124" cy="82" r="9" fill="#2A1266"/>
+    <circle cx="73" cy="79" r="3" fill="#FFFFFF"/>
+    <circle cx="121" cy="79" r="3" fill="#FFFFFF"/>
+    <ellipse cx="54" cy="106" rx="7" ry="3.5" fill="#FF9BC7" opacity=".7"/>
+    <ellipse cx="146" cy="106" rx="7" ry="3.5" fill="#FF9BC7" opacity=".7"/>
+  </g>
+  <g data-expr="determined">
+    <circle cx="76" cy="82" r="9" fill="#2A1266"/>
+    <circle cx="124" cy="82" r="9" fill="#2A1266"/>
+    <circle cx="73" cy="79" r="3" fill="#FFFFFF"/>
+    <circle cx="121" cy="79" r="3" fill="#FFFFFF"/>
+    <ellipse cx="54" cy="106" rx="8" ry="4" fill="#FF6FA8" opacity=".8"/>
+    <ellipse cx="146" cy="106" rx="8" ry="4" fill="#FF6FA8" opacity=".8"/>
+  </g>
+  <g data-expr="admiring">
+    <g transform="translate(76,82)">
+      <path d="M0 7 C -10 -1, -12 -13, -4 -13 C -1 -13, 0 -10, 0 -8 C 0 -10, 1 -13, 4 -13 C 12 -13, 10 -1, 0 7 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+      <circle cx="-3" cy="-8" r="1.3" fill="#FFFFFF"/>
+    </g>
+    <g transform="translate(124,82)">
+      <path d="M0 7 C -10 -1, -12 -13, -4 -13 C -1 -13, 0 -10, 0 -8 C 0 -10, 1 -13, 4 -13 C 12 -13, 10 -1, 0 7 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+      <circle cx="-3" cy="-8" r="1.3" fill="#FFFFFF"/>
+    </g>
+    <ellipse cx="54" cy="106" rx="8" ry="4" fill="#FF6FA8" opacity=".75"/>
+    <ellipse cx="146" cy="106" rx="8" ry="4" fill="#FF6FA8" opacity=".75"/>
+  </g>
+  <g data-expr="action">
+    <rect x="58" y="68" width="36" height="30" fill="#4A2A8F"/>
+    <rect x="106" y="68" width="36" height="30" fill="#4A2A8F"/>
+    <path d="M62 86 Q76 72 90 86" stroke="#2A1266" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M110 86 Q124 72 138 86" stroke="#2A1266" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <ellipse cx="52" cy="106" rx="9" ry="4.5" fill="#FF6FA8" opacity=".8"/>
+    <ellipse cx="148" cy="106" rx="9" ry="4.5" fill="#FF6FA8" opacity=".8"/>
+  </g>
+  <g id="beak">
+    <path d="M100 80 L 90 94 Q 100 104 110 94 Z" fill="#F59E0B" stroke="#2A1266" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M92 94 Q100 100 108 94" stroke="#7A4408" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <circle cx="97" cy="86" r="0.9" fill="#2A1266"/>
+    <circle cx="103" cy="86" r="0.9" fill="#2A1266"/>
+  </g>
+</svg>
+  </div>
+  <div class="onboarding-speech" id="onboarding-speech">
+    <div id="onboarding-bubble"></div>
+    <button class="onboarding-next-btn" id="onboarding-btn" onclick="nextOnboardingStep()"></button>
+  </div>
+  <div class="onboarding-dots-float" id="onboarding-dots"></div>
+</div>
 <div id="screen-auth" class="auth-screen">
   <div class="auth-logo-wrap">
     <div class="auth-logo-text">Corpus</div>
@@ -5467,6 +5631,7 @@ function renderHome() {
   } catch(e) { console.error('renderHome: weeks list error', e); }
 
   populateCarousel();
+  requestAnimationFrame(startOnboarding);
 }
 
 function populateCarousel() {
@@ -6044,6 +6209,233 @@ function launchConfetti() {
 // ═══════════════════════════════════════════════════════════
 
 // Auth-gated startup — kept at global scope so handleAuthSubmit can access them.
+const ONBOARDING_STEPS = [
+  {
+    expr: 'owl-neutral',
+    text: 'היי! אני כאן כדי לקחת אותך להרפתקה יומית בין הרעיונות הגדולים בהיסטוריה. יוצאים לדרך?',
+    textEn: 'Hey! I\'m here to take you on a daily adventure through the greatest ideas in history. Ready to go?',
+    btn: 'בוא נתחיל!',
+    btnEn: 'Let\'s start! 🦉',
+    spotlight: null,
+    tailDirection: 'top'
+  },
+  {
+    expr: 'owl-determined',
+    text: 'כאן נמדוד את ההתמדה שלך — XP ורצף יומי. אל תיתן ללהבה לכבות!',
+    textEn: 'This is where we track your dedication — XP and daily streak. Don\'t let the flame die out!',
+    btn: 'הבנתי!',
+    btnEn: 'Got it!',
+    spotlight: '.stats-duolingo',
+    tailDirection: 'left'
+  },
+  {
+    expr: 'owl-admiring',
+    text: 'כאן יחכו לך כל ההוגים שתאסוף. הפנתיאון הפרטי שלך!',
+    textEn: 'Here you\'ll find all the thinkers you collect. Your personal pantheon!',
+    btn: 'מגניב!',
+    btnEn: 'Amazing!',
+    spotlight: '.thinker-carousel-wrap',
+    tailDirection: 'left'
+  },
+  {
+    expr: 'owl-action',
+    text: 'וכאן הקסם קורה. לחיצה אחת ואנחנו צוללים פנימה. מוכן?',
+    textEn: 'And this is where the magic happens. One tap and we dive in. Ready?',
+    btn: 'אני מוכן! 🚀',
+    btnEn: 'I\'m ready! 🚀',
+    spotlight: '.hero-continue-card',
+    tailDirection: 'left'
+  }
+];
+
+let onboardingStep = 0;
+
+function drawSpotlight(targetSelector) {
+  const canvas = document.getElementById('onboarding-spotlight');
+  if (!canvas) return;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = 'rgba(42, 27, 74, 0.75)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  if (targetSelector) {
+    const el = document.querySelector(targetSelector);
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      const padding = 12;
+      const x = rect.left - padding;
+      const y = rect.top - padding;
+      const w = rect.width + padding * 2;
+      const h = rect.height + padding * 2;
+      const r = 16;
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(0,0,0,1)';
+      ctx.fill();
+      ctx.restore();
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(123, 79, 212, 0.6)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+}
+
+window.addEventListener('resize', () => {
+  const step = ONBOARDING_STEPS[onboardingStep];
+  if (step && document.getElementById('onboarding-overlay').style.display !== 'none') {
+    drawSpotlight(step.spotlight);
+  }
+});
+
+function startOnboarding() {
+  if (localStorage.getItem('corpus_onboarding_done')) return;
+  const overlay = document.getElementById('onboarding-overlay');
+  overlay.style.display = 'block';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      onboardingStep = 0;
+      renderOnboardingStep();
+    });
+  });
+}
+
+function renderOnboardingStep() {
+  const step = ONBOARDING_STEPS[onboardingStep];
+
+  const owl = document.querySelector('.onboarding-owl-float svg');
+  if (owl) {
+    owl.classList.remove('owl-neutral', 'owl-determined', 'owl-admiring', 'owl-action');
+    owl.classList.add('owl-svg', step.expr);
+  }
+
+  const owlFloat = document.getElementById('onboarding-owl-float');
+  const speech = document.getElementById('onboarding-speech');
+
+  if (step.spotlight) {
+    const target = document.querySelector(step.spotlight);
+    if (target) {
+      const rect = target.getBoundingClientRect();
+      const screenH = window.innerHeight;
+      const screenW = window.innerWidth;
+      const owlSize = 100;
+      const padding = 20;
+
+      if (rect.top < screenH / 2) {
+        // Target in top half — place owl+bubble below it
+        const owlTop = rect.bottom + padding;
+        const owlLeft = padding;
+        owlFloat.style.top = owlTop + 'px';
+        owlFloat.style.left = owlLeft + 'px';
+        owlFloat.style.transform = '';
+
+        speech.style.top = owlTop + 'px';
+        speech.style.left = (owlLeft + owlSize + 12) + 'px';
+        speech.style.transform = '';
+
+        speech.classList.remove('tail-top', 'tail-left', 'tail-right', 'tail-bottom');
+        speech.classList.add('tail-left');
+      } else {
+        // Target in bottom half — place owl+bubble above it
+        const owlTop = rect.top - owlSize - padding;
+        const owlLeft = padding;
+        owlFloat.style.top = Math.max(owlTop, 60) + 'px';
+        owlFloat.style.left = owlLeft + 'px';
+        owlFloat.style.transform = '';
+
+        speech.style.top = Math.max(owlTop, 60) + 'px';
+        speech.style.left = (owlLeft + owlSize + 12) + 'px';
+        speech.style.transform = '';
+
+        speech.classList.remove('tail-top', 'tail-left', 'tail-right', 'tail-bottom');
+        speech.classList.add('tail-left');
+      }
+    }
+  } else {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        owlFloat.style.transition = 'none';
+        speech.style.transition = 'none';
+
+        // Fix bubble position first
+        const bubbleTop = window.innerHeight * 0.42;
+        speech.style.top = bubbleTop + 'px';
+        const speechWidth = speech.offsetWidth;
+        const centerX = window.innerWidth / 2;
+        speech.style.left = (centerX - speechWidth / 2) + 'px';
+        speech.style.transform = 'none';
+        speech.classList.remove('tail-top', 'tail-left', 'tail-right', 'tail-bottom');
+        speech.classList.add('tail-top');
+
+        // Place owl so its beak (78% down) aligns with bubble top
+        const owlSize = 100;
+        const owlTop = bubbleTop - Math.round(owlSize * 0.78);
+        const owlCenterX = window.innerWidth / 2;
+        owlFloat.style.top = Math.max(owlTop, 20) + 'px';
+        owlFloat.style.left = (owlCenterX - owlSize / 2) + 'px';
+        owlFloat.style.transform = 'none';
+
+        setTimeout(() => {
+          owlFloat.style.transition = '';
+          speech.style.transition = '';
+        }, 50);
+      });
+    });
+  }
+
+  const isEn = state && state.lang === 'en';
+  document.getElementById('onboarding-bubble').textContent = isEn ? step.textEn : step.text;
+  document.getElementById('onboarding-btn').textContent = isEn ? step.btnEn : step.btn;
+
+  speech.style.animation = 'none';
+  speech.offsetHeight;
+  speech.style.animation = 'bubblePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+
+  const dots = document.getElementById('onboarding-dots');
+  dots.innerHTML = ONBOARDING_STEPS.map((_,i) =>
+    `<div class="onboarding-dot ${i===onboardingStep?'active':''}"></div>`
+  ).join('');
+
+  setTimeout(() => drawSpotlight(step.spotlight), 100);
+}
+
+function nextOnboardingStep() {
+  onboardingStep++;
+  if (onboardingStep >= ONBOARDING_STEPS.length) {
+    document.getElementById('onboarding-overlay').style.display = 'none';
+    localStorage.setItem('corpus_onboarding_done', '1');
+    return;
+  }
+  renderOnboardingStep();
+}
+
 async function handleEmailVerification() {
   const hash = window.location.hash;
   if (hash && (hash.includes('access_token') || hash.includes('type=signup'))) {
