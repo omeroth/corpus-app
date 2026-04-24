@@ -5968,6 +5968,12 @@ function finishDay() {
   const day = week.days.find(d => d.id === state.currentDay);
   const key = state.currentWeek + '-' + state.currentDay;
 
+  // If day already completed, don't award XP again
+  if (state.completedDays[key]) {
+    showHomeScreen();
+    return;
+  }
+
   const prevLevel = getLevel(state.xp);
 
   // Day completion bonus + streak bonus
