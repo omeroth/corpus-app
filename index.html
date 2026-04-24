@@ -5915,7 +5915,6 @@ function handleQuiz(chosen, correctIdx, explanation, btn) {
     state.correctInRow = (state.correctInRow || 0) + 1;
     if (state.correctInRow === 3) {
       state.readerXP += 10;
-      state.xp += 10;
       document.getElementById('reader-xp-display').textContent = state.readerXP;
       showStreakToast(ui.streakToast);
     }
