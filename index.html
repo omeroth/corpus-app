@@ -5973,7 +5973,7 @@ function finishDay() {
 
   // Day completion bonus + streak bonus
   state.readerXP += 30;
-  state.readerXP += Math.min(state.dailyStreak * 5, 30);
+  state.readerXP += Math.min(state.dailyStreak * 2, 10);
 
   state.xp += state.readerXP;
   state.completedDays[key] = true;
@@ -5989,7 +5989,6 @@ function finishDay() {
   const totalDays = getW().find(w => w.id === state.currentWeek).days.length;
   const completedInWeek = getW().find(w => w.id === state.currentWeek).days.filter(d => state.completedDays[state.currentWeek + '-' + d.id]).length;
   if (completedInWeek === totalDays) {
-    state.xp += 100;
     state.readerXP += 100;
   }
 
