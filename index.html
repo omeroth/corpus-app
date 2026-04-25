@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="Corpus">
 <link rel="apple-touch-icon" href="images/icon-192.png">
 <link rel="manifest" href="manifest.json">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=DM+Sans:wght@300;400;500;600&family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/posthog-js@latest/dist/array.full.js"></script>
 <script>
   posthog.init("phc_vUupVqSRdBay7mQ4Aswudhu8mFHnych6PKNRpP6BHoS4", {
@@ -1518,6 +1518,37 @@
   .owl-svg.owl-action [data-point] { animation: pointBob 1.1s ease-in-out infinite; }
   .onboarding-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.4); transition: all 0.3s ease; }
   .onboarding-dot.active { background: white; width: 24px; border-radius: 4px; box-shadow: 0 0 8px rgba(255,255,255,0.6); }
+
+  /* ── Learning card body typography ── */
+  .learning-card-body {
+    font-family: 'Assistant', sans-serif;
+    font-size: 18px;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+    color: #1a1a1a;
+    direction: rtl;
+    text-align: right;
+    padding: 5% 8%;
+  }
+  .learning-card-body h1,
+  .learning-card-body h2,
+  .learning-card-body h3 {
+    font-family: 'Assistant', sans-serif;
+    font-weight: 700;
+    color: #6366f1;
+    margin-bottom: 1.2rem;
+    text-align: right;
+  }
+  .learning-card-body p {
+    margin-bottom: 1.5rem;
+  }
+  .learning-card-body blockquote {
+    border-right: 4px solid #e2e8f0;
+    padding-right: 1rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: #4a5568;
+  }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
@@ -5745,7 +5776,7 @@ function renderReader() {
   content.innerHTML = '';
 
   const card = document.createElement('div');
-  card.className = 'section-card';
+  card.className = 'section-card learning-card-body';
 
   const ui = u();
   if (sec.type === 'idea') {
