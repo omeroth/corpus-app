@@ -616,13 +616,17 @@
 
   /* ── Reader shell ── */
   .reader-screen-shell {
+    display: flex;
     flex-direction: column;
-    height: 100dvh;
+    height: 100%;
+    overflow: hidden;
   }
   .screen.active.reader-screen-shell {
     display: flex;
   }
   .reader-scroll-area {
+    height: auto !important;
+    min-height: 0;
     flex: 1;
     overflow-y: auto;
     padding: 12px 12px 4px;
@@ -671,6 +675,7 @@
   .btn-reader-back:hover { background: rgba(123,79,212,0.08); }
 
   /* ── Reader ── */
+  #screen-reader .reader-topbar { display: none; }
   .reader-topbar {
     padding: 8px 16px;
     background: var(--surface);
@@ -735,6 +740,10 @@
     border-radius: var(--radius);
     padding: 16px 20px;
     margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    height: auto !important;
+    overflow: visible !important;
   }
   .section-type-label {
     font-size: 11px;
@@ -1560,6 +1569,24 @@
     min-height: unset !important;
     overflow: visible !important;
     flex-shrink: 0;
+  }
+
+  /* Reader content wrappers — ensure no height clipping */
+  .reader-content, .reader-body, .section-content, .reader-scroll, .reader-main {
+    height: auto !important;
+    min-height: unset !important;
+    overflow: visible !important;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Section card flex growth */
+  .reader-card, .content-card {
+    display: flex;
+    flex-direction: column;
+    height: auto !important;
+    flex-grow: 1;
+    overflow: visible !important;
   }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -3039,12 +3066,12 @@ const corpusData = {
           {
             type: 'source',
             title: 'שלוש הגישות של השבוע', titleEn: 'The Approaches of the Week',
-            quote: '',
-            quoteEn: '',
+            quote: 'שלוש הגישות של השבוע (והמבקרים שלהן):\n\nאריסטו: המוסר הוא פיתוח מידות טובות. שאל: “מי אני רוצה להיות?”.\nקאנט: המוסר הוא ציות לחוק אוניברסלי. שאל: “מה חובתי?”.\nמיל: המוסר הוא מקסום האושר והפחתת סבל. שאל: “מה התוצאה?”.\nניטשה: המוסר הוא המצאה אנושית. שאל: “מי המציא את הערכים ולמה?”.\nתומסון: המוסר הוא מורכב ומלא סתירות. שאלה: “מה האינטואיציה שלנו אומרת?”.',
+            quoteEn: 'The approaches of the week (and their critics):\n\nAristotle: Morality is developing virtues. He asked: “Who do I want to be?”.\nKant: Morality is obedience to a universal law. He asked: “What is my duty?”.\nMill: Morality is maximising happiness and reducing suffering. He asked: “What are the consequences?”.\nNietzsche: Morality is a human invention. He asked: “Who invented the values and why?”.\nThomson: Morality is complex and full of contradictions. She asked: “What do our intuitions say?”.',
             attr: '',
             attrEn: '',
-            content: 'שלוש הגישות של השבוע (והמבקרים שלהן):\n\nאריסטו: המוסר הוא פיתוח מידות טובות. שאל: “מי אני רוצה להיות?”.\nקאנט: המוסר הוא ציות לחוק אוניברסלי. שאל: “מה חובתי?”.\nמיל: המוסר הוא מקסום האושר והפחתת סבל. שאל: “מה התוצאה?”.\nניטשה: המוסר הוא המצאה אנושית. שאל: “מי המציא את הערכים ולמה?”.\nתומסון: המוסר הוא מורכב ומלא סתירות. שאלה: “מה האינטואיציה שלנו אומרת?”.',
-            contentEn: 'The three approaches of the week (and their critics):\n\nAristotle: Morality is developing virtues. He asked: “Who do I want to be?”.\nKant: Morality is obedience to a universal law. He asked: “What is my duty?”.\nMill: Morality is maximising happiness and reducing suffering. He asked: “What are the consequences?”.\nNietzsche: Morality is a human invention. He asked: “Who invented the values and why?”.\nThomson: Morality is complex and full of contradictions. She asked: “What do our intuitions say?”.',
+            content: '',
+            contentEn: '',
           },
           {
             type: 'explanation',
