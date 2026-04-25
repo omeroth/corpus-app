@@ -1549,6 +1549,18 @@
     font-style: italic;
     color: #4a5568;
   }
+
+  /* Source section overflow fix */
+  #screen-reader .source-section,
+  #screen-reader .section-source,
+  #screen-reader [class*="source"],
+  #screen-reader .quote-container,
+  #screen-reader .reader-source {
+    height: auto !important;
+    min-height: unset !important;
+    overflow: visible !important;
+    flex-shrink: 0;
+  }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
