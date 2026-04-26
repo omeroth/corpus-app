@@ -1155,6 +1155,9 @@
     margin-bottom: 20px;
     background: rgba(123,79,212,0.06);
     animation: badgeBounce 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   @keyframes badgeBounce {
     0% { transform: scale(0.7) rotate(-5deg); opacity: 0; }
@@ -1634,6 +1637,105 @@
     flex-grow: 1;
     overflow: visible !important;
   }
+
+  /* ── Completion modal fixes ── */
+  #modal-complete {
+    z-index: 1500;
+    background: rgba(42,27,74,0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    direction: rtl;
+  }
+  #modal-complete .modal-box {
+    overflow: hidden;
+    box-sizing: border-box;
+    padding: 24px;
+    direction: rtl;
+    text-align: right;
+  }
+
+  /* ── Thinker Unlock Flip Card ── */
+  .thinker-unlock.flip-card {
+    padding: 0;
+    animation: none;
+    cursor: pointer;
+  }
+  .flip-card {
+    width: min(240px, 100%);
+    max-width: 240px;
+    height: 320px;
+    perspective: 1000px;
+    -webkit-perspective: 1000px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    border-radius: 20px;
+  }
+  .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-radius: 20px;
+  }
+  .flip-card.flipped .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+  .flip-card-front,
+  .flip-card-back {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: inherit;
+    overflow: hidden;
+  }
+  .flip-card-front {
+    background: rgba(123,79,212,0.06);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px;
+    text-align: center;
+  }
+  .flip-card-front .unlock-portrait-img {
+    height: 190px;
+    width: 100%;
+    object-fit: cover;
+    object-position: center 15%;
+    border-radius: 10px;
+    margin: 6px 0;
+    display: block;
+  }
+  .flip-card-back {
+    transform: rotateY(180deg);
+    overflow: hidden;
+    overflow-y: auto;
+    background: linear-gradient(160deg, #F8F5FF, #EDE0FF);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 20px;
+    direction: rtl;
+    text-align: right;
+  }
+  .flip-card-back-bio {
+    font-size: 13px;
+    color: #4B2D8A;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .flip-card-back-quote {
+    font-size: 13px;
+    color: #7B4FD4;
+    font-style: italic;
+    border-top: 1px solid rgba(123,79,212,0.2);
+    padding-top: 12px;
+  }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
@@ -1967,12 +2069,20 @@
         <div class="modal-xp-label" id="modal-streak-label">רצף שאלות</div>
       </div>
     </div>
-    <div class="thinker-unlock" id="thinker-unlock-box">
-      <div class="thinker-unlock-label" id="modal-unlock-label">🏛 הוגה נפתח!</div>
-      <div id="unlock-portrait"></div>
-      <div class="thinker-unlock-name" id="unlock-name"></div>
+    <div class="thinker-unlock flip-card" id="thinker-unlock-box" onclick="this.classList.add('flipped'); setTimeout(()=>{document.getElementById('modal-continue-btn').style.display='';},700)">
+      <div class="flip-card-inner">
+        <div class="flip-card-front">
+          <div class="thinker-unlock-label" id="modal-unlock-label">🏛 הוגה נפתח!</div>
+          <div id="unlock-portrait"></div>
+          <div class="thinker-unlock-name" id="unlock-name"></div>
+        </div>
+        <div class="flip-card-back">
+          <div class="flip-card-back-bio" id="unlock-bio"></div>
+          <div class="flip-card-back-quote" id="unlock-quote"></div>
+        </div>
+      </div>
     </div>
-    <button class="nav-btn" id="modal-continue-btn" onclick="closeCompleteModal()">המשך</button>
+    <button class="nav-btn" id="modal-continue-btn" onclick="closeCompleteModal()" style="display:none">המשך</button>
   </div>
 </div>
 
@@ -5817,7 +5927,19 @@ function populateCarousel() {
 function handleHeroContinue() {
   const btn = document.getElementById('btn-hero-continue');
   if (btn._nextWeek && btn._nextDay) {
-    openReader(btn._nextWeek, btn._nextDay);
+    const ls = state.lastSection;
+    if (ls && ls.week === btn._nextWeek && ls.day === btn._nextDay && ls.section > 0) {
+      state.currentWeek = btn._nextWeek;
+      state.currentDay = btn._nextDay;
+      state.currentSection = ls.section;
+      state.readerXP = 0;
+      state.quizAnswered = false;
+      state.dayQuizResults = [];
+      renderReader();
+      showScreen('reader');
+    } else {
+      openReader(btn._nextWeek, btn._nextDay);
+    }
   }
 }
 
@@ -6046,6 +6168,8 @@ function nextSection() {
     const xpEl = document.getElementById('reader-xp-display');
     if (xpEl) xpEl.textContent = state.readerXP;
     state.currentSection++;
+    state.lastSection = { week: state.currentWeek, day: state.currentDay, section: state.currentSection };
+    saveStateLocal();
     state.quizAnswered = false;
     renderReader();
     const scrollArea = document.getElementById('reader-content');
@@ -6135,9 +6259,38 @@ function finishDay() {
   const day = week.days.find(d => d.id === state.currentDay);
   const key = state.currentWeek + '-' + state.currentDay;
 
-  // If day already completed, don't award XP again
+  // If day already completed — show completion screen without awarding XP
   if (state.completedDays[key]) {
-    showHomeScreen();
+    const ui = u();
+    document.getElementById('complete-title').textContent = ui.dayCompleted(day.id);
+    document.getElementById('complete-subtitle').textContent = day.title;
+    document.getElementById('complete-xp').textContent = '+0';
+    document.getElementById('complete-streak').textContent = state.correctInRow;
+    const _thinkerId = day.thinkerId;
+    const _thinker = getT().find(t => t.id === _thinkerId);
+    const _flipCard = document.getElementById('thinker-unlock-box');
+    _flipCard.classList.remove('flipped');
+    document.getElementById('modal-continue-btn').style.display = 'none';
+    if (_thinker) {
+      _flipCard.style.display = 'block';
+      const _portrait = document.getElementById('unlock-portrait');
+      _portrait.innerHTML = _thinker.image
+        ? `<img class="unlock-portrait-img" src="${_thinker.image}" alt="${_thinker.name}">`
+        : `<div class="unlock-portrait-emoji">${_thinker.emoji}</div>`;
+      document.getElementById('unlock-name').textContent = _thinker.name;
+      document.getElementById('unlock-bio').textContent = _thinker.bio || '';
+      document.getElementById('unlock-quote').textContent = _thinker.quote || '';
+    } else {
+      _flipCard.style.display = 'none';
+    }
+    document.getElementById('modal-complete').classList.add('active');
+    launchConfetti();
+    if (_thinker) {
+      setTimeout(() => _flipCard.classList.add('flipped'), 1500);
+      setTimeout(() => { document.getElementById('modal-continue-btn').style.display = ''; }, 2200);
+    } else {
+      document.getElementById('modal-continue-btn').style.display = '';
+    }
     return;
   }
 
@@ -6153,7 +6306,8 @@ function finishDay() {
 
   // Unlock thinker
   const thinkerId = day.thinkerId;
-  if (thinkerId && !state.unlockedThinkers.includes(thinkerId)) {
+  const isNewThinker = thinkerId && !state.unlockedThinkers.includes(thinkerId);
+  if (isNewThinker) {
     state.unlockedThinkers.push(thinkerId);
   }
 
@@ -6182,8 +6336,12 @@ function finishDay() {
   setTimeout(() => animateXPCount(xpEl, state.readerXP), 300);
   document.getElementById('complete-streak').textContent = state.correctInRow;
 
+  const flipCard = document.getElementById('thinker-unlock-box');
+  flipCard.classList.remove('flipped');
+  document.getElementById('modal-continue-btn').style.display = 'none';
+
   if (thinker) {
-    document.getElementById('thinker-unlock-box').style.display = 'block';
+    flipCard.style.display = 'block';
     const portrait = document.getElementById('unlock-portrait');
     if (thinker.image) {
       portrait.innerHTML = `<img class="unlock-portrait-img" src="${thinker.image}" alt="${thinker.name}">`;
@@ -6191,12 +6349,23 @@ function finishDay() {
       portrait.innerHTML = `<div class="unlock-portrait-emoji">${thinker.emoji}</div>`;
     }
     document.getElementById('unlock-name').textContent = thinker.name;
+    document.getElementById('unlock-bio').textContent = thinker.bio || '';
+    document.getElementById('unlock-quote').textContent = thinker.quote || '';
   } else {
-    document.getElementById('thinker-unlock-box').style.display = 'none';
+    flipCard.style.display = 'none';
   }
 
   document.getElementById('modal-complete').classList.add('active');
   launchConfetti();
+
+  if (thinker) {
+    setTimeout(() => flipCard.classList.add('flipped'), 1500);
+    setTimeout(() => {
+      document.getElementById('modal-continue-btn').style.display = '';
+    }, 2200);
+  } else {
+    document.getElementById('modal-continue-btn').style.display = '';
+  }
 
   if (newLevel > prevLevel) {
     setTimeout(() => {
@@ -6712,5 +6881,6 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
   document.addEventListener('DOMContentLoaded', initUI);
 }
 </script>
+
 </body>
 </html>
