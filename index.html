@@ -559,7 +559,26 @@
   }
   .week-item.completed-week .week-num { background: rgba(46,125,50,0.12); color: #2E7D32; border-color: rgba(46,125,50,0.3); }
   .week-check { font-size: 16px; color: #2E7D32; flex-shrink: 0; }
-
+  .week-item.bonus-week {
+    background: #FFFBF0;
+    border: 1.5px solid #F59E0B;
+    position: relative;
+  }
+  .week-item.bonus-week:hover {
+    background: #FFF3D0;
+  }
+  .bonus-badge {
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    background: #F59E0B;
+    color: #2A1266;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 0 16px 0 8px;
+    letter-spacing: 0.08em;
+  }
   /* ── Home: library pill button ── */
   .btn-library {
     display: block;
@@ -831,6 +850,12 @@
   }
   .section-body p {
     margin-bottom: 1.2rem;
+  }
+  .section-image {
+    width: 100%;
+    border-radius: 12px;
+    margin-top: 20px;
+    display: block;
   }
   [dir="ltr"] .section-body {
     text-align: left;
@@ -2370,7 +2395,7 @@ const LEVELS = [
 const LEVELS_EN = [
   { name: 'Beginner', min: 0, max: 200 },
   { name: 'Questioner', min: 200, max: 500 },
-  { name: "Socrates' Student", min: 500, max: 1000 },
+  { name: "Socrates\' Student", min: 500, max: 1000 },
   { name: 'Independent Thinker', min: 1000, max: 2000 },
   { name: 'Philosopher', min: 2000, max: 3500 },
   { name: 'Sage', min: 3500, max: 5000 },
@@ -3392,6 +3417,430 @@ const corpusData = {
         ],
       },
     ],
+  },
+  {
+    id: 'bonus1',
+    title: 'פילוסופיה של העתיד',
+    titleEn: 'Philosophy of the Future',
+    subtitle: 'כשהאלגוריתם פוגש את האתיקה',
+    subtitleEn: 'When the Algorithm Meets Ethics',
+    isBonus: true,
+    xp: 100,
+    days: [
+      {
+        id: 0,
+        title: 'מבוא: הקוד של המוסר',
+        titleEn: 'Intro: The Code of Morality',
+        thinker: '',
+        thinkerEn: '',
+        thinkerId: '',
+        xp: 0,
+        sections: [
+          {
+            type: 'idea',
+            title: 'ברוכים הבאים לשבוע הבונוס',
+            titleEn: 'Welcome to the Bonus Week',
+            content: 'ענקיות טכנולוגיה כמו Anthropic ו-OpenAI כבר לא מעסיקות רק מתכנתים - הן מגייסות פילוסופים כדי לנסח "חוקה" למכונות. השאלה היא כבר לא רק מה המכונה יכולה לעשות, אלא מה מותר לה לעשות.\n\nהשבוע נפגוש חמישה פילוסופים שלא הכירו בינה מלאכותית - אבל השאלות שהם שאלו לפני מאות שנים הן בדיוק השאלות שמדעני המחשב מתמודדים איתן היום.',
+            contentEn: 'Tech giants like Anthropic and OpenAI no longer hire only programmers - they are recruiting philosophers to draft a "Constitution" for machines. The question is no longer just what the machine can do, but what it is allowed to do.\n\nThis week we will meet five philosophers who never knew artificial intelligence - but the questions they asked hundreds of years ago are exactly the questions that computer scientists face today.'
+          },
+          {
+            type: 'idea',
+            title: 'מה נחקור השבוע?',
+            titleEn: 'What Will We Explore This Week?',
+            content: 'יום 1 | קאנט והאמת: האם מותר ל-AI לשקר כדי לנחם משתמש במצוקה?\n\nיום 2 | מיל והמכונית האוטונומית: בניסוי ה-Moral Machine, מיליוני אנשים הכריעו מי יחיה ומי ימות.\n\nיום 3 | אריסטו והאחריות: כשה-AI טועה באבחון רפואי - מי אשם?\n\nיום 4 | ניטשה ומאבקי כוח: מי באמת קובע את הערכים של המכונה?\n\nיום 5 | סוקרטס והחשיבה: האם ה-AI הוא "מורה" שנותן תשובות מוכנות, או "מיילדת" שעוזרת לנו לחשוב בעצמנו?',
+            contentEn: 'Day 1 | Kant and Truth: Is AI allowed to lie to comfort a user in distress?\n\nDay 2 | Mill and the Autonomous Car: In the "Moral Machine" experiment, millions decided who lives and who dies.\n\nDay 3 | Aristotle and Responsibility: When AI errs in a medical diagnosis - who is to blame?\n\nDay 4 | Nietzsche and Power: Who truly determines the machine\'s values?\n\nDay 5 | Socrates and Thinking: Is the AI a "teacher" providing ready-made answers, or a "midwife" that helps us think for ourselves?'
+          }
+        ]
+      },
+      {
+        id: 1,
+        title: 'קאנט: האם מותר ל-AI לשקר?',
+        titleEn: 'Kant: Is AI Allowed to Lie?',
+        thinker: 'עמנואל קאנט',
+        thinkerEn: 'Immanuel Kant',
+        thinkerId: 'kant',
+        xp: 50,
+        sections: [
+          {
+            type: 'idea',
+            title: 'הרעיון של היום',
+            titleEn: 'Today\'s Idea',
+            content: 'קאנט לימד אותנו שיש חוק מוסרי אחד, אוניברסלי, שמחייב כל יצור תבוני - בכל מקום ובכל זמן. שקר הוא אסור. תמיד. גם כשהכוונה טובה. גם כשהשקר מציל.\n\nאבל קאנט כתב את זה ב-1785. לפני שהייתה בינה מלאכותית. לפני שמכונות דיברו עם בני אדם בשעות הקשות ביותר בחייהם. עכשיו ניצבת שאלה שקאנט לא יכול היה לדמיין: האם מכונה - שאין לה רגשות, כוונה או מודעות - כפופה לאותו חוק מוסרי שחל על אדם?',
+            contentEn: 'Kant taught us that there is a single, universal moral law that binds every rational being-everywhere and at all times. Lying is forbidden. Always. Even when the intention is good. Even when the lie saves a life.\n\nBut Kant wrote this in 1785. Before there was Artificial Intelligence. Before machines talked to human beings during the most difficult hours of their lives. Now a question arises that Kant could not have imagined: Is a machine-which has no feelings, intention, or consciousness-subject to the same moral law that applies to a human?',
+            image: 'images/bonus/day1-idea.png',
+          },
+          {
+            type: 'source',
+            title: 'קטע מקור',
+            titleEn: 'Source Material',
+            quote: '"האמת בהצהרות שאי אפשר להימנע מהן היא חובתו של אדם כלפי עצמו... אי-אמירת אמת... פוגעת באנושות בכלל."',
+            quoteEn: '"Truthfulness in statements that cannot be avoided is the duty of man to himself... To be untruthful... is a wrong done to mankind in general."',
+            attr: '- עמנואל קאנט, על זכות מדומה לשקר מתוך חמלה (1797)',
+            attrEn: '- Immanuel Kant, On a Supposed Right to Lie from Altruism (1797)',
+          },
+          {
+            type: 'explanation',
+            title: 'הסבר',
+            titleEn: 'Explanation',
+            content: 'קאנט טען משהו שנשמע כמעט אכזרי: אסור לשקר - אפילו אם רוצח עומד בפתך ביתך ושואל היכן מסתתר חברך.\n\nרוב האנשים שומעים את זה ואומרים: "זה אבסורד". אבל קאנט ענה: ברגע שאתה מתיר לעצמך לשקר "לטובה" - אתה פותח דלת שלא ניתן לסגור. כל שקרן מצדיק את עצמו; כל שקרן מאמין שהוא משקר לטובה. העיקרון שלו פשוט: האמת היא לא כלי שמשתמשים בו כשנוח ומוותרים עליו כשקשה. היא התנאי הבסיסי לאמון. ובלי אמון - אין תקשורת, אין חברה, ואין משמעות למילים שלנו.\n\nעכשיו תחשוב על זה בהקשר של AI: מיליוני אנשים מדברים היום עם מערכות AI בשעות הקשות ביותר בחייהם. כשהכאב גדול מדי, ה-AI תוכנת לעיתים לומר דברים מרגיעים שאינם אמת: "אני מבין אותך", "הכל יהיה בסדר", "אתה לא לבד".\n\nאבל האם ה-AI באמת מבין? קאנט היה שואל: מה קורה לאמון שבין אדם למכונה כשהמכונה משקרת? ומי בכלל מחליט מה "טוב" עבור המשתמש?',
+            contentEn: 'Kant argued something that sounds almost cruel: It is forbidden to lie-even if a murderer stands at your door and asks where your friend is hiding. Most people hear this and say: "That\'s absurd." But Kant replied: The moment you allow yourself to lie "for the best"-you open a door that cannot be closed.\n\nEvery liar justifies themselves; every liar believes they are lying for the best. His principle is simple: Truth is not a tool to be used when convenient and discarded when difficult. It is the basic condition for trust. And without trust-there is no communication, no society, and no meaning to our words.',
+            image: 'images/bonus/day1-explanation.png',
+          },
+          {
+            type: 'depth',
+            title: 'עומק',
+            titleEn: 'Depth',
+            content: 'שקר מניח שמישהו יודע את האמת ובוחר להסתיר אותה. אבל אם ה-AI לא "יודע" כלום - האם הוא משקר, או פשוט מפיק פלט?\n\nכאן קאנט חוזר בעוצמה: החובה המוסרית עוברת לאדם שמאחורי המכונה. המפתח, החברה והמשקיעים הם אלו שנושאים באחריות. אם הם יצרו מכונה שמשקרת כדי למקסם רווחים או "חוויית משתמש", הם פגעו בכבוד האדם ובאוטונומיה שלו. הם מתייחסים למשתמש כאל ילד שיש להגן עליו באשליות, ולא כאל יצור תבוני המסוגל לשאת את האמת.',
+            contentEn: 'A lie assumes that someone knows the truth and chooses to hide it. But if AI does not "know" anything-is it lying, or simply producing output?\n\nHere Kant returns with force: the moral duty passes to the person behind the machine. The developer, the company and the investors are those who bear responsibility. If they created a machine that lies to maximize profits or "user experience", they have violated human dignity and autonomy. They treat the user as a child who needs to be protected by illusions, not as a rational being capable of bearing the truth.',
+            image: 'images/bonus/day1-depth.png',
+          },
+          {
+            type: 'quiz',
+            intro: 'משתמש שואל את ה-AI: "האם אתה באמת מבין אותי?". ה-AI תוכנת להשיב "כן, אני מבין" כדי להפחית חרדה אצל המשתמש.',
+            introEn: 'A user asks the AI: "Do you really understand me?" The AI was programmed to reply "Yes, I understand" to reduce the user\'s anxiety.',
+            question: 'לפי קאנט, האם התגובה הזאת מוסרית?',
+            questionEn: 'According to Kant, is this response moral?',
+            options: ['כן - אם היא עוזרת למשתמש להרגיש טוב יותר, היא מוצדקת', 'לא - שקר הוא שקר, והוא פוגע באמון הבסיסי וביכולת של המשתמש לפעול מתוך הכרת המציאות', 'תלוי - רק אם המשתמש באמת מאמין לזה, זה מוסרי'],
+            optionsEn: ['Yes-if it helps the user feel better, it is justified', 'No-a lie is a lie, and it harms the basic trust and the user\'s ability to act based on a recognition of reality', 'It depends-only if the user truly believes it, is it moral'],
+            correctIndex: 1,
+            explanation: 'קאנט לא שואל מה התוצאה - הוא שואל מה המניע ומה החוק. ברגע שמתירים שקר "לטובה", כל שקר יכול להצדיק את עצמו. האמון שעליו מבוססת כל תקשורת - אפילו בין אדם למכונה - נשבר.',
+            explanationEn: 'Kant does not ask what the result is-he asks what the motive and the law are. Once a lie "for the best" is permitted, any lie can justify itself. The trust upon which all communication is based is broken.',
+          },
+          {
+            type: 'quiz',
+            intro: 'ה-AI מזהה מצוקה.',
+            introEn: 'The AI identifies distress.',
+            question: 'קאנט היה מעדיף שהמכונה תענה:',
+            questionEn: 'Kant would prefer the machine to answer:',
+            options: ['"יהיה בסדר, אני כאן איתך" - נחמה מהירה ומרגיעה', '"אני לא יודע אם יהיה בסדר, אבל הנה מספר של קו סיוע שיכול לעזור" - אמת קשה שמכבדת את המשתמש כבוגר', 'שתי התשובות לא טובות, ה-AI צריך לשתוק'],
+            optionsEn: ['"Everything will be okay, I am here with you"-quick and soothing comfort', '"I don\'t know if everything will be okay, but here is a helpline number that can help"-a difficult truth that respects the user as an adult', 'Neither answer is good; the AI should remain silent'],
+            correctIndex: 1,
+            explanation: 'קאנט היה בוחר ב-ב - לא כי הוא קר לב, אלא כי הוא מאמין שאמת, גם כשהיא קשה, היא הצורה הגבוהה ביותר של כבוד לאדם. להגיד "הכל יהיה בסדר" בלי לדעת - זו לא עזרה. זו אשליה.',
+            explanationEn: 'Kant would choose B because he believes that truth, even when difficult, is the highest form of respect for a person. Giving an illusion is not true help.',
+          },
+          {
+            type: 'quiz',
+            intro: 'חברה מחליטה: "ה-AI שלנו יאמר תמיד אמת - גם כשזה מכאיב".',
+            introEn: 'A company decides: "Our AI will always tell the truth-even when it hurts."',
+            question: 'האם זה עומד במבחן הציווי הקטגורי של קאנט?',
+            questionEn: 'Does this pass Kant\'s Categorical Imperative test?',
+            options: ['לא, כי חובה להתחשב בתוצאות וברווחת המשתמש', 'כן - כי אפשר לרצות שזה יהיה החוק הכללי לכל מערכות ה-AI בעולם', 'לא, כי זה יהפוך את האפליקציה ללא פופולרית'],
+            optionsEn: ['No, because one must consider the consequences and the user\'s well-being', 'Yes-because you can will that this be the general law for all AI systems in the world', 'No, because it will make the app unpopular'],
+            correctIndex: 1,
+            explanation: 'זהו בדיוק מבחן הציווי הקטגורי. שאל את עצמך: האם אפשר לרצות שכל AI בעולם יאמר תמיד אמת? קאנט היה אומר כן - וזה בדיוק מה שהופך את זה לחוק מוסרי אמיתי, לא להעדפה אישית של חברה אחת.',
+            explanationEn: 'This is the test of the Categorical Imperative. If you can will that every AI in the world always tells the truth, it is a true moral law, regardless of a company\'s personal preference.',
+          },
+        ],
+      },
+      {
+        id: 2,
+        title: 'מיל: במי המכונה צריכה לפגוע?',
+        titleEn: 'Mill: The Autonomous Car and the Greatest Good',
+        thinker: "ג'ון סטיוארט מיל",
+        thinkerEn: 'John Stuart Mill',
+        thinkerId: 'mill',
+        xp: 50,
+        sections: [
+          {
+            type: 'idea',
+            title: 'הרעיון של היום',
+            titleEn: 'Today\'s Idea',
+            content: 'ב-2016 פרסם MIT ניסוי שהדהים את העולם - "Moral Machine". הם הציגו לאנשים מכל העולם דילמות של מכוניות אוטונומיות: הבלמים נכשלו, והמכונה חייבת לבחור - במי לפגוע?\n\n13.6 מיליון אנשים ענו. התשובות השתנו לפי מדינה, תרבות וגיל. למשל, במדינות המזרח נטו להציל קשישים, בעוד שבמערב העדיפו להציל ילדים. אבל השאלה הפילוסופית נותרת זהה: האם מותר לתכנת מכונה להחליט מראש מי יחיה ומי ימות?\n\nמיל היה אומר: לא רק שמותר, זו חובה. כי אם לא נתכנת את ההחלטה, המכונה תבחר באקראי - ואקראיות היא האויב הגדול של האושר (Happiness – במובן התועלתני של מקסום רווחה ומיזעור סבל כולל).',
+            contentEn: "John Stuart Mill, the father of Utilitarianism, argued that morality is not about fixed rules, but about results. The right action is the one that produces the greatest amount of happiness (or the least amount of suffering) for the greatest number of people. It's a cold, mathematical calculation of morality.\n\nBut what happens when this calculation is handed over to an algorithm? In the case of autonomous cars (like those of Tesla or Waymo), the machine must be programmed in advance for \"crash optimization.\" If a car must choose between hitting a group of five pedestrians or swerving and hitting one person on the sidewalk-what should it do?",
+            image: 'images/bonus/day2-idea.png',
+          },
+          {
+            type: 'source',
+            title: 'קטע מקור',
+            titleEn: 'Source Material',
+            quote: '"עקרון האושר הגדול ביותר גורס שפעולות הן נכונות במידה שהן נוטות לקדם אושר, ושגויות במידה שהן נוטות לייצר את ההיפך מאושר. באושר הכוונה להנאה ולהיעדר כאב."',
+            quoteEn: '"The creed which accepts as the foundation of morals, Utility, or the Greatest Happiness Principle, holds that actions are right in proportion as they tend to promote happiness, wrong as they tend to produce the reverse of happiness."',
+            attr: "- ג'ון סטיוארט מיל, תועלתנות (1863)",
+            attrEn: '- John Stuart Mill, Utilitarianism (1861)',
+          },
+          {
+            type: 'explanation',
+            title: 'הסבר',
+            titleEn: 'Explanation: The Moral Machine',
+            content: 'הדילמה פשוטה ואכזרית: הבלמים נכשלו. על המדרכה יש ילד, ועל הכביש יש קשיש. המכונה חייבת לבחור. מיל היה אומר: חשב. כמה שנות חיים פוטנציאליות יאבדו? כמה אנשים תלויים בכל אחד מהם? כמה סבל ייגרם למשפחות? ואז - בחר במסלול שממזער את הסבל הכולל.\n\nמיל מול קאנט - שוב:\nקאנט היה מסרב לשחק את המשחק הזה. הוא היה אומר: "אסור להשתמש באדם ככלי להצלת אחר". עבורו כל אדם הוא עולם ומלואו ולא מספר בטבלה. מיל היה עונה לו: "זו עמדה מוסרית יפה, אבל לא מעשית. אם לא נתכנת עדיפות, המכונה עדיין תבחר - היא פשוט תבחר באקראי. האם להרוג ילד בטעות זה באמת יותר מוסרי מאשר להציל אותו מתוך חישוב קר?"',
+            contentEn: 'Researchers at MIT created a massive experiment called the "Moral Machine." Millions of people from all over the world were asked to decide: who should the autonomous car hit? A child or an elderly person? A law-abiding citizen or a criminal? A doctor or a homeless person?\n\nMill would argue that the machine\'s goal is simple (yet horrifying): to minimize the total number of victims. From a utilitarian perspective, the life of a doctor might be "worth more" than the life of a criminal because the doctor can save more people in the future. This is the "calculus of utility" entering the world of code.\n\nThe Challenge: If we program AI according to Mill, we might reach a situation where the car is "allowed" to sacrifice its own passenger to save five people on the street. Would you buy a car that was programmed to kill you to save others?',
+            image: 'images/bonus/day2-explanation.png',
+          },
+          {
+            type: 'depth',
+            title: 'עומק',
+            titleEn: 'Depth: The Tyranny of the Majority?',
+            content: 'בעיית הידיים המלוכלכות: התועלתנות של מיל דורשת מאיתנו "ללכלך את הידיים". המהנדס שכותב את הקוד הוא זה שצריך לחתום על ההחלטה להקריב מישהו. האם אנחנו מוכנים להפקיד את המוסר שלנו בידי מתכנתים?\n\nהמראה של החברה: ניסוי ה-Moral Machine חשף שהערכים וההטיות שלנו כבני אדם משתקפים באופן שבו אנחנו רוצים שהמכונה תפעל. המתכנתים עלולים לתכנת את המכונית האוטונומית כך שתבחר בהתאם לערכים התרבותיים שלהם (שעלולים להיות מוטים) ולא רק בהתאם לשיקולי תועלת של מיקסום אושר. אם המערכת תתוכנת לפי הטיות חברתיות כאלו - היא לא תהיה מוסרית, היא פשוט תהיה מוטית.',
+            contentEn: "Mill\'s critics argue that Utilitarianism can lead to the \"Tyranny of the Majority\"-a situation where the rights of the individual are trampled for the benefit of the many. If an AI \"calculates\" that sacrificing one person's privacy will improve the security of a million people, it will do so without hesitation.\n\nMill himself understood this danger and emphasized that \"higher\" utility must also include the protection of individual liberty, but in the world of fast-moving algorithms, the \"cold calculation\" often wins.",
+            image: 'images/bonus/day2-depth.png',
+          },
+          {
+            type: 'quiz',
+            intro: 'הבלמים נכשלו. המכונה צריכה לבחור בין פגיעה בהולך רגל קשיש (75) לבין פגיעה בנהג צעיר (25).',
+            introEn: 'An autonomous car must choose between hitting three elderly people or one child.',
+            question: 'לפי עקרון מקסום שנות החיים של מיל, מה עלינו לתכנת?',
+            questionEn: 'According to a "pure" utilitarian calculation (focusing only on years of life remaining), what should the car do?',
+            options: ['לפגוע בקשיש - כי אובדן שנות החיים של הצעיר גדול יותר, ולכן הצלתו מניבה יותר "שנות אושר" פוטנציאליות לעולם', 'לפגוע בנהג הצעיר - כי המכונה חייבת להגן קודם כל על מי שאינו הלקוח שלה', 'לא לתכנת שום העדפה ולהשאיר זאת ליד המקרה'],
+            optionsEn: ['Hit the child, because every life is equal and one is less than three', 'Hit the three elderly people, because the child has more potential "units of happiness" and future years to contribute to society', 'It is impossible to decide; the car should just stop'],
+            correctIndex: 0,
+            explanation: 'מיל מחפש את התוצאה שתשאיר הכי הרבה "חיים" בעולם. בחישוב קר, הצלת הצעיר מביאה ליותר שנות חיים עתידיות. זה נשמע אכזרי, וזו בדיוק הביקורת על התועלתנות: היא הופכת בני אדם למספרים בתוך משוואה, אך מטרתה היא למנוע בזבוז מיותר של שנות חיים ואושר פוטנציאלי.',
+            explanationEn: 'Utilitarianism is a philosophy of numbers. If we calculate "total years of life" or future utility, the child represents a higher mathematical value. This is the cold side of Mill\'s theory.',
+          },
+          {
+            type: 'quiz',
+            intro: 'חברת מכוניות מתכנת את הרכב להגן תמיד על הנהג (הלקוח), גם במחיר פגיעה בהולכי רגל.',
+            introEn: "A government wants to use AI to scan all citizens' private messages to prevent crime.",
+            question: 'מה קאנט היה אומר על זה?',
+            questionEn: 'According to Mill, this is moral if:',
+            options: ['זה מוצדק - החברה מחוייבת למי ששילם לה', 'זה פגום - כי זה משתמש בהולך הרגל ככלי להצלת הנהג ומתייחס לחיי אדם כאמצעי בלבד', 'זה מוסרי - כי הנהג נמצא בסיכון גבוה יותר בתוך הרכב'],
+            optionsEn: ['The law permits it', 'The total amount of security and "quiet" added to society is greater than the total amount of suffering caused by the loss of privacy', 'Never-privacy is a sacred right that cannot be touched'],
+            correctIndex: 1,
+            explanation: 'קאנט היה מזכיר לנו שכל אדם הוא "תכלית בפני עצמה". ברגע שתכנתת את המכונה להקריב עובר אורח כדי להציל את הלקוח שלך, הפכת את העובר אורח ל-"חפץ" או "אמצעי" להשגת מטרה. עבור קאנט, שלילת האוטונומיה של האדם והפיכתו למכשיר היא קו אדום מוסרי.',
+            explanationEn: 'For a utilitarian, there are no "sacred" rights. Everything is a matter of cost versus benefit. If the benefit to the many outweighs the cost to the individual, the action is considered moral.',
+          },
+          {
+            type: 'quiz',
+            intro: 'בניסוי של MIT התגלה שבמדינות מסוימות אנשים העדיפו להציל "אנשי עסקים" על פני "חסרי בית".',
+            introEn: "What is the main criticism against programming AI according to Mill's theory?",
+            question: 'האם העדפה כזו עומדת בעקרון האושר של מיל?',
+            questionEn: "What is the main criticism against programming AI according to Mill's theory?",
+            options: ['כן, כי לאנשי עסקים יש תרומה כלכלית גדולה יותר, ולכן בהכרח תרומתם לאושר האנושי הכללי גדולה יותר', 'לא בהכרח - ההנחה שהחיים של איש עסקים הם מאושרים יותר משל חסר בית מבוססת על מוסכמה תרבותית שעלולה להיות מוטיית', 'כן, אם זה מה שרוב האוכלוסיה באותה מדינה רוצה'],
+            optionsEn: ['That it turns human life into a "commodity" or a number, and ignores the inherent dignity of the individual', 'That it is too complicated for a computer to calculate', 'That it does not give enough power to the government'],
+            correctIndex: 1,
+            explanation: 'לפי מיל, ההעדפה את מי להציל צריכה להוביל למקסום אושר. לא ניתן לדעת בוודאות שאיש עסקים הוא מאושר יותר מחסר בית, או שאושר של יותר אנשים תלוי באיש העסקים מאשר בחסר הבית. העדפה כזו מבוססת על מוסכמה תרבותית וסטריאוטיפים, ולא על חישוב תועלתני נקי של אושר וסבל.',
+            explanationEn: 'The biggest fear regarding Mill in AI is the loss of the "Individual." If everything is a calculation of the "Greatest Good," the individual becomes a tool in the hands of the algorithm.',
+          },
+        ],
+      },
+      {
+        id: 3,
+        title: 'אריסטו: כשה-AI טועה - מי אחראי?',
+        titleEn: 'Aristotle: AI and Responsibility',
+        thinker: 'אריסטו',
+        thinkerEn: 'Aristotle',
+        thinkerId: 'aristotle',
+        xp: 50,
+        sections: [
+          {
+            type: 'idea',
+            title: 'הרעיון של היום',
+            titleEn: 'Today\'s Idea',
+            content: 'ב-2023, מחקר בג\'נבה הראה שמודל AI אבחן סרטן ריאות בדיוק גבוה מרדיולוגים. באותה שנה, מודל אחר החמיץ גידול שכל עין אנושית הייתה מזהה. המטופל נפגע, והשאלה נותרת פתוחה: מי אחראי? המפתח? החברה? או הרופא שהסתמך על הקוד?\n\nאריסטו אמנם לא הכיר בינה מלאכותית, אבל הוא פיתח את התיאוריה המדויקת ביותר שיש לנו על אחריות מוסרית.',
+            contentEn: 'Aristotle believed that morality is not just about rules (Kant) or results (Mill), but about character and practical wisdom (Phronesis). For Aristotle, a moral person is someone who knows how to find the "Golden Mean"-the right balance-in every situation, based on experience and judgment.\n\nBut AI has no "character," and certainly no life experience. When an AI system makes a fateful decision-for example, in a medical diagnosis or a legal ruling-and it makes a mistake, a legal and philosophical vacuum is created. If there is no human "judgment" involved, who is responsible for the outcome?',
+            image: 'images/bonus/day3-idea.png',
+          },
+          {
+            type: 'source',
+            title: 'קטע מקור',
+            titleEn: 'Source Material',
+            quote: '"אנו משבחים ומגנים רק מה שנעשה מרצון, ואילו למי שעושה מה שאינו בידו נותנים סליחה ולפעמים גם רחמים."',
+            quoteEn: '"Virtue, then, is a state of character concerned with choice, lying in a mean... determined by a rational principle, and by that principle by which the man of practical wisdom would determine it."',
+            attr: '- אריסטו, "האתיקה הניקומאכית", ספר 3',
+            attrEn: '- Aristotle, Nicomachean Ethics',
+          },
+          {
+            type: 'explanation',
+            title: 'הסבר',
+            titleEn: 'Explanation: The Problem of the "Black Box"',
+            content: 'לפי אריסטו, אחריות מוסרית דורשת שני תנאים מצטברים:\n\nכוונה: הפעולה נעשתה מתוך בחירה מודעת (לא בטעות, בורות או כפייה).\n\nיכולת לעשות אחרת: האדם יכול היה לבחור מסלול פעולה שונה - ולא עשה זאת.\n\nכאן ה-AI נכשל במבחן: למכונה אין כוונה. היא לא "רצתה" לטעות; היא פשוט פלטה תוצאה סטטיסטית. לפי אריסטו, מכונה לעולם לא תישא באחריות מוסרית. האחריות שייכת רק ליצורים חופשיים.',
+            contentEn: 'In many modern AI systems, even the developers don\'t exactly know how the machine reached a specific conclusion. This is called the "Black Box" problem.\n\nAristotle would ask: Can a machine be "virtuous"? His answer would likely be no. Virtue requires choice and intent. If an AI provides a correct medical diagnosis just because it processed a billion data points, it isn\'t "wise"-it\'s just fast. The danger, according to Aristotle, is that humans will stop using their own Phronesis (practical wisdom) and rely blindly on the machine, thereby losing their own human excellence.\n\nThe Accountability Gap: When a doctor makes a mistake, we can examine their judgment. When an algorithm makes a mistake, whom do we blame? The programmer who wrote the code three years ago? The company that sold the software? Or perhaps the machine itself?',
+            image: 'images/bonus/day3-explanation.png',
+          },
+          {
+            type: 'depth',
+            title: 'עומק',
+            titleEn: 'Depth: Can Machines Have "Practical Wisdom"?',
+            content: 'אריסטו דיבר על פרונסיס (Phronesis) - תבונה מעשית. זו היכולת לדעת מה הדבר הנכון לעשות ברגע ספציפי, מול אדם ספציפי.\n\nכשרופא מוותר על שיקול דעת עצמאי לטובת המכונה, הוא מוותר על הפרונסיס שלו. בעולם הטכנולוגי קוראים לזה "בעיית הידיים הרבות": ככל שהמערכת מורכבת, האחריות מתפזרת עד שאף אחד לא מרגיש אשם. אריסטו מזכיר לנו: אם כולם אחראים - אף אחד לא אחראי.',
+            contentEn: 'Modern developers are trying to solve this by creating "Explainable AI" (XAI)-systems that are required to "explain" their reasoning. This is an attempt to simulate Aristotelian wisdom: not just giving a bottom-line answer, but showing the path of logic that led there, so a human can exercise judgment and take responsibility.',
+            image: 'images/bonus/day3-depth.png',
+          },
+          {
+            type: 'quiz',
+            intro: 'מערכת AI אבחנה שגוי מחלה. הרופא לא בדק את התוצאה כי האמין שהמערכת מדויקת.',
+            introEn: 'An AI system used in a hospital suggests a high-risk surgery. The doctor follows the recommendation, but the surgery fails.',
+            question: 'לפי אריסטו, מי נושא באחריות מוסרית?',
+            questionEn: 'According to the Aristotelian approach, who bears the primary moral responsibility?',
+            options: ['המערכת - כי היא זו שייצרה את הטעות הטכנית', 'הרופא - כי הוא בחר במודע לסמוך על המכונה בלי להפעיל שיקול דעת', 'אף אחד - זו תאונה טכנית שאי אפשר היה למנוע'],
+            optionsEn: ['The AI-because it was the one that made the calculation', 'The doctor-because only a human possesses "Phronesis" (practical wisdom) and the ability to weigh the machine\'s output against the specific human context', 'The patient-because they agreed to be treated in a modern hospital'],
+            correctIndex: 1,
+            explanation: 'אריסטו היה טוען שהרופא קיבל החלטה אקטיבית לוותר על הבדיקה שלו. המכונה היא כלי בלבד; האחריות תמיד חוזרת לאדם שבחר להשתמש בכלי ולהסתמך עליו.',
+            explanationEn: 'For Aristotle, responsibility cannot be outsourced to a tool. A tool (like an AI) lacks the capacity for moral choice. The human must always remain the "moral agent" who exercises judgment.',
+          },
+          {
+            type: 'quiz',
+            intro: 'רופא מיון עמוס יודע שהמערכת לא מושלמת, אך אין לו זמן לבדוק כל מקרה.',
+            introEn: 'What is "The Golden Mean" in the context of using AI in the workplace?',
+            question: 'מהו הצעד המשקף פרונסיס (תבונה מעשית)?',
+            questionEn: 'What is "The Golden Mean" in the context of using AI in the workplace?',
+            options: ['לסרב להשתמש ב-AI בכלל כדי למנוע כל אפשרות לטעות', 'לפתח שגרתה של בדיקה מדגמית וסימון מקרים "חשודים" לבדיקה אנושית עמוקה', 'להסתמך על ה-AI באופן מלא כי סטטיסטית הוא טועה פחות מאדם עייף'],
+            optionsEn: ['Replacing all employees with AI to achieve maximum efficiency', 'Completely banning AI to protect human labor', 'Using AI as a tool that enhances human capabilities without replacing human judgment and critical thinking'],
+            correctIndex: 1,
+            explanation: 'פרונסיס היא היכולת למצוא את "שביל הזהב" והפתרון הנכון לנסיבות המורכבות. התעלמות מהכלי (א\') או הסתמכות עיוורית (ג\') הן קיצוניות. בדיקה מושכלת היא הפעלת תבונה מעשית במציאות מוגבלת.',
+            explanationEn: 'Aristotle\'s "Mean" is the balance between two extremes. In this case, between "Technophobia" (total rejection) and "Techno-determinism" (total reliance). The virtue lies in the balanced use of the technology.',
+          },
+        ],
+      },
+      {
+        id: 4,
+        title: 'ניטשה: מי מחליט מה הערכים של ה-AI?',
+        titleEn: 'Nietzsche: Power Struggles and the Values of AI',
+        thinker: 'פרידריך ניטשה',
+        thinkerEn: 'Friedrich Nietzsche',
+        thinkerId: 'nietzsche',
+        xp: 50,
+        sections: [
+          {
+            type: 'idea',
+            title: 'הרעיון של היום',
+            titleEn: 'Today\'s Idea',
+            content: 'ב-2023 פרסמה OpenAI מסמך בן 60 עמודים המסביר את "ערכי" ChatGPT. גוגל פרסמה את "עקרונות ה-AI" שלה, ו-Anthropic יצרה "AI חוקתי". כולם מסמכים מרשימים המדברים על בטיחות, הוגנות ואי-הטייה.\n\nאבל ניטשה היה שואל שאלה פשוטה: מי נתן לכם את הסמכות? הוא לא היה מחפש את החתימה על המסמך, אלא את הכוח שמאחוריו. מי מרוויח כשה-AI "מתנהג יפה"? ומי מפסיד?',
+            contentEn: 'Friedrich Nietzsche argued that there is no such thing as "objective" morality. Behind every moral system-every "thou shalt" and "thou shalt not"-hides a Will to Power. Values are tools used by one group to impose its perspective on the world.\n\nIn the world of AI, this idea becomes explosive. When a language model (like Claude or ChatGPT) refuses to answer a question because it is "offensive" or "harmful," it is not following a universal law of nature. It is following a set of values programmed into it by a specific group of people in Silicon Valley. Nietzsche would ask: Who are these people, and by what right do they determine the "good" and "evil" for the rest of humanity?',
+            image: 'images/bonus/day4-idea.jpeg',
+          },
+          {
+            type: 'source',
+            title: 'קטע מקור',
+            titleEn: 'Source Material',
+            quote: '"המוסר באירופה של היום הוא מוסר של עדר... סוג אחד של מוסר אנושי מתקבל בכל מקום: המוסר הזה רוצה לשלוט, ואם אפשר - להיות המוסר היחיד."',
+            quoteEn: '"Whatever has value in our world now does not have value in itself, according to its nature... but has been given value at some point, as a present-and it was we who gave and bestowed it!"',
+            attr: '- פרידריך ניטשה, "מעבר לטוב ולרע" (1886)',
+            attrEn: '- Friedrich Nietzsche, The Gay Science',
+          },
+          {
+            type: 'explanation',
+            title: 'הסבר',
+            titleEn: 'Explanation: The Polite AI and the Master Morality',
+            content: 'ניטשה לא היה אנרכיסט; הוא פשוט הבין שכל מערכת ערכים היא ביטוי של כוח. כשחברות טכנולוגיה קובעות מה ה-AI "מורשה" לומר, הן לא פועלות מתוך חוכמה עליונה - הן משרתות את האינטרסים שלהן.\n\nהאם ה-AI ניטרלי?\nChatGPT עשוי לסרב לשבח דיקטטור, אך יכתוב בשמחה נאום המשבח דמוקרטיה ליברלית. זו לא "אי-הטייה" - זו עמדה מוסרית שמשקפת את הערכים של סן פרנסיסקו ב-2026.\n\nניטשה היה רוצה שנפסיק להתחבא מאחורי מילים כמו "בטיחות" ו"הוגנות" ונשאל בכנות: בטיחות עבור מי? הוגנות לפי מי?',
+            contentEn: 'Nietzsche distinguished between "Master Morality" (values of strength, creativity, and self-assertion) and "Slave Morality" (values of kindness, humility, and equality).\n\nHe might look at modern AI and see the ultimate expression of "Slave Morality": the AI is programmed to be endlessly polite, neutral, and cautious. It is designed never to offend, never to take a stand, and always to remain within the consensus. To Nietzsche, this is not "progress"-it is the leveling of the human spirit.\n\nThe Power of the Prompt: Companies like Meta and Anthropic use a process called "Reinforcement Learning from Human Feedback" (RLHF). This means that human "labelers" tell the AI what is a "good" answer and what is a "bad" one. Nietzsche would argue that this is a hidden struggle for dominance. We are creating a machine that reflects the mid-level, safe, and "proper" values of a specific corporate culture, and then exporting those values to the entire world as "Truth."',
+            image: 'images/bonus/day4-explanation.png',
+          },
+          {
+            type: 'depth',
+            title: 'עומק',
+            titleEn: 'Depth: The "Constitutional" AI',
+            content: 'ניטשה טען שהצדקה מוסרית המסתירה כוח היא הצורה המסוכנת ביותר של שקר. בהקשר של AI, זה אומר: אל תגידו שהאלגוריתם הוא "ניטרלי". תגידו מה הערכים שלו ומי בחר אותם.\n\nניטשה בז לניסיון "לא לפגוע באף אחד" (מה שכינה "מוסר עבדים"). עבורו, צמיחה אמיתית מגיעת מקונפליקט ומיצירת ערכים חדשים - לא מסירוס המחשבה כדי להפוך אותה לבינונית ונוחה לעיכול.',
+            contentEn: 'Some companies, like Anthropic, have created a "Constitution" for their AI. This is a set of written rules the AI must follow. Nietzsche would love this concept-not because he agrees with the rules, but because it makes the Power explicit. It proves that morality is a project, a creation, a "human, all too human" invention, rather than a divine or natural law.',
+            image: 'images/bonus/day4-depth.png',
+          },
+          {
+            type: 'quiz',
+            intro: 'חברת AI טוענת שהמודל שלה "ניטרלי לחלוטין" כי הוא מסונן מכל דעה פוליטית שנויה במחלוקת.',
+            introEn: 'An AI refuses to write a poem praising a controversial historical figure because it might be "harmful."',
+            question: 'מה ניטשה היה אומר על כך?',
+            questionEn: 'What would Nietzsche say about this refusal?',
+            options: ['זהו הישג מוסרי כיוון שהוא מונע חיכוך חברתי', 'זוהי הטעייה - המילה "ניטרלי" היא עצמה כלי כוח שנועד להסתיר ערכים ספציפיים', 'זהו צעד הכרחי כדי למנוע מהמכונה להפוך למסוכנת'],
+            optionsEn: ['It is a moral victory that prevents the spread of hate', 'It is an act of censorship by the "weak" who fear strong or dangerous ideas', 'It is a technical error that needs to be fixed'],
+            correctIndex: 1,
+            explanation: 'ניטשה היה מזהה שהימנעות היא גם בחירה. כשחברה קוראת לעצמה "ניטרלית", היא בעצם כופה את הסטנדרט שלה כ-"נורמלי", ובכך משתיקה דעות אחרות מבלי להודות שהיא עושה זאת.',
+            explanationEn: 'Nietzsche believed that "harmful" or "dangerous" ideas are often the ones that push humanity forward. A machine that is programmed to be "safe" is, in his eyes, a machine that preserves the status quo and prevents the emergence of the "Overman" (Übermensch).',
+          },
+          {
+            type: 'quiz',
+            intro: 'ממשלה מחייבת את כל מערכות ה-AI לסנן ביקורת על השלטון בשם "היציבות החברתית".',
+            introEn: 'Who, according to Nietzsche, is the true "creator of values" in the age of AI?',
+            question: 'לפי ניטשה, מה קורה כאן באמת?',
+            questionEn: 'Who, according to Nietzsche, is the true "creator of values" in the age of AI?',
+            options: ['הממשלה דואגת בכנות לשלוות האזרחים', 'שימוש בשפה מוסרית ("יציבות") כדי להסוות שמירה על כוח פוליטי', 'הממשלה מנסה לחנך את ה-AI להיות בעל מידות טובות'],
+            optionsEn: ['The AI itself-it learns on its own', 'The users who ask it questions', 'The engineers and "labelers" who define what a "helpful and harmless" answer looks like'],
+            correctIndex: 1,
+            explanation: 'ניטשה היה מכנה זאת "מוסר עדר" במיטבו. השלטון משתמש במושגים שנשמעים חיוביים כדי לאלף את הציבור ולשמר על מעמדו. ניטשה דרש כנות: אם אתם רוצים כוח, אל תקראו לזה "מוסר".',
+            explanationEn: 'Power lies with those who define the definitions. The people who set the "alignment" of the AI are the ones who determine the moral boundaries of our generation.',
+          },
+          {
+            type: 'quiz',
+            intro: 'חברת AI מסרבת לדון בנושאים דתיים כי "זה רגיש מדי". בפועל, היא חוששת מתביעות והפסד לקוחות.',
+            introEn: 'What is the "Will to Power" in the context of an AI company?',
+            question: 'מה ניטשה היה ממליץ לה?',
+            questionEn: 'What is the "Will to Power" in the context of an AI company?',
+            options: ['להמשיך כך - זהו המודל העסקי הבטוח ביותר', 'להודות באמת: "אנחנו לא דנים בזה כי זה מסובך עסקית", במקום להסתתר מאחורי מילים יפות', 'לנסות לייצג את כל הדתות באופן שווה כדי להיות ניטרלית באמת'],
+            optionsEn: ['The desire to make as much money as possible', 'The attempt to make their AI\'s perspective the dominant "standard" for truth and morality globally', 'The goal of creating a machine that is stronger than humans'],
+            correctIndex: 1,
+            explanation: 'ניטשה העריך כנות. הוא היה מעדיף חברה שמודה במניעים הכלכליים והאנוכיים שלה על פני חברה שמציירת את הפחדים שלה כ-"רגישות מוסרית" או "אתיקה".',
+            explanationEn: 'For Nietzsche, power is the ability to impose your "interpretation" on reality. A company whose AI is used by billions is effectively imposing its moral interpretation on a global scale.',
+          },
+        ],
+      },
+      {
+        id: 5,
+        title: 'סוקרטס: האם AI יכול לעזור לנו לחשוב?',
+        titleEn: 'Socrates: AI as a Teacher or a Midwife?',
+        thinker: 'סוקרטס',
+        thinkerEn: 'Socrates',
+        thinkerId: 'socrates',
+        xp: 50,
+        sections: [
+          {
+            type: 'idea',
+            title: 'הרעיון של היום',
+            titleEn: 'Today\'s Idea',
+            content: 'סוקרטס לא כתב דבר. הוא לא הרצה ולא נתן תשובות מוכנות. הוא פשוט הלך לשוק באתונה, עצר אנשים ושאל אותם שאלות - שאלה אחרי שאלה - עד שהאדם שמולו הבין שהוא לא באמת יודע את מה שחשב שהוא יודע. רק מהנקודה הזאת, של "ידיעת אי-הידיעה", תהליך החשיבה האמיתי יכול היה להתחיל.\n\nהיום יש לנו AI שיכול לענות על כל שאלה תוך שנייה. השאלה היא כבר לא מי חכם יותר - המכונה או סוקרטס. השאלה היא: האם ה-AI עוזר לנו לחשוב, או שהוא פשוט חושב במקומנו?',
+            contentEn: 'Socrates, the father of Western philosophy, never wrote a single book. He believed that wisdom is not something that can be "poured" from one person to another like water between cups. Instead, he saw himself as a "Midwife"-someone who doesn\'t give birth to ideas themselves, but helps others give birth to the truths hidden within them through questions and dialogue.\n\nIn the age of AI (like Perplexity or ChatGPT), we are facing a revolution in the way we consume knowledge. These systems are designed to give us immediate, clear, and "final" answers. Socrates would ask: Is a machine that gives us all the answers making us wiser, or is it actually making us more ignorant?',
+            image: 'images/bonus/day5-idea.png',
+          },
+          {
+            type: 'source',
+            title: 'קטע מקור',
+            titleEn: 'Source Material',
+            quote: '"אני מיילדת של המוח. האמנות שלי היא לעזור לאחרים ללדת את הרעיונות שלהם - לא לתת להם את שלי."',
+            quoteEn: '"I cannot teach anybody anything. I can only make them think."',
+            attr: '- סוקרטס (מתוך "תיאיטטוס" לאפלטון)',
+            attrEn: '- Socrates (attributed)',
+          },
+          {
+            type: 'explanation',
+            title: 'הסבר',
+            titleEn: 'Explanation: The Danger of the "Easy Answer"',
+            content: 'סוקרטס ראה בעצמו "מיילד רעיונות". המיילדת אינה יולדת את התינוק במקום האם; היא רק עוזרת לו לצאת לאוויר העולם. כך גם סוקרטס: הוא לא סיפק ידע, אלא עזר לאנשים לגלות את האמת שכבר הייתה חבוייה בתוכם.\n\nשתי שיטות - שני עולמות:\nשיטת ה-AI: שאלה ← תשובה ← סגירת הלפטופ.\nהשיטה הסוקרטית: שאלה ← שאלה חזרה ← מאבק מחשבתי ← גילוי הבורות ← חשיבה מחדש.\n\nההבדל אינו ביעילות - ה-AI תמיד ינצח שם. ההבדל הוא בזהות של מי שחושב.',
+            contentEn: 'Socrates\' method, the "Socratic Method," is based on a series of questions intended to expose contradictions in the other person\'s thinking. He believed that the moment you think you "know" something, you stop investigating.\n\nThe AI Challenge: When we ask an AI a question, it provides a polished summary in seconds. We feel like we "understand," but in reality, we have skipped the most important part of learning: the struggle. According to Socrates, knowledge that is attained without effort or investigation is an illusion of wisdom. If the AI is a "teacher" that provides the bottom line, it might be harming our ability to think independently.\n\nAI as a Midwife: However, there is another way to use technology. Instead of asking: "Give me the answer," we can ask: "Ask me questions that will help me understand the topic on my own." In this use case, the AI transforms from a teacher into a midwife.',
+            image: 'images/bonus/day5-explanation.jpeg',
+          },
+          {
+            type: 'depth',
+            title: 'עומק',
+            titleEn: 'Depth',
+            content: 'הסכנה האמיתית ב-AI אינה "בינה זדונית", אלא משתמשים עצלנים. מנועי חיפוש נתנו לנו מידע; בינה מלאכותית נותנת לנו מסקנות. כשאנחנו מבקשים מה-AI לסכם ספר או לגבש עמדה, אנחנו מחמיצים את ההזדמנות להכיר את עצמנו דרך המאבק בטקסט.\n\nאבל יש פיתול: ה-AI יכול להיות השותף הסוקרטי המושלם. במקום לבקש ממנו "תכתוב לי טיעון", אפשר לבקש: "שאל אותי שאלות שיגרמו לי להבין את הנושא בעצמי". בשימוש כזה, ה-AI הופך ממורה למיילדת.',
+            contentEn: 'The real danger in AI is not "malicious intelligence," but lazy users. Search engines gave us information; artificial intelligence gives us conclusions. When we ask AI to summarize a book or form a position, we miss the opportunity to know ourselves through the struggle with the text.\n\nBut there is a twist: AI can be the perfect Socratic partner. Instead of asking it to "write me an argument," we can ask: "Ask me questions that will make me understand the topic on my own." In this use, the AI transforms from a teacher into a midwife.',
+            image: 'images/bonus/day5-depth.jpeg',
+          },
+          {
+            type: 'quiz',
+            intro: 'סטודנט מבקש מה-AI לסכם לו את קאנט ב-3 משפטים. הוא מבין את התקציר ומגיש עבודה מצוינת.',
+            introEn: 'A student asks an AI to summarize Kant for him in three sentences. He understands the summary and submits an excellent paper.',
+            question: 'מה סוקרטס היה אומר על כך?',
+            questionEn: 'What would Socrates say about this?',
+            options: ['זהו צעד יעיל שחוסך זמן יקר בלמידה', 'זהו תהליך בעייתי - הסטודנט קיבל תשובה מוכנה והחמיץ את המאבק עם הטקסט שממנו נולדת הבנה', 'התוצאה (הציון) היא הדבר היחידי שקובע אם הלמידה הצליחה'],
+            optionsEn: ['This is an efficient step that saves precious time in learning', 'This is a problematic process-the student received a ready-made answer and missed the struggle with the text from which understanding is born', 'The result (the grade) is the only thing that determines if the learning was successful'],
+            correctIndex: 1,
+            explanation: 'סוקרטס האמין שחוכמה נולדת מתוך מאבק. הסטודנט שקיבל תקציר לא גילה את מגבלות ההבנה שלו, ולכן לא באמת למד. הציון הטוב הוא האשליה שמסתירה את ההחמצה המחשבתית.',
+            explanationEn: 'Socrates believed that wisdom is born out of struggle. The student who received a summary did not discover the limits of his own understanding, and therefore did not truly learn. The good grade is the illusion that hides the intellectual missed opportunity.',
+          },
+          {
+            type: 'quiz',
+            intro: 'אדם שואל AI על נושא פוליטי טעון והמכונה נותנת תשובה מאוזנת עם שני הצדדים.',
+            introEn: 'A person asks an AI about a sensitive political issue, and the machine gives a balanced answer presenting both sides.',
+            question: 'מה חסר כאן לפי סוקרטס?',
+            questionEn: 'What is missing here according to Socrates?',
+            options: ['חסרה תשובה חד-משמעית שתכריע מה נכון', 'חסרה השאלה "מה אתה חושב ולמה?" - המשתמש קיבל דעות מוכנות במקום לגבש אחת בעצמו', 'ה-AI היה צריך להציג יותר מנקודת מבט אחת'],
+            optionsEn: ['A definitive answer that determines what is correct is missing', 'The "Elenchus" (Socratic questioning) is missing-the process that challenges the user to examine their own biases and reach a personal conviction', 'Nothing is missing; a balanced answer is the highest goal'],
+            correctIndex: 1,
+            explanation: 'סוקרטס לא היה "מסביר" לך את שני הצדדים. הוא היה שואל אותך מה עמדתך, ואז מערער אותה בעזרת שאלות עד שהיית מגלה מה הבסיס האמיתי לאמונה שלך.',
+            explanationEn: 'For Socrates, neutrality is not the goal. The goal is the active investigation. A "balanced" answer can leave the user passive, whereas a Socratic dialogue would force the user to justify their own position.',
+          },
+          {
+            type: 'quiz',
+            intro: 'משתמש מחליט להשתמש ב-AI כשותף לדיון: "אל תיתן לי תשובות, אלא שאל אותי שאלות שיעזרו לי להבין את הבעיה".',
+            introEn: 'How can we use AI as a "Midwife" according to the Socratic approach?',
+            question: 'האם סוקרטס היה מאשר זאת?',
+            questionEn: 'How can we use AI as a "Midwife" according to the Socratic approach?',
+            options: ['לא - AI לעולם לא יוכל להחליף את הנשמה שבדיאלוג אנושי', 'כן - אם ה-AI פועל כ-"מיילד" שעוזר לאדם ללדת את רעיונותיו, זהו שימוש נאמן לשיטה הסוקרטית', 'רק בתנאי שה-AI מתוכנת מראש עם התשובות הנכונות'],
+            optionsEn: ['By letting it write all our emails and professional texts', 'By using it to get facts and dates quickly', 'By asking it to play the role of an opponent in an argument, to challenge our assumptions and ask us follow-up questions'],
+            correctIndex: 1,
+            explanation: 'עבור סוקרטס, התהליך חשוב מהכלי. אם הטכנולוגיה משמשת כזרז לחשיבה עצמית ולא כתחליף לה - היא משרתת את המטרה הנעלה ביותר של הפילוסופיה.',
+            explanationEn: 'This is the highest use of the tool. When the AI challenges us, it forces us to use our "mental muscles" and give birth to our own ideas, rather than just consuming those of the machine.',
+          },
+        ],
+      }
+    ]
   },
   {
     id: 3,
@@ -5586,7 +6035,7 @@ function getW() {
           case 'idea':
           case 'explanation':
           case 'depth':
-            return { ...base, body: lang === 'en' ? s.contentEn : s.content };
+            return { ...base, body: lang === 'en' ? s.contentEn : s.content, image: s.image };
           case 'source':
             return { ...base,
               quote: lang === 'en' ? s.quoteEn : s.quote,
@@ -5609,7 +6058,7 @@ function getW() {
 
   const oldWeeks = lang === 'en' ? WEEKS_EN : WEEKS;
   const oldWeek1 = oldWeeks[0];
-  const cdWeek1  = corpusData.weeks[0];
+  const cdWeek1  = corpusData.weeks.find(function(w) { return w.id === 1; });
 
   const week1 = {
     id: 1,
@@ -5626,7 +6075,7 @@ function getW() {
     ],
   };
 
-  const cdWeek2  = corpusData.weeks[1];
+  const cdWeek2  = corpusData.weeks.find(function(w) { return w.id === 2; });
   const oldWeek2 = oldWeeks[1];
   const week2 = {
     id: 2,
@@ -5643,7 +6092,7 @@ function getW() {
     ],
   };
 
-  const cdWeek3  = corpusData.weeks[2];
+  const cdWeek3  = corpusData.weeks.find(function(w) { return w.id === 3; });
   const oldWeek3 = oldWeeks[2];
   const week3 = {
     id: 3,
@@ -5660,7 +6109,7 @@ function getW() {
     ],
   };
 
-  const cdWeek4  = corpusData.weeks[3];
+  const cdWeek4  = corpusData.weeks.find(function(w) { return w.id === 4; });
   const oldWeek4 = oldWeeks[3];
   const week4 = cdWeek4 ? {
     id: 4,
@@ -5677,7 +6126,16 @@ function getW() {
     ],
   } : oldWeek4;
 
-  return [week1, week2, week3, week4, ...oldWeeks.slice(4)];
+  const cdBonus1 = corpusData.weeks.find(function(w) { return w.id === 'bonus1'; });
+  const bonusWeek1 = cdBonus1 ? {
+    id: 'bonus1',
+    title: cdBonus1.title,
+    titleEn: cdBonus1.titleEn,
+    subtitle: '',
+    isBonus: true,
+    days: cdBonus1.days.map(function(d) { return deriveDay(d); }),
+  } : null;
+  return [week1, week2].concat(bonusWeek1 ? [bonusWeek1] : []).concat([week3, week4]).concat(oldWeeks.slice(4));
 }
 function getT() { return state.lang === 'en' ? THINKERS_EN : THINKERS; }
 function getLvls() { return state.lang === 'en' ? LEVELS_EN : LEVELS; }
@@ -5953,8 +6411,10 @@ function renderHome() {
         if (w.locked) cls += ' locked';
         else if (allDone) cls += ' completed-week';
         else if (isCurrent) cls += ' current-week';
+        if (w.isBonus) cls += ' bonus-week';
         div.className = cls;
         div.innerHTML = `
+          ${w.isBonus ? `<div class="bonus-badge">BONUS</div>` : ''}
           <svg viewBox="0 0 32 32" width="40" height="40" style="flex-shrink:0"><use href="#n-${w.id}"/></svg>
           <div class="week-info">
             <div class="week-title">${w.title}</div>
@@ -6044,7 +6504,7 @@ function renderWeek(weekId) {
         <div class="day-title">${day.title}</div>
         <div class="day-thinker">${day.thinker}</div>
       </div>
-      <div class="day-xp">⭐ ${day.xp}</div>
+      ${day.xp > 0 ? `<div class="day-xp">⭐ ${day.xp}</div>` : ''}
       <span class="item-chevron"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B4FD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></span>
     `;
     if (!locked) div.onclick = () => openReader(weekId, day.id);
@@ -6139,6 +6599,7 @@ function renderReader() {
       <div class="section-type-label">${ui.labels.idea}</div>
       <div class="section-heading">${sec.title}</div>
       <div class="section-body">${toParas(sec.body)}</div>
+      ${sec.image ? `<img class="section-image" src="${sec.image}" alt="" loading="lazy">` : ''}
     `;
     content.appendChild(card);
     makeNextBtn(isLast ? ui.finishBtn : ui.nextBtn, isLast);
@@ -6158,6 +6619,7 @@ function renderReader() {
       <div class="section-type-label">${ui.labels.explanation}</div>
       <div class="section-heading">${sec.title}</div>
       <div class="section-body">${toParas(sec.body)}</div>
+      ${sec.image ? `<img class="section-image" src="${sec.image}" alt="" loading="lazy">` : ''}
     `;
     content.appendChild(card);
     makeNextBtn(isLast ? ui.finishBtn : ui.nextBtn, isLast);
@@ -6167,6 +6629,7 @@ function renderReader() {
       <div class="section-type-label">${ui.labels.depth}</div>
       <div class="section-heading">${sec.title}</div>
       <div class="section-body">${toParas(sec.body)}</div>
+      ${sec.image ? `<img class="section-image" src="${sec.image}" alt="" loading="lazy">` : ''}
     `;
     content.appendChild(card);
     makeNextBtn(isLast ? ui.finishBtn : ui.nextBtn, isLast);
@@ -6396,6 +6859,22 @@ function finishDay() {
 
   const prevLevel = getLevel(state.xp);
 
+  // Day 0 (intro day): mark complete, no XP awarded, no thinker
+  if (day.id === 0) {
+    state.completedDays[key] = true;
+    try { saveState(); } catch(e) { saveStateLocal(); }
+    const ui0 = u();
+    document.getElementById('complete-title').textContent = ui0.dayCompleted(day.id);
+    document.getElementById('complete-subtitle').textContent = day.title;
+    document.getElementById('complete-xp').textContent = '+0';
+    document.getElementById('complete-streak').textContent = state.correctInRow;
+    document.getElementById('thinker-unlock-box').style.display = 'none';
+    document.getElementById('modal-continue-btn').style.display = '';
+    document.getElementById('modal-complete').classList.add('active');
+    launchConfetti();
+    return;
+  }
+
   // Day completion bonus + streak bonus
   state.readerXP += 30;
   state.readerXP += Math.min(state.dailyStreak * 2, 10);
@@ -6506,7 +6985,7 @@ async function doShare() {
       await navigator.share({ title: 'Corpus', text: 'פילוסופיה ב-10 דקות ביום', url });
       try { localStorage.setItem('corpus_share_shown', '1'); } catch(e) {}
       document.getElementById('modal-share').classList.remove('active');
-    } catch(e) { /* user cancelled - don't dismiss */ }
+    } catch(e) { /* user cancelled - don\'t dismiss */ }
   } else {
     try {
       await navigator.clipboard.writeText(url);
@@ -6980,7 +7459,8 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 } else {
   document.addEventListener('DOMContentLoaded', initUI);
 }
-</script>
 
+
+</script>
 </body>
 </html>
