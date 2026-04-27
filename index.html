@@ -579,6 +579,30 @@
     border-radius: 0 16px 0 8px;
     letter-spacing: 0.08em;
   }
+  .week-item.locked[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    right: 0;
+    background: #2A1266;
+    color: white;
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    white-space: normal;
+    z-index: 100;
+    max-width: 260px;
+    line-height: 1.5;
+  }
+  .week-item.locked[title]:hover::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    right: 16px;
+    border: 6px solid transparent;
+    border-top-color: #2A1266;
+    z-index: 100;
+  }
   /* ── Home: library pill button ── */
   .btn-library {
     display: block;
@@ -6406,23 +6430,32 @@ function renderHome() {
           ww.days.some(d => !state.completedDays[ww.id + '-' + d.id])) &&
           w.days && w.days.some(d => !state.completedDays[w.id + '-' + d.id]) &&
           !getW().slice(0, getW().indexOf(w)).some(pw => !pw.locked && pw.days && pw.days.some(d => !state.completedDays[pw.id + '-' + d.id]));
+        const bonusUnlocked = !w.isBonus || (
+          getW().find(wk => wk.id === 1)?.days.every(d => state.completedDays['1-' + d.id]) &&
+          getW().find(wk => wk.id === 2)?.days.every(d => state.completedDays['2-' + d.id])
+        );
         const div = document.createElement('div');
         let cls = 'week-item';
-        if (w.locked) cls += ' locked';
+        if (w.locked || (w.isBonus && !bonusUnlocked)) cls += ' locked';
         else if (allDone) cls += ' completed-week';
         else if (isCurrent) cls += ' current-week';
         if (w.isBonus) cls += ' bonus-week';
         div.className = cls;
+        if (w.isBonus && !bonusUnlocked) {
+          div.title = state.lang === 'en' ? 'Complete weeks 1 and 2 to unlock this bonus week' : 'כדי לפתוח את שבוע הבונוס יש לסיים את שבועות 1 ו-2';
+        }
         div.innerHTML = `
-          ${w.isBonus ? `<div class="bonus-badge">BONUS</div>` : ''}
+          ${w.isBonus ? (bonusUnlocked
+            ? `<div class="bonus-badge">BONUS</div>`
+            : `<div class="bonus-badge" style="background:#9B9B9B">🔒 סיים שבועות 1-2</div>`) : ''}
           <svg viewBox="0 0 32 32" width="40" height="40" style="flex-shrink:0"><use href="#n-${w.id}"/></svg>
           <div class="week-info">
             <div class="week-title">${w.title}</div>
-            <div class="week-meta">${w.locked ? ui.comingSoon : ui.daysOf(completedCount, totalDays)}</div>
+            <div class="week-meta">${(w.locked || (w.isBonus && !bonusUnlocked)) ? ui.comingSoon : ui.daysOf(completedCount, totalDays)}</div>
           </div>
           ${allDone ? '<div class="week-check">✓</div>' : '<span class="item-chevron"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B4FD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></span>'}
         `;
-        if (!w.locked) div.onclick = () => { renderWeek(w.id); showScreen('week'); };
+        if (!w.locked && (!w.isBonus || bonusUnlocked)) div.onclick = () => { renderWeek(w.id); showScreen('week'); };
         wl.appendChild(div);
       } catch(weekErr) { console.error('renderHome: week row error', w && w.id, weekErr); }
     });
