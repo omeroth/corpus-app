@@ -151,6 +151,7 @@
     font-weight: 800;
     flex: 1;
     text-align: center;
+    direction: rtl;
     margin: 0 8px;
     color: var(--text);
     direction: inherit;
@@ -1821,6 +1822,25 @@
       <circle cx="48" cy="14" r="1.8" fill="#F59E0B" stroke="#2A1266" stroke-width="0.8"/>
       <circle cx="14" cy="20" r="1.4" fill="#FFCF7A"/>
     </symbol>
+  </defs>
+</svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="n-base">
+      <circle cx="16" cy="16" r="14" fill="#7B4FD4"/>
+      <circle cx="16" cy="16" r="14" fill="none" stroke="#2A1266" stroke-width="1.2" opacity=".25"/>
+      <path d="M7 11 Q 12 6 18 6" stroke="#D4BFFA" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".7"/>
+    </g>
+    <symbol id="n-1" viewBox="0 0 32 32"><use href="#n-base"/><text x="16" y="22" text-anchor="middle" font-family="Heebo, Inter, sans-serif" font-weight="700" font-size="16" fill="#FFFFFF">1</text></symbol>
+    <symbol id="n-2" viewBox="0 0 32 32"><use href="#n-base"/><text x="16" y="22" text-anchor="middle" font-family="Heebo, Inter, sans-serif" font-weight="700" font-size="16" fill="#FFFFFF">2</text></symbol>
+    <symbol id="n-3" viewBox="0 0 32 32"><use href="#n-base"/><text x="16" y="22" text-anchor="middle" font-family="Heebo, Inter, sans-serif" font-weight="700" font-size="16" fill="#FFFFFF">3</text></symbol>
+    <symbol id="n-4" viewBox="0 0 32 32"><use href="#n-base"/><text x="16" y="22" text-anchor="middle" font-family="Heebo, Inter, sans-serif" font-weight="700" font-size="16" fill="#FFFFFF">4</text></symbol>
+    <symbol id="n-5" viewBox="0 0 32 32"><use href="#n-base"/><text x="16" y="22" text-anchor="middle" font-family="Heebo, Inter, sans-serif" font-weight="700" font-size="16" fill="#FFFFFF">5</text></symbol>
+    <symbol id="n-6" viewBox="0 0 32 32"><use href="#n-base"/><text x="16" y="22" text-anchor="middle" font-family="Heebo, Inter, sans-serif" font-weight="700" font-size="16" fill="#FFFFFF">6</text></symbol>
+    <symbol id="n-7" viewBox="0 0 32 32"><use href="#n-base"/><text x="16" y="22" text-anchor="middle" font-family="Heebo, Inter, sans-serif" font-weight="700" font-size="16" fill="#FFFFFF">7</text></symbol>
+    <symbol id="n-8" viewBox="0 0 32 32"><use href="#n-base"/><text x="16" y="22" text-anchor="middle" font-family="Heebo, Inter, sans-serif" font-weight="700" font-size="16" fill="#FFFFFF">8</text></symbol>
+    <symbol id="n-9" viewBox="0 0 32 32"><use href="#n-base"/><text x="16" y="22" text-anchor="middle" font-family="Heebo, Inter, sans-serif" font-weight="700" font-size="16" fill="#FFFFFF">9</text></symbol>
+    <symbol id="n-10" viewBox="0 0 32 32"><use href="#n-base"/><text y="22" text-anchor="middle" font-family="Heebo, Inter, sans-serif" font-weight="700" font-size="16" fill="#FFFFFF"><tspan x="12">1</tspan><tspan x="21">0</tspan></text></symbol>
   </defs>
 </svg>
 <div id="onboarding-overlay" style="display:none">
@@ -5935,7 +5955,7 @@ function renderHome() {
         else if (isCurrent) cls += ' current-week';
         div.className = cls;
         div.innerHTML = `
-          <div class="week-num">${w.id}</div>
+          <svg viewBox="0 0 32 32" width="40" height="40" style="flex-shrink:0"><use href="#n-${w.id}"/></svg>
           <div class="week-info">
             <div class="week-title">${w.title}</div>
             <div class="week-meta">${w.locked ? ui.comingSoon : ui.daysOf(completedCount, totalDays)}</div>
@@ -6006,7 +6026,7 @@ function closeLibraryModal() {
 function renderWeek(weekId) {
   state.currentWeek = weekId;
   const week = getW().find(w => w.id === weekId);
-  document.getElementById('week-screen-title').textContent = week.title;
+  document.getElementById('week-screen-title').innerHTML = `<span style="unicode-bidi:plaintext">${week.title}</span>`;
   const wb = document.getElementById('week-back-btn');
   if (wb) wb.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>';
 
