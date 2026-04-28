@@ -6685,7 +6685,20 @@ function renderReader() {
       optsEl.appendChild(btn);
     });
 
-    document.getElementById('reader-btn-bar').innerHTML = '';
+    const quizBtnBar = document.getElementById('reader-btn-bar');
+    quizBtnBar.innerHTML = '';
+    const isFirstSection = state.currentSection === 0;
+    const isFirstDay = week && week.days && week.days[0] && week.days[0].id === state.currentDay;
+    if (!(isFirstSection && isFirstDay)) {
+      const quizRow = document.createElement('div');
+      quizRow.className = 'reader-nav-row';
+      const quizBackBtn = document.createElement('button');
+      quizBackBtn.className = 'btn-reader-back';
+      quizBackBtn.textContent = state.lang === 'he' ? '→ חזור' : '← Back';
+      quizBackBtn.onclick = readerGoBack;
+      quizRow.appendChild(quizBackBtn);
+      quizBtnBar.appendChild(quizRow);
+    }
   }
   else if (sec.type === 'reflection') {
     card.innerHTML = `
