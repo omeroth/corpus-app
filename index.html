@@ -114,6 +114,34 @@
     font-size: 15px;
     font-weight: 700;
     color: #3D1F7A;
+    position: relative;
+    cursor: default;
+  }
+  .topbar-stat:hover::after {
+    content: attr(title);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2A1266;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 8px;
+    white-space: nowrap;
+    z-index: 100;
+    pointer-events: none;
+  }
+  .topbar-stat:hover::before {
+    content: '';
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom-color: #2A1266;
+    z-index: 100;
   }
   .topbar-stat svg {
     width: 28px;
@@ -160,7 +188,7 @@
   /* ── Scrollable content ── */
   .scroll-content {
     padding: 20px;
-    padding-bottom: 40px;
+    padding-bottom: 80px;
   }
 
   /* ── Home: Quote card ── */
@@ -290,6 +318,433 @@
     flex-direction: row-reverse;
   }
   .thinker-scroll::-webkit-scrollbar { display: none; }
+  .pf-card {
+    background: #FFFFFF;
+    border: 1.5px solid rgba(123,79,212,0.18);
+    border-radius: 20px;
+    padding: 20px;
+    margin: 12px 16px 0;
+    direction: rtl;
+  }
+  .pf-user-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .pf-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #EDE0FF;
+    border: 2px solid #7B4FD4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: #7B4FD4;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .pf-avatar img { width:100%; height:100%; object-fit:cover; }
+  .pf-name {
+    font-size: 17px;
+    font-weight: 800;
+    color: #3D1F7A;
+  }
+  .pf-email {
+    font-size: 12px;
+    color: #7B4FD4;
+    margin-top: 2px;
+  }
+  .pf-since {
+    font-size: 11px;
+    color: #9B7FC9;
+    margin-top: 3px;
+  }
+  .pf-streak-card {
+    text-align: center;
+  }
+  .pf-streak-top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding-left: 45px;
+  }
+  .pf-streak-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pf-flame {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+  }
+  .pf-streak-num {
+    font-size: 56px;
+    font-weight: 900;
+    color: #3D1F7A;
+    line-height: 1;
+  }
+  .pf-streak-label {
+    font-size: 13px;
+    color: #7B4FD4;
+    font-weight: 600;
+    margin: 4px 0 16px;
+  }
+  .pf-week-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 4px;
+  }
+  .pf-week-dot {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .pf-week-circle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #F0EBFF;
+    border: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #9B7FC9;
+  }
+  .pf-week-circle.active {
+    background: #7B4FD4;
+    color: white;
+  }
+  .pf-week-circle.today {
+    border-color: #F59E0B;
+  }
+  .pf-week-day-label {
+    font-size: 9px;
+    color: #9B7FC9;
+    font-weight: 600;
+  }
+  .pf-xp-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .pf-xp-level {
+    font-size: 14px;
+    font-weight: 700;
+    color: #3D1F7A;
+  }
+  .pf-xp-val {
+    font-size: 13px;
+    color: #7B4FD4;
+    font-weight: 700;
+  }
+  .pf-xp-track {
+    background: #F0EBFF;
+    border-radius: 50px;
+    height: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  @keyframes xpGlow {
+    0%, 100% { box-shadow: 0 0 6px rgba(123,79,212,0.4); }
+    50% { box-shadow: 0 0 16px rgba(123,79,212,0.8), 0 0 24px rgba(155,111,228,0.4); }
+  }
+  .pf-xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7B4FD4, #9B6FE4);
+    border-radius: 50px;
+    width: 0%;
+    transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: xpGlow 2s ease-in-out infinite;
+  }
+  .pf-xp-next {
+    font-size: 11px;
+    color: #9B7FC9;
+    font-weight: 600;
+  }
+  .pf-lang-section {
+    margin: 12px 16px 0;
+  }
+  .pf-lang-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #FFFFFF;
+    border: 1.5px solid rgba(123,79,212,0.18);
+    border-radius: 14px;
+    padding: 14px 20px;
+    width: 100%;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #3D1F7A;
+    font-family: inherit;
+    direction: rtl;
+    text-align: right;
+  }
+  .pf-lang-dropdown {
+    background: #FFFFFF;
+    border: 1.5px solid rgba(123,79,212,0.18);
+    border-radius: 14px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  .pf-lang-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 14px 20px;
+    background: none;
+    border: none;
+    border-bottom: 1px solid rgba(123,79,212,0.08);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #3D1F7A;
+    font-family: inherit;
+    direction: rtl;
+    text-align: right;
+  }
+  .pf-lang-option:last-child {
+    border-bottom: none;
+  }
+  .pf-lang-option:hover {
+    background: #F8F5FF;
+  }
+  .pf-lang-check {
+    color: #7B4FD4;
+    font-size: 16px;
+    font-weight: 900;
+  }
+  .pf-logout-btn {
+    display: block;
+    margin: 16px 16px 8px;
+    width: calc(100% - 32px);
+    padding: 14px;
+    background: none;
+    border: 1.5px solid rgba(123,79,212,0.25);
+    border-radius: 50px;
+    color: #9B7FC9;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  /* INTRO CAROUSEL */
+  :root{--ink:#2A1266;--purple:#7B4FD4;--purple-light:#9B6FE4;--lilac:#B995F3;--bg:#F8F5FF;--amber:#F59E0B;--pink:#FF6FA8}
+  /* Rail */
+  #intro-overlay .rail{position:absolute;inset:0;display:flex;width:300%;transition:transform .65s cubic-bezier(.7,0,.2,1);will-change:transform}
+  #intro-overlay .rail.is-still{transition:transform 0s}
+  #intro-overlay .slide{flex:0 0 33.3333%;height:100%;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:24px 28px 32px}
+  /* Top chrome */
+  #intro-overlay .top{position:absolute;top:18px;left:0;right:0;padding:0 22px;display:flex;align-items:center;justify-content:space-between;z-index:30}
+  #intro-overlay .dots{display:flex;gap:7px}
+  #intro-overlay .dot{width:24px;height:5px;border-radius:99px;background:rgba(255,255,255,.28);transition:background .35s,width .35s;cursor:pointer}
+  #intro-overlay .dot.active{width:34px;background:#fff}
+  #intro-overlay .dot.done{background:rgba(255,255,255,.7)}
+  #intro-overlay .skip{font:inherit;font-size:14px;font-weight:500;color:rgba(255,255,255,.85);background:transparent;border:0;padding:6px 10px;cursor:pointer}
+  #intro-overlay .top.dark .dot{background:rgba(42,18,102,.22)}
+  #intro-overlay .top.dark .dot.active{background:var(--ink)}
+  #intro-overlay .top.dark .dot.done{background:rgba(42,18,102,.55)}
+  #intro-overlay .top.dark .skip{color:rgba(42,18,102,.7)}
+  /* Copy & CTA */
+  #intro-overlay .copy{position:relative;z-index:5;padding-bottom:8px}
+  #intro-overlay .copy h1{font-size:30px;font-weight:800;letter-spacing:-.025em;line-height:1.15;margin-bottom:14px}
+  #intro-overlay .copy p{font-size:16.5px;line-height:1.55;font-weight:400;opacity:.92;max-width:34ch}
+  #intro-overlay .cta-row{margin-top:26px;display:flex;align-items:center;gap:14px}
+  #intro-overlay .cta{font:inherit;font-weight:700;font-size:17px;letter-spacing:-.01em;border:0;cursor:pointer;padding:16px 28px;border-radius:18px;display:inline-flex;align-items:center;gap:10px;transition:transform .15s ease,box-shadow .2s ease}
+  #intro-overlay .cta:active{transform:translateY(1px) scale(.99)}
+  #intro-overlay .cta-arrow{display:inline-block;transform:scaleX(-1);font-size:20px;line-height:1}
+  /* Owl */
+  #intro-overlay .stage{position:absolute;left:0;right:0;display:grid;place-items:center;pointer-events:none}
+  #intro-overlay .owl-holder{position:relative;display:grid;place-items:center}
+  #intro-overlay .owl-svg{width:100%;height:auto;display:block}
+  #intro-overlay .owl-svg [data-expr]{display:none}
+  #intro-overlay .owl-svg.owl-neutral [data-expr="neutral"]{display:inline}
+  #intro-overlay .owl-svg.owl-determined [data-expr="determined"]{display:inline}
+  #intro-overlay .owl-svg.owl-admiring [data-expr="admiring"]{display:inline}
+  #intro-overlay .owl-svg.owl-action [data-expr="action"]{display:inline}
+  @keyframes wave{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(14deg)}}
+  #intro-overlay .owl-svg.owl-neutral [data-wave]{animation:wave 1.7s ease-in-out infinite;transform-origin:60px 110px}
+  @keyframes pointBob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+  #intro-overlay .owl-svg.owl-action [data-point]{animation:pointBob 1.1s ease-in-out infinite}
+  @keyframes introBounce{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+  #intro-overlay .owl-svg.owl-admiring [data-bounce]{animation:introBounce 1.4s ease-in-out infinite;transform-origin:100px 120px}
+  /* Per-slide entry */
+  #intro-overlay .slide .anim{opacity:0;transform:translateY(18px);transition:opacity .55s ease,transform .55s ease}
+  #intro-overlay .slide[data-active="true"] .anim{opacity:1;transform:none}
+  #intro-overlay .slide[data-active="true"] .anim.d1{transition-delay:.12s}
+  #intro-overlay .slide[data-active="true"] .anim.d2{transition-delay:.24s}
+  #intro-overlay .slide[data-active="true"] .anim.d3{transition-delay:.36s}
+  #intro-overlay .slide[data-active="true"] .anim.d4{transition-delay:.48s}
+  /* S1 — night sky */
+  #intro-overlay .s1{background:radial-gradient(ellipse at 50% 20%,#3A1E86 0%,transparent 55%),radial-gradient(ellipse at 80% 80%,#5E37A8 0%,transparent 60%),linear-gradient(180deg,#0E0626 0%,#1F0B5C 60%,#2A1266 100%);color:#fff}
+  #intro-overlay .s1 .copy h1{color:#fff}
+  #intro-overlay .s1 .copy p{color:rgba(255,255,255,.78)}
+  #intro-overlay .s1 .cta-primary{background:#fff;color:#2A1266;box-shadow:0 14px 36px -10px rgba(0,0,0,.55),inset 0 -3px 0 rgba(42,18,102,.08)}
+  #intro-overlay .s1 .stage{top:8%;height:54%}
+  #intro-overlay .s1 .owl-holder{width:78%;max-width:340px}
+  #intro-overlay .stars{position:absolute;inset:0;pointer-events:none}
+  #intro-overlay .star{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;box-shadow:0 0 8px 2px rgba(255,255,255,.6)}
+  #intro-overlay .star.lg{width:5px;height:5px;background:#FFE9B0;box-shadow:0 0 12px 3px rgba(255,210,122,.7)}
+  #intro-overlay .star.tiny{width:2px;height:2px;opacity:.6}
+  @keyframes twinkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+  #intro-overlay .star{animation:twinkle 3s ease-in-out infinite}
+  #intro-overlay .moon{position:absolute;top:14%;left:14%;width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF0C7 0%,#F5B544 60%,#C97D1A 100%);box-shadow:0 0 30px 6px rgba(245,181,68,.45),inset -6px -8px 0 rgba(42,18,102,.18)}
+  #intro-overlay .moon::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 70% 70%,rgba(42,18,102,.18) 0,transparent 35%),radial-gradient(circle at 50% 30%,rgba(42,18,102,.15) 0,transparent 25%)}
+  #intro-overlay .constellation{position:absolute;inset:0;pointer-events:none;width:100%;height:100%}
+  #intro-overlay .constellation path{stroke:rgba(255,233,176,.55);stroke-width:1;fill:none;stroke-dasharray:200;stroke-dashoffset:200;transition:stroke-dashoffset 1.6s ease .5s}
+  #intro-overlay .slide[data-active="true"] .constellation path{stroke-dashoffset:0}
+  @keyframes shoot{0%{transform:translate(-30px,-30px) rotate(20deg);opacity:0}10%{opacity:1}70%{opacity:1}100%{transform:translate(360px,180px) rotate(20deg);opacity:0}}
+  #intro-overlay .shoot{position:absolute;top:18%;left:0;width:90px;height:2px;background:linear-gradient(90deg,transparent,#FFE9B0,#fff);border-radius:2px;animation:shoot 5s ease-in 2s infinite}
+  /* S2 — daylight */
+  #intro-overlay .s2{background:radial-gradient(ellipse at 50% 18%,#FFE6F2 0%,transparent 60%),radial-gradient(ellipse at 90% 90%,#E4D2FB 0%,transparent 55%),linear-gradient(180deg,#FBF6FF 0%,#F2E6FF 100%);color:#2A1266}
+  #intro-overlay .s2 .copy h1{color:#2A1266}
+  #intro-overlay .s2 .copy p{color:#5B4191}
+  #intro-overlay .s2 .cta-primary{background:#7B4FD4;color:#fff;box-shadow:0 14px 32px -10px rgba(123,79,212,.55),inset 0 -3px 0 rgba(42,18,102,.25)}
+  #intro-overlay .s2 .stage{top:6%;height:58%}
+  #intro-overlay .s2 .owl-holder{width:62%;max-width:260px;z-index:2}
+  #intro-overlay .rays{position:absolute;top:50%;left:50%;width:340px;height:340px;transform:translate(-50%,-50%);pointer-events:none;z-index:1}
+  #intro-overlay .rays svg{width:100%;height:100%;display:block;animation:introRotate 32s linear infinite}
+  @keyframes introRotate{to{transform:rotate(360deg)}}
+  #intro-overlay .orbit{position:absolute;inset:0;pointer-events:none;z-index:3}
+  #intro-overlay .topic{position:absolute;background:#fff;border:1.5px solid rgba(42,18,102,.1);padding:9px 14px;border-radius:999px;font-size:13.5px;font-weight:700;color:#2A1266;box-shadow:0 8px 22px -8px rgba(42,18,102,.25);display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+  #intro-overlay .topic .dot-color{width:8px;height:8px;border-radius:50%}
+  @keyframes floatA{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+  @keyframes floatB{0%,100%{transform:translateY(0) rotate(2deg)}50%{transform:translateY(-8px) rotate(-2deg)}}
+  #intro-overlay .topic.t1{top:8%;right:6%;animation:floatA 5s ease-in-out infinite}
+  #intro-overlay .topic.t2{top:30%;left:4%;animation:floatB 5.6s ease-in-out infinite}
+  #intro-overlay .topic.t3{top:54%;right:0%;animation:floatA 6.2s ease-in-out infinite reverse}
+  #intro-overlay .topic.t4{top:12%;left:10%;animation:floatB 4.8s ease-in-out infinite .3s}
+  #intro-overlay .spark{position:absolute;font-size:18px;color:#F59E0B;font-weight:900;text-shadow:0 0 10px rgba(245,158,11,.55);pointer-events:none;z-index:2}
+  @keyframes sparkPulse{0%,100%{transform:scale(.7) rotate(0);opacity:.4}50%{transform:scale(1.2) rotate(25deg);opacity:1}}
+  #intro-overlay .spark.sp1{top:22%;right:18%;animation:sparkPulse 2.1s ease-in-out infinite}
+  #intro-overlay .spark.sp2{top:46%;left:18%;animation:sparkPulse 2.4s ease-in-out infinite .4s}
+  #intro-overlay .spark.sp3{bottom:28%;right:24%;animation:sparkPulse 2.6s ease-in-out infinite .8s;color:#FF6FA8}
+  /* S3 — rewards */
+  #intro-overlay .s3{background:radial-gradient(ellipse at 50% 20%,#FFD68C 0%,transparent 50%),radial-gradient(ellipse at 20% 90%,#FF9DC4 0%,transparent 55%),linear-gradient(180deg,#3D1E7A 0%,#2A1266 60%,#1F0B5C 100%);color:#fff}
+  #intro-overlay .s3 .copy h1{color:#fff}
+  #intro-overlay .s3 .copy p{color:rgba(255,255,255,.85)}
+  #intro-overlay .s3 .cta-primary{background:linear-gradient(180deg,#FFB74A 0%,#F59E0B 100%);color:#3A1B00;box-shadow:0 16px 38px -8px rgba(245,158,11,.6),inset 0 -4px 0 rgba(154,82,0,.4),inset 0 2px 0 rgba(255,255,255,.5)}
+  #intro-overlay .s3 .stage{top:7%;height:55%}
+  #intro-overlay .s3 .owl-holder{width:70%;max-width:300px;z-index:3}
+  #intro-overlay .burst{position:absolute;top:46%;left:50%;width:520px;height:520px;transform:translate(-50%,-50%);pointer-events:none;z-index:1;opacity:.55}
+  #intro-overlay .burst svg{width:100%;height:100%;animation:introRotate 28s linear infinite}
+  #intro-overlay .badge{position:absolute;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.97);color:#2A1266;padding:11px 14px 11px 12px;border-radius:18px;font-weight:800;font-size:14.5px;box-shadow:0 14px 32px -10px rgba(0,0,0,.5);z-index:4}
+  #intro-overlay .badge .ico{width:38px;height:38px;display:grid;place-items:center;flex:0 0 38px;filter:drop-shadow(0 2px 4px rgba(42,18,102,.2))}
+  #intro-overlay .badge .ico svg{width:100%;height:100%;display:block}
+  #intro-overlay .badge .num{font-size:17px;letter-spacing:-.01em}
+  #intro-overlay .badge .lbl{font-size:11px;font-weight:600;opacity:.65;letter-spacing:.02em;display:block;line-height:1}
+  #intro-overlay .badge .meta{display:flex;flex-direction:column;gap:1px;align-items:flex-start}
+  #intro-overlay .badge.b-xp{top:18%;right:5%;animation:floatA 4.6s ease-in-out infinite}
+  #intro-overlay .badge.b-streak{top:39%;left:3%;animation:floatB 5s ease-in-out infinite .3s}
+  #intro-overlay .badge.b-pantheon{top:60%;right:8%;animation:floatA 5.4s ease-in-out infinite .6s}
+  @keyframes flicker{0%,100%{transform:scaleY(1) scaleX(1)}50%{transform:scaleY(1.05) scaleX(.97)}}
+  #intro-overlay .badge.b-streak .ico svg .flame-grp{transform-origin:50% 100%;animation:flicker 1.2s ease-in-out infinite;transform-box:fill-box}
+  #intro-overlay .confetti{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+  #intro-overlay .conf{position:absolute;width:8px;height:14px;border-radius:2px;opacity:0;animation:confFall 4s linear infinite}
+  @keyframes confFall{0%{transform:translateY(-30px) rotate(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(120vh) rotate(720deg);opacity:0}}
+  #intro-overlay .steplab{font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;opacity:.55;margin-bottom:14px}
+  #intro-overlay .s1 .steplab,#intro-overlay .s3 .steplab{color:rgba(255,255,255,.7)}
+  #intro-overlay .s2 .steplab{color:#7B4FD4}
+  /* END INTRO CAROUSEL */
+
+  .pantheon-stats {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 20px 8px;
+    font-size: 13px;
+    color: #7B4FD4;
+    font-weight: 600;
+  }
+  .pantheon-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    padding: 12px 16px 24px;
+  }
+  .pantheon-card {
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 3/4;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+  }
+  .pantheon-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(123,79,212,0.25);
+  }
+  .pantheon-card.locked:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  .pantheon-card:active {
+    transform: scale(0.97);
+  }
+  .pantheon-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 20%;
+    display: block;
+  }
+  .pantheon-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(42,18,102,0.88) 0%, rgba(42,18,102,0.4) 30%, transparent 55%);
+  }
+  .pantheon-card-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px;
+    direction: rtl;
+  }
+  .pantheon-card-name {
+    font-size: 12px;
+    font-weight: 800;
+    color: #FFFFFF;
+    line-height: 1.2;
+  }
+  .pantheon-card-era {
+    font-size: 10px;
+    color: #B995F3;
+    margin-top: 2px;
+  }
+  .pantheon-card.locked {
+    cursor: default;
+  }
+  .pantheon-card.locked img {
+    filter: grayscale(100%) brightness(0.4);
+  }
+  .pantheon-card.locked .pantheon-card-name {
+    color: #6B5A8A;
+  }
+  .pantheon-card.locked .pantheon-card-era {
+    color: #4A3A6A;
+  }
+  .pantheon-lock-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 28px;
+    opacity: 0.6;
+  }
   .thinker-card {
     flex-shrink: 0;
     width: 100px;
@@ -369,6 +824,7 @@
     cursor: pointer;
     display: flex;
     align-items: center;
+    position: relative;
     gap: 14px;
     transition: transform 0.15s, box-shadow 0.15s;
   }
@@ -558,7 +1014,20 @@
     border-left: 3px solid var(--accent);
   }
   .week-item.completed-week .week-num { background: rgba(46,125,50,0.12); color: #2E7D32; border-color: rgba(46,125,50,0.3); }
-  .week-check { font-size: 16px; color: #2E7D32; flex-shrink: 0; }
+  .week-check {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #7B4FD4;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 900;
+    border: 2px solid #2A1266;
+    flex-shrink: 0;
+  }
   .week-item.bonus-week {
     background: #FFFBF0;
     border: 1.5px solid #F59E0B;
@@ -602,6 +1071,58 @@
     border: 6px solid transparent;
     border-top-color: #2A1266;
     z-index: 100;
+  }
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    box-sizing: border-box;
+    height: 64px;
+    background: #FFFFFF;
+    border-top: 1.5px solid rgba(123,79,212,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 200;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -2px 16px rgba(123,79,212,0.08);
+  }
+  .bottom-nav-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px 24px;
+    flex: 1;
+  }
+  .bottom-nav-btn.active {
+    background: none;
+  }
+  .bottom-nav-btn svg {
+    transition: opacity 0.2s;
+  }
+  .bottom-nav-btn:not(.active) svg {
+    opacity: 0.35;
+  }
+  .bottom-nav-btn.active svg {
+    opacity: 1;
+  }
+  .bottom-nav-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #7B4FD4;
   }
   /* ── Home: library pill button ── */
   .btn-library {
@@ -668,7 +1189,13 @@
     font-size: 18px;
     flex-shrink: 0;
   }
-  .day-item.completed .day-circle { background: var(--accent); }
+  .day-item.completed .day-circle {
+    background: #7B4FD4;
+    color: white;
+    border: 2px solid #2A1266;
+    font-size: 14px;
+    font-weight: 900;
+  }
   .day-info { flex: 1; }
   .day-title {
     font-family: 'Nunito', sans-serif;
@@ -1859,6 +2386,37 @@
       <path d="M30 14 Q 32 22 30 28" stroke="#D4BFFA" stroke-width="2" fill="none" stroke-linecap="round" opacity=".9"/>
       <circle cx="27" cy="22" r="1.8" fill="#FFFFFF"/>
     </symbol>
+    <symbol id="ic-pantheon" viewBox="0 0 64 64">
+      <rect x="10" y="50" width="44" height="4" rx="1.2" fill="#9B6FE4" stroke="#2A1266" stroke-width="1.6" stroke-linejoin="round"/>
+      <rect x="15" y="24" width="4.5" height="26" fill="#9B6FE4" stroke="#2A1266" stroke-width="1.6" stroke-linejoin="round"/>
+      <rect x="29.75" y="24" width="4.5" height="26" fill="#7B4FD4" stroke="#2A1266" stroke-width="1.6" stroke-linejoin="round"/>
+      <rect x="44.5" y="24" width="4.5" height="26" fill="#5E37A8" stroke="#2A1266" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M16.4 27 L 16.4 47" stroke="#D4BFFA" stroke-width="1" stroke-linecap="round" opacity=".9"/>
+      <path d="M31.15 27 L 31.15 47" stroke="#D4BFFA" stroke-width="1" stroke-linecap="round" opacity=".85"/>
+      <rect x="11" y="20" width="42" height="3.5" rx="1" fill="#7B4FD4" stroke="#2A1266" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M11 20 L 32 9 L 53 20 Z" fill="#9B6FE4" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M32 9 L 53 20 L 38 20 Z" fill="#5E37A8" opacity=".4"/>
+      <path d="M16 18 Q 22 12 30 11" stroke="#D4BFFA" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".95"/>
+    </symbol>
+    <symbol id="ic-home" viewBox="0 0 64 64">
+      <path d="M12 30 L 32 14 L 52 30 L 52 50 Q 52 53 49 53 L 15 53 Q 12 53 12 50 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M32 14 L 52 30 L 52 50 Q 52 53 49 53 L 32 53 Z" fill="#5E37A8" opacity=".45"/>
+      <path d="M9 31 L 32 13 L 55 31" fill="none" stroke="#2A1266" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M16 36 L 16 48" stroke="#D4BFFA" stroke-width="1.2" stroke-linecap="round" opacity=".9"/>
+      <rect x="20" y="34" width="9" height="9" rx="1.2" fill="#D4BFFA" stroke="#2A1266" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M24.5 34 L 24.5 43 M 20 38.5 L 29 38.5" stroke="#2A1266" stroke-width="1"/>
+      <path d="M37 53 L 37 42 Q 37 38 41 38 Q 45 38 45 42 L 45 53 Z" fill="#D4BFFA" stroke="#2A1266" stroke-width="1.4" stroke-linejoin="round"/>
+      <circle cx="43" cy="46.5" r="0.7" fill="#2A1266"/>
+    </symbol>
+    <symbol id="ic-personal" viewBox="0 0 64 64">
+      <path d="M12 52 Q 12 38 32 38 Q 52 38 52 52" fill="#7B4FD4" stroke="#2A1266" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M32 38 Q 52 38 52 52 L 32 52 Z" fill="#5E37A8" opacity=".45"/>
+      <path d="M27 41 Q 32 47 37 41" stroke="#2A1266" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <path d="M16 50 Q 18 43 24 40" stroke="#D4BFFA" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".9"/>
+      <circle cx="32" cy="22" r="9.5" fill="#9B6FE4" stroke="#2A1266" stroke-width="2"/>
+      <path d="M32 12.5 A 9.5 9.5 0 0 1 32 31.5 A 7.5 9.5 0 0 0 32 12.5 Z" fill="#5E37A8" opacity=".35"/>
+      <path d="M25 19 Q 27 14 31 13" stroke="#D4BFFA" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".95"/>
+    </symbol>
     <symbol id="icon-streak" viewBox="0 0 64 64">
       <ellipse cx="32" cy="55" rx="14" ry="3" fill="#2A1266" opacity=".25"/>
       <ellipse cx="32" cy="54" rx="13" ry="2.4" fill="#7B4FD4" stroke="#2A1266" stroke-width="1.6"/>
@@ -1871,8 +2429,288 @@
       <circle cx="48" cy="14" r="1.8" fill="#F59E0B" stroke="#2A1266" stroke-width="0.8"/>
       <circle cx="14" cy="20" r="1.4" fill="#FFCF7A"/>
     </symbol>
+
+    <!-- Content section icons -->
+    <symbol id="ic-idea" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="22" fill="#9B6FE4" stroke="#2A1266" stroke-width="2"/>
+      <path d="M32 10 A 22 22 0 0 1 32 54 A 18 22 0 0 0 32 10 Z" fill="#5E37A8" opacity=".5"/>
+      <circle cx="32" cy="32" r="19.5" fill="none" stroke="#F5B544" stroke-width="1" opacity=".7"/>
+      <path d="M16 22 Q 20 14 28 12" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" opacity=".9"/>
+      <path d="M32 12 L 32 15" stroke="#F5B544" stroke-width="1.6" stroke-linecap="round" opacity=".85"/>
+      <path d="M19 17 L 21 19" stroke="#F5B544" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>
+      <path d="M45 17 L 43 19" stroke="#F5B544" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>
+      <path d="M22 32 Q 22 18 32 18 Q 42 18 42 32 Q 42 38 38 41 L 38 45 L 26 45 L 26 41 Q 22 38 22 32 Z" fill="#5E37A8" stroke="#2A1266" stroke-width="1.6" stroke-linejoin="round" transform="translate(1.5,1.5)"/>
+      <path d="M22 30 Q 22 16 32 16 Q 42 16 42 30 Q 42 36 38 40 L 38 44 Q 38 46 36 46 L 28 46 Q 26 46 26 44 L 26 40 Q 22 36 22 30 Z" fill="#FFD982" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M36 18 Q 42 20 42 30 Q 42 36 38 40 L 38 44 Q 38 46 36 46 L 34 46 Z" fill="#C7892C" opacity=".4"/>
+      <ellipse cx="30" cy="30" rx="6" ry="8" fill="#FFFFFF" opacity=".55"/>
+      <path d="M27 22 Q 28 19 31 18" stroke="#FFFFFF" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".9"/>
+      <path d="M31 30 Q 31 27 33 26" stroke="#FFFFFF" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+      <rect x="26" y="46" width="12" height="2" fill="#2A1266"/>
+      <path d="M27 48 L 37 48 L 36 50.5 L 28 50.5 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M28.5 50.5 L 35.5 50.5 L 34.5 53 L 29.5 53 Z" fill="#5E37A8" stroke="#2A1266" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M48 26 L 49 28 L 51 29 L 49 30 L 48 32 L 47 30 L 45 29 L 47 28 Z" fill="#FFD982" stroke="#C7892C" stroke-width="0.7" stroke-linejoin="round"/>
+      <path d="M14 38 L 14.8 39.5 L 16.2 40.2 L 14.8 40.9 L 14 42.4 L 13.2 40.9 L 11.8 40.2 L 13.2 39.5 Z" fill="#FFD982" stroke="#C7892C" stroke-width="0.6" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="ic-source" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="22" fill="#9B6FE4" stroke="#2A1266" stroke-width="2"/>
+      <path d="M32 10 A 22 22 0 0 1 32 54 A 18 22 0 0 0 32 10 Z" fill="#5E37A8" opacity=".5"/>
+      <circle cx="32" cy="32" r="19.5" fill="none" stroke="#F5B544" stroke-width="1" opacity=".7"/>
+      <path d="M16 22 Q 20 14 28 12" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" opacity=".9"/>
+      <rect x="14" y="19" width="34" height="28" rx="2" fill="#5E37A8" stroke="#2A1266" stroke-width="1.6" transform="rotate(-5 31 33)"/>
+      <path d="M14 20 L 32 20 L 32 48 L 14 48 Q 12 48 12 46 L 12 22 Q 12 20 14 20 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M32 20 L 50 20 Q 52 20 52 22 L 52 46 Q 52 48 50 48 L 32 48 Z" fill="#5E37A8" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M32 20 L 32 48" stroke="#2A1266" stroke-width="1.4"/>
+      <path d="M15 22 L 31 22 L 31 46 L 15 46 Z" fill="#FBF8FF" stroke="#2A1266" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M33 22 L 49 22 L 49 46 L 33 46 Z" fill="#FBF8FF" stroke="#2A1266" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M17 26 L 29 26" stroke="#2A1266" stroke-width="1" stroke-linecap="round" opacity=".75"/>
+      <rect x="17" y="29.5" width="10" height="2" rx="0.6" fill="#F5B544" stroke="#C7892C" stroke-width="0.5"/>
+      <path d="M17 35 L 29 35" stroke="#2A1266" stroke-width="1" stroke-linecap="round" opacity=".75"/>
+      <path d="M17 39 L 26 39" stroke="#2A1266" stroke-width="1" stroke-linecap="round" opacity=".55"/>
+      <path d="M17 43 L 29 43" stroke="#2A1266" stroke-width="1" stroke-linecap="round" opacity=".55"/>
+      <path d="M35 26 L 47 26" stroke="#2A1266" stroke-width="1" stroke-linecap="round" opacity=".75"/>
+      <path d="M35 30 L 47 30" stroke="#2A1266" stroke-width="1" stroke-linecap="round" opacity=".75"/>
+      <path d="M35 34 L 44 34" stroke="#2A1266" stroke-width="1" stroke-linecap="round" opacity=".55"/>
+      <path d="M35 38 L 47 38" stroke="#2A1266" stroke-width="1" stroke-linecap="round" opacity=".55"/>
+      <path d="M35 42 L 42 42" stroke="#2A1266" stroke-width="1" stroke-linecap="round" opacity=".55"/>
+      <path d="M42 20 L 42 32 L 44 30 L 46 32 L 46 20 Z" fill="#F5B544" stroke="#2A1266" stroke-width="1.4" stroke-linejoin="round"/>
+      <path d="M43 22 L 43 28" stroke="#FFD982" stroke-width="1" stroke-linecap="round"/>
+      <path d="M16 23.5 Q 19 22.5 23 22.5" stroke="#D4BFFA" stroke-width="1" fill="none" stroke-linecap="round" opacity=".9"/>
+      <path d="M52 18 L 53 20 L 55 21 L 53 22 L 52 24 L 51 22 L 49 21 L 51 20 Z" fill="#FFD982" stroke="#C7892C" stroke-width="0.7" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="ic-explain" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="22" fill="#9B6FE4" stroke="#2A1266" stroke-width="2"/>
+      <path d="M32 10 A 22 22 0 0 1 32 54 A 18 22 0 0 0 32 10 Z" fill="#5E37A8" opacity=".5"/>
+      <circle cx="32" cy="32" r="19.5" fill="none" stroke="#F5B544" stroke-width="1" opacity=".7"/>
+      <path d="M16 22 Q 20 14 28 12" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" opacity=".9"/>
+      <rect x="14" y="17" width="22" height="28" rx="2" fill="#5E37A8" stroke="#2A1266" stroke-width="1.6" transform="rotate(-7 25 31)"/>
+      <rect x="15" y="16" width="22" height="28" rx="2" fill="#D4BFFA" stroke="#2A1266" stroke-width="1.6"/>
+      <rect x="15" y="16" width="22" height="4.5" fill="#7B4FD4"/>
+      <path d="M15 20.5 L 37 20.5" stroke="#2A1266" stroke-width="1"/>
+      <circle cx="18" cy="18.3" r="0.9" fill="#F5B544"/>
+      <circle cx="20.6" cy="18.3" r="0.9" fill="#FFD982" opacity=".7"/>
+      <path d="M18 25 L 34 25" stroke="#2A1266" stroke-width="1.2" stroke-linecap="round" opacity=".65"/>
+      <path d="M18 28.5 L 31 28.5" stroke="#2A1266" stroke-width="1.2" stroke-linecap="round" opacity=".5"/>
+      <rect x="17.5" y="31.5" width="17" height="2.6" rx="1" fill="#F5B544" stroke="#C7892C" stroke-width="0.6"/>
+      <path d="M18 37.5 L 32 37.5" stroke="#2A1266" stroke-width="1.2" stroke-linecap="round" opacity=".5"/>
+      <path d="M18 41 L 27 41" stroke="#2A1266" stroke-width="1.2" stroke-linecap="round" opacity=".4"/>
+      <circle cx="40" cy="32" r="8.5" fill="#2A1266" opacity=".22" transform="translate(1.4,1.6)"/>
+      <circle cx="40" cy="32" r="8.5" fill="#F5B544" stroke="#2A1266" stroke-width="1.8"/>
+      <circle cx="40" cy="32" r="6" fill="#D4BFFA" stroke="#2A1266" stroke-width="1.4"/>
+      <circle cx="40" cy="32" r="6" fill="none" stroke="#FFD982" stroke-width="0.8" opacity=".7"/>
+      <path d="M36 29 Q 37 27 39 27" stroke="#FFFFFF" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".95"/>
+      <path d="M46 38 L 50.5 43" stroke="#2A1266" stroke-width="3.6" stroke-linecap="round"/>
+      <path d="M46 38 L 50.5 43" stroke="#7B4FD4" stroke-width="2" stroke-linecap="round"/>
+      <path d="M47 38.5 L 49.5 41.5" stroke="#F5B544" stroke-width="1.2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="ic-depth" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="22" fill="#9B6FE4" stroke="#2A1266" stroke-width="2"/>
+      <path d="M32 10 A 22 22 0 0 1 32 54 A 18 22 0 0 0 32 10 Z" fill="#5E37A8" opacity=".5"/>
+      <circle cx="32" cy="32" r="19.5" fill="none" stroke="#D4BFFA" stroke-width="1" opacity=".6"/>
+      <circle cx="32" cy="32" r="19.5" fill="none" stroke="#F5B544" stroke-width="1" stroke-dasharray="2 6" opacity=".75"/>
+      <path d="M16 22 Q 20 14 28 12" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" opacity=".9"/>
+      <circle cx="32" cy="45" r="7" fill="#7B4FD4" opacity=".4"/>
+      <path d="M14 18 Q 32 12 50 18 L 50 24 Q 32 30 14 24 Z" fill="#EAD8FF" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M18 19 Q 24 16 30 16" stroke="#FFFFFF" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".95"/>
+      <path d="M17 26 Q 32 33 47 26 L 47 32 Q 32 38 17 32 Z" fill="#A87FE8" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M21 27 Q 26 28.5 30 28" stroke="#FFFFFF" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".7"/>
+      <path d="M19 33 Q 32 39 45 33 L 45 39 Q 32 44 19 39 Z" fill="#5E37A8" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M23 34 Q 28 35 32 34.5" stroke="#FFFFFF" stroke-width="1" fill="none" stroke-linecap="round" opacity=".5"/>
+      <path d="M22 39 Q 32 43 42 39 L 42 43 Q 32 46.5 22 43 Z" fill="#2A1266" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+      <circle cx="32" cy="47" r="4.5" fill="#1A0A4A" stroke="#2A1266" stroke-width="1.6"/>
+      <circle cx="32" cy="47" r="2.6" fill="#5E37A8"/>
+      <circle cx="32" cy="47" r="1.4" fill="#F5B544"/>
+      <circle cx="31.4" cy="46.4" r=".7" fill="#FFFFFF" opacity=".9"/>
+      <path d="M22 49 L 22.6 50 L 23.6 50.5 L 22.6 51 L 22 52 L 21.4 51 L 20.4 50.5 L 21.4 50 Z" fill="#FFD982" stroke="#C7892C" stroke-width="0.5" stroke-linejoin="round"/>
+      <path d="M42 49 L 42.6 50 L 43.6 50.5 L 42.6 51 L 42 52 L 41.4 51 L 40.4 50.5 L 41.4 50 Z" fill="#FFD982" stroke="#C7892C" stroke-width="0.5" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="ic-question" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="22" fill="#9B6FE4" stroke="#2A1266" stroke-width="2"/>
+      <path d="M32 10 A 22 22 0 0 1 32 54 A 18 22 0 0 0 32 10 Z" fill="#5E37A8" opacity=".5"/>
+      <circle cx="32" cy="32" r="19.5" fill="none" stroke="#F5B544" stroke-width="1" opacity=".7"/>
+      <path d="M16 22 Q 20 14 28 12" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" opacity=".9"/>
+      <path d="M19 18 L 43 18 Q 46 18 46 21 L 46 39 Q 46 42 43 42 L 28 42 L 22 47 L 23 42 L 19 42 Q 16 42 16 39 L 16 21 Q 16 18 19 18 Z" fill="#5E37A8" stroke="#2A1266" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M22 16 L 46 16 Q 49 16 49 19 L 49 37 Q 49 40 46 40 L 31 40 L 25 45 L 26 40 L 22 40 Q 19 40 19 37 L 19 19 Q 19 16 22 16 Z" fill="#FFFFFF" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M23 21 Q 24 19 27 19" stroke="#9B6FE4" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".7"/>
+      <path d="M28 24 Q 28 19 34 19 Q 40 19 40 24 Q 40 28 36 30 Q 34 31 34 33" fill="none" stroke="#F5B544" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M28 24 Q 28 19 34 19 Q 40 19 40 24 Q 40 28 36 30 Q 34 31 34 33" fill="none" stroke="#FFD982" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="34" cy="37" r="2" fill="#F5B544" stroke="#2A1266" stroke-width="1.2"/>
+      <path d="M50 22 L 51 24 L 53 25 L 51 26 L 50 28 L 49 26 L 47 25 L 49 24 Z" fill="#FFD982" stroke="#C7892C" stroke-width="0.7" stroke-linejoin="round"/>
+      <path d="M14 42 L 15 43.5 L 16.5 44 L 15 44.5 L 14 46 L 13 44.5 L 11.5 44 L 13 43.5 Z" fill="#FFD982" stroke="#C7892C" stroke-width="0.6" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="ic-summary" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="22" fill="#F5B544" stroke="#2A1266" stroke-width="2"/>
+      <path d="M32 10 A 22 22 0 0 1 32 54 A 18 22 0 0 0 32 10 Z" fill="#C7892C" opacity=".55"/>
+      <circle cx="32" cy="32" r="19.5" fill="none" stroke="#7B4FD4" stroke-width="1" opacity=".55"/>
+      <path d="M16 22 Q 20 14 28 12" stroke="#FFFFFF" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".95"/>
+      <rect x="15" y="19" width="30" height="30" rx="2.6" fill="#5E37A8" stroke="#2A1266" stroke-width="1.6" transform="rotate(-5 30 34)"/>
+      <rect x="17" y="17" width="28" height="30" rx="2.4" fill="#9B6FE4" stroke="#2A1266" stroke-width="1.8"/>
+      <rect x="17" y="17" width="28" height="5" fill="#7B4FD4"/>
+      <path d="M17 22 L 45 22" stroke="#2A1266" stroke-width="1.2"/>
+      <circle cx="21" cy="19.5" r="0.9" fill="#F5B544"/>
+      <circle cx="24" cy="19.5" r="0.9" fill="#FFD982" opacity=".7"/>
+      <rect x="20" y="25" width="4" height="4" rx="0.8" fill="#F5B544" stroke="#2A1266" stroke-width="1.2"/>
+      <path d="M20.5 27 L 22 28.5 L 23.8 25.7" stroke="#2A1266" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M26 27 L 41 27" stroke="#FFFFFF" stroke-width="1.4" stroke-linecap="round"/>
+      <rect x="20" y="31" width="4" height="4" rx="0.8" fill="#F5B544" stroke="#2A1266" stroke-width="1.2"/>
+      <path d="M20.5 33 L 22 34.5 L 23.8 31.7" stroke="#2A1266" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M26 33 L 38 33" stroke="#FFFFFF" stroke-width="1.4" stroke-linecap="round"/>
+      <rect x="20" y="37" width="4" height="4" rx="0.8" fill="#F5B544" stroke="#2A1266" stroke-width="1.2"/>
+      <path d="M20.5 39 L 22 40.5 L 23.8 37.7" stroke="#2A1266" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M26 39 L 36 39" stroke="#FFFFFF" stroke-width="1.4" stroke-linecap="round"/>
+      <circle cx="43" cy="45" r="7" fill="#F5B544" stroke="#2A1266" stroke-width="1.6"/>
+      <circle cx="43" cy="45" r="5" fill="none" stroke="#C7892C" stroke-width="0.8" stroke-dasharray="1.5 1"/>
+      <path d="M43 41 L 44 44 L 47 44.4 L 44.6 46.2 L 45.4 49 L 43 47.4 L 40.6 49 L 41.4 46.2 L 39 44.4 L 42 44 Z" fill="#FFFFFF" stroke="#2A1266" stroke-width="1" stroke-linejoin="round"/>
+    </symbol>
   </defs>
 </svg>
+
+<template id="owl-template">
+<svg class="owl-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Sophos">
+  <defs>
+    <clipPath id="bodyClip">
+      <path d="M100 22 C 40 22, 22 74, 30 130 C 36 176, 66 192, 100 192 C 134 192, 164 176, 170 130 C 178 74, 160 22, 100 22 Z"/>
+    </clipPath>
+  </defs>
+  <ellipse cx="100" cy="194" rx="54" ry="4" fill="#2A1B4A" opacity="0.18"/>
+  <g id="silhouette">
+    <path d="M100 18 C 36 18, 18 74, 26 132 C 34 180, 66 194, 100 194 C 134 194, 166 180, 174 132 C 182 74, 164 18, 100 18 Z" fill="#2A1266"/>
+    <path d="M100 22 C 40 22, 22 76, 30 132 C 38 178, 66 190, 100 190 C 134 190, 162 178, 170 132 C 178 76, 160 22, 100 22 Z" fill="#7B4FD4"/>
+    <g clip-path="url(#bodyClip)">
+      <path d="M100 22 Q 60 26 40 80 Q 26 140 50 186 Q 36 150 38 100 Q 52 42 100 22 Z" fill="#5E37A8" opacity=".55"/>
+      <ellipse cx="78" cy="38" rx="22" ry="10" fill="#B995F3" opacity=".75"/>
+    </g>
+  </g>
+  <g>
+    <path d="M58 26 Q54 -2 78 14 Q82 30 80 44 Q68 36 58 26 Z" fill="#5E37A8" stroke="#2A1266" stroke-width="2.4" stroke-linejoin="round"/>
+    <path d="M142 26 Q146 -2 122 14 Q118 30 120 44 Q132 36 142 26 Z" fill="#5E37A8" stroke="#2A1266" stroke-width="2.4" stroke-linejoin="round"/>
+    <path d="M64 22 Q62 10 74 16" stroke="#4A2A8F" stroke-width="1.4" fill="none" opacity=".8" stroke-linecap="round"/>
+    <path d="M136 22 Q138 10 126 16" stroke="#4A2A8F" stroke-width="1.4" fill="none" opacity=".8" stroke-linecap="round"/>
+  </g>
+  <g clip-path="url(#bodyClip)">
+    <ellipse cx="100" cy="136" rx="40" ry="46" fill="#FFFFFF"/>
+    <path d="M100 94 Q 132 100 138 136 Q 136 174 112 188 Q 128 170 128 140 Q 124 104 100 94 Z" fill="#EADCFB"/>
+    <g stroke="#C7AFEC" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".9">
+      <path d="M84 118 Q90 124 96 118"/><path d="M104 118 Q110 124 116 118"/>
+      <path d="M80 132 Q88 138 96 132"/><path d="M104 132 Q112 138 120 132"/>
+      <path d="M82 148 Q90 154 98 148"/><path d="M102 148 Q110 154 118 148"/>
+      <path d="M86 164 Q94 170 100 164"/><path d="M100 164 Q106 170 114 164"/>
+    </g>
+  </g>
+  <g id="feet">
+    <g transform="translate(80,188)">
+      <path d="M-13 -5 Q-15 6 -10 7 Q-6 5 -6 0 Z M-4 -6 Q-6 7 -2 7 Q2 6 0 0 Z M5 -5 Q2 6 6 7 Q11 6 9 0 Z" fill="#F59E0B" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+    </g>
+    <g transform="translate(120,188)">
+      <path d="M-13 -5 Q-15 6 -10 7 Q-6 5 -6 0 Z M-4 -6 Q-6 7 -2 7 Q2 6 0 0 Z M5 -5 Q2 6 6 7 Q11 6 9 0 Z" fill="#F59E0B" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+    </g>
+  </g>
+  <!-- WINGS -->
+  <g data-expr="neutral">
+    <g data-wave>
+      <path d="M50 112 Q 22 86 26 50 Q 46 44 62 74 Q 70 96 66 122 Q 58 124 50 112 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M50 112 Q 38 90 36 62 Q 44 58 52 76 Q 62 96 62 118 Q 56 120 50 112 Z" fill="#5E37A8" opacity=".65"/>
+      <path d="M36 78 Q48 82 58 100" stroke="#2A1266" stroke-width="1.2" fill="none" opacity=".6"/>
+      <path d="M32 62 Q44 68 56 90" stroke="#2A1266" stroke-width="1.2" fill="none" opacity=".6"/>
+    </g>
+    <g>
+      <path d="M150 112 Q 170 116 168 146 Q 160 170 136 170 Q 130 154 132 132 Q 136 112 150 112 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M150 112 Q 164 116 162 142 Q 158 162 142 164 Q 138 152 140 134 Q 144 114 150 112 Z" fill="#5E37A8" opacity=".55"/>
+    </g>
+  </g>
+  <g data-expr="determined">
+    <g>
+      <path d="M58 112 Q 38 94 44 62 Q 64 56 74 84 Q 80 102 74 122 Q 66 122 58 112 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M58 112 Q 46 94 48 68 Q 62 62 70 86 Q 76 102 70 118 Q 64 118 58 112 Z" fill="#5E37A8" opacity=".55"/>
+      <rect x="46" y="56" width="20" height="7" rx="3" fill="#F59E0B" stroke="#2A1266" stroke-width="1.6"/>
+    </g>
+    <g>
+      <path d="M142 112 Q 162 94 156 62 Q 136 56 126 84 Q 120 102 126 122 Q 134 122 142 112 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M142 112 Q 154 94 152 68 Q 138 62 130 86 Q 124 102 130 118 Q 136 118 142 112 Z" fill="#5E37A8" opacity=".55"/>
+      <rect x="134" y="56" width="20" height="7" rx="3" fill="#F59E0B" stroke="#2A1266" stroke-width="1.6"/>
+    </g>
+    <g>
+      <rect x="56" y="45" width="88" height="6" rx="3" fill="#4A2A8F" stroke="#2A1266" stroke-width="1.6"/>
+      <rect x="42" y="38" width="10" height="20" rx="2" fill="#2A1266"/>
+      <rect x="148" y="38" width="10" height="20" rx="2" fill="#2A1266"/>
+    </g>
+  </g>
+  <g data-expr="admiring">
+    <g data-bounce>
+      <g>
+        <path d="M62 106 Q 44 88 48 66 Q 68 60 78 86 Q 82 104 78 122 Q 68 122 62 106 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+        <path d="M62 106 Q 52 90 54 72 Q 66 68 74 88 Q 78 104 74 118 Q 68 118 62 106 Z" fill="#5E37A8" opacity=".55"/>
+      </g>
+      <g>
+        <path d="M138 106 Q 156 88 152 66 Q 132 60 122 86 Q 118 104 122 122 Q 132 122 138 106 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+        <path d="M138 106 Q 148 90 146 72 Q 134 68 126 88 Q 122 104 126 118 Q 132 118 138 106 Z" fill="#5E37A8" opacity=".55"/>
+      </g>
+    </g>
+  </g>
+  <g data-expr="action">
+    <g>
+      <path d="M54 112 Q 36 116 40 146 Q 48 172 68 170 Q 74 154 72 134 Q 66 114 54 112 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M54 112 Q 42 116 44 140 Q 52 162 66 164 Q 70 150 68 134 Q 64 116 54 112 Z" fill="#5E37A8" opacity=".55"/>
+    </g>
+    <g data-point>
+      <path d="M146 114 Q 172 124 174 158 Q 170 180 154 184 Q 144 176 142 156 Q 138 134 146 114 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M146 114 Q 166 124 168 154 Q 164 174 154 178 Q 148 168 148 154 Q 144 134 146 114 Z" fill="#5E37A8" opacity=".55"/>
+      <circle cx="162" cy="186" r="7" fill="#7B4FD4" stroke="#2A1266" stroke-width="2"/>
+    </g>
+  </g>
+  <!-- EYE PATCH -->
+  <g id="eyepatch">
+    <path d="M60 78 C 60 54, 140 54, 140 78 C 140 100, 122 108, 100 104 C 78 108, 60 100, 60 78 Z" fill="#4A2A8F" stroke="#2A1266" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M66 66 Q100 58 134 66" stroke="#6E3BD3" stroke-width="1.6" fill="none" opacity=".7"/>
+  </g>
+  <g id="eyeWhites">
+    <circle cx="76" cy="82" r="15" fill="#FFFFFF" stroke="#2A1266" stroke-width="2"/>
+    <circle cx="124" cy="82" r="15" fill="#FFFFFF" stroke="#2A1266" stroke-width="2"/>
+  </g>
+  <!-- EYES per expression -->
+  <g data-expr="neutral">
+    <circle cx="76" cy="82" r="9" fill="#2A1266"/><circle cx="124" cy="82" r="9" fill="#2A1266"/>
+    <circle cx="73" cy="79" r="3" fill="#FFFFFF"/><circle cx="79" cy="85" r="1.4" fill="#FFFFFF"/>
+    <circle cx="121" cy="79" r="3" fill="#FFFFFF"/><circle cx="127" cy="85" r="1.4" fill="#FFFFFF"/>
+    <ellipse cx="54" cy="106" rx="7" ry="3.5" fill="#FF9BC7" opacity=".7"/>
+    <ellipse cx="146" cy="106" rx="7" ry="3.5" fill="#FF9BC7" opacity=".7"/>
+  </g>
+  <g data-expr="determined">
+    <circle cx="76" cy="82" r="9" fill="#2A1266"/><circle cx="124" cy="82" r="9" fill="#2A1266"/>
+    <circle cx="73" cy="79" r="3" fill="#FFFFFF"/><circle cx="121" cy="79" r="3" fill="#FFFFFF"/>
+    <ellipse cx="54" cy="106" rx="8" ry="4" fill="#FF6FA8" opacity=".8"/>
+    <ellipse cx="146" cy="106" rx="8" ry="4" fill="#FF6FA8" opacity=".8"/>
+  </g>
+  <g data-expr="admiring">
+    <g transform="translate(76,82)">
+      <path d="M0 7 C -10 -1, -12 -13, -4 -13 C -1 -13, 0 -10, 0 -8 C 0 -10, 1 -13, 4 -13 C 12 -13, 10 -1, 0 7 Z" fill="#FF6FA8" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M-4 -10 Q-2 -7 0 -5" stroke="#FFFFFF" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".9"/>
+    </g>
+    <g transform="translate(124,82)">
+      <path d="M0 7 C -10 -1, -12 -13, -4 -13 C -1 -13, 0 -10, 0 -8 C 0 -10, 1 -13, 4 -13 C 12 -13, 10 -1, 0 7 Z" fill="#FF6FA8" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M-4 -10 Q-2 -7 0 -5" stroke="#FFFFFF" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".9"/>
+    </g>
+    <ellipse cx="54" cy="106" rx="8" ry="4" fill="#FF6FA8" opacity=".75"/>
+    <ellipse cx="146" cy="106" rx="8" ry="4" fill="#FF6FA8" opacity=".75"/>
+  </g>
+  <g data-expr="action">
+    <rect x="58" y="68" width="36" height="30" fill="#4A2A8F"/>
+    <rect x="106" y="68" width="36" height="30" fill="#4A2A8F"/>
+    <path d="M62 86 Q76 72 90 86" stroke="#2A1266" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M110 86 Q124 72 138 86" stroke="#2A1266" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M86 74 l1 2 l2 1 l-2 1 l-1 2 l-1 -2 l-2 -1 l2 -1 Z" fill="#F59E0B"/>
+    <path d="M114 74 l1 2 l2 1 l-2 1 l-1 2 l-1 -2 l-2 -1 l2 -1 Z" fill="#F59E0B"/>
+    <ellipse cx="52" cy="106" rx="9" ry="4.5" fill="#FF6FA8" opacity=".8"/>
+    <ellipse cx="148" cy="106" rx="9" ry="4.5" fill="#FF6FA8" opacity=".8"/>
+  </g>
+  <!-- BEAK -->
+  <g id="beak">
+    <path d="M100 80 L 90 94 Q 100 104 110 94 Z" fill="#F59E0B" stroke="#2A1266" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M92 94 Q100 100 108 94" stroke="#7A4408" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <circle cx="97" cy="86" r="0.9" fill="#2A1266"/><circle cx="103" cy="86" r="0.9" fill="#2A1266"/>
+  </g>
+</svg>
+</template>
+
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <g id="n-base">
@@ -2056,27 +2894,22 @@
   ═══════════════════════════════ -->
   <div id="screen-home" class="screen active">
     <div class="topbar">
-      <button class="logout-btn" id="logout-btn" onclick="authLogout()" title="Sign Out">⎋</button>
+      <div style="width:36px"></div>
       <div class="topbar-logo-wrap">
         <div class="topbar-logo">Corpus</div>
       </div>
-      <button class="settings-btn" onclick="toggleSettings()">
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B4FD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="12" cy="12" r="3"></circle>
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-  </svg>
-</button>
+      <div style="width:36px"></div>
     </div>
     <div class="stats-subheader">
-      <span class="topbar-stat">
+      <span class="topbar-stat" title="Streak">
         <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-streak"/></svg>
         <span id="stat-streak">0</span>
       </span>
-      <span class="topbar-stat">
+      <span class="topbar-stat" title="XP">
         <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-xp"/></svg>
         <span id="stat-xp">0</span>
       </span>
-      <span class="topbar-stat">
+      <span class="topbar-stat" title="Level">
         <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-level"/></svg>
         <span id="stat-level">1</span>
       </span>
@@ -2099,7 +2932,6 @@
       <div id="weeks-list"></div>
 
       <!-- Library button -->
-      <button class="btn-library" onclick="showLibraryModal()">הוגים שצברת 🏛</button>
     </div>
   </div>
 
@@ -2111,6 +2943,112 @@
       <button class="modal-btn" onclick="closeLibraryModal()" id="library-close-btn"></button>
     </div>
   </div>
+
+  <!-- ═══════════════════════════════
+       PANTHEON SCREEN
+  ═══════════════════════════════ -->
+  <div id="screen-pantheon" class="screen">
+    <div class="topbar">
+      <div style="width:36px"></div>
+      <div class="topbar-logo-wrap">
+        <div class="topbar-logo">Corpus</div>
+      </div>
+      <div style="width:36px"></div>
+    </div>
+    <div class="stats-subheader">
+      <span class="topbar-stat" title="Streak">
+        <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-streak"/></svg>
+        <span id="pantheon-streak">0</span>
+      </span>
+      <span class="topbar-stat" title="XP">
+        <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-xp"/></svg>
+        <span id="pantheon-xp">0</span>
+      </span>
+      <span class="topbar-stat" title="Level">
+        <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-level"/></svg>
+        <span id="pantheon-level">1</span>
+      </span>
+    </div>
+    <div class="scroll-content" style="padding-bottom:80px">
+      <div class="pantheon-stats" id="pantheon-stats"></div>
+      <div class="pantheon-grid" id="pantheon-grid"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════
+       PROFILE SCREEN
+  ═══════════════════════════════ -->
+  <div id="screen-profile" class="screen">
+    <div class="topbar">
+      <div style="width:36px"></div>
+      <div class="topbar-logo-wrap">
+        <div class="topbar-logo">Corpus</div>
+      </div>
+      <div style="width:36px"></div>
+    </div>
+  <div class="scroll-content" style="padding-bottom:80px">
+
+    <!-- Profile Card -->
+    <div class="pf-card pf-user-card">
+      <div class="pf-avatar" id="pf-avatar"></div>
+      <div>
+        <div class="pf-name" id="pf-name">טוען...</div>
+        <div class="pf-email" id="pf-email"></div>
+        <div class="pf-since" id="pf-since"></div>
+      </div>
+    </div>
+
+    <!-- XP Card -->
+    <div class="pf-card pf-xp-card">
+      <div class="pf-xp-top">
+        <span class="pf-xp-level" id="pf-level-name"></span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="pf-xp-val" id="pf-xp-val"></span>
+          <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-xp"/></svg>
+        </div>
+      </div>
+      <div class="pf-xp-track">
+        <div class="pf-xp-fill" id="pf-xp-fill"></div>
+      </div>
+      <div class="pf-xp-next" id="pf-xp-next"></div>
+    </div>
+
+    <!-- Streak Card -->
+    <div class="pf-card pf-streak-card">
+      <div class="pf-streak-top">
+        <div class="pf-streak-group">
+          <svg class="pf-flame" viewBox="0 0 64 64" width="52" height="52"><use href="#icon-streak"/></svg>
+          <span class="pf-streak-num" id="pf-streak-num">0</span>
+        </div>
+      </div>
+      <div class="pf-streak-label" id="pf-streak-label">ימים ברצף</div>
+      <div class="pf-week-row" id="pf-week-row"></div>
+    </div>
+
+    <!-- Language Selector -->
+    <div class="pf-lang-section">
+      <button class="pf-lang-btn" id="pf-lang-btn" onclick="toggleLangDropdown()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B4FD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span id="pf-lang-label">שפה</span>
+        <span id="pf-lang-current" style="margin-right:auto;color:#9B7FC9;font-size:12px"></span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9B7FC9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="pf-lang-dropdown" id="pf-lang-dropdown" style="display:none">
+        <button class="pf-lang-option" id="pf-lang-he" onclick="setAppLang('he')">
+          <span>עברית</span>
+          <span class="pf-lang-check" id="pf-lang-check-he">✓</span>
+        </button>
+        <button class="pf-lang-option" id="pf-lang-en" onclick="setAppLang('en')">
+          <span>English</span>
+          <span class="pf-lang-check" id="pf-lang-check-en"></span>
+        </button>
+      </div>
+    </div>
+
+    <button class="pf-logout-btn" onclick="authLogout()" id="pf-logout-btn">התנתק</button>
+
+  </div>
+</div>
 
   <!-- ═══════════════════════════════
        WEEK SCREEN
@@ -2299,11 +3237,15 @@ async function loadProgressFromSupabase() {
 function showAuthScreen() {
   document.getElementById('screen-auth').classList.add('active');
   document.getElementById('app').style.display = 'none';
+  const nav = document.getElementById('bottom-nav');
+  if (nav) nav.style.display = 'none';
 }
 
 function hideAuthScreen() {
   document.getElementById('screen-auth').classList.remove('active');
   document.getElementById('app').style.display = '';
+  const nav = document.getElementById('bottom-nav');
+  if (nav) nav.style.display = 'flex';
 }
 
 let authMode = 'signin';
@@ -2384,11 +3326,98 @@ async function authWithApple() {
   await sb.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: 'https://omeroth.github.io/corpus-app/' } });
 }
 
+let _introCarouselInited = false;
+
+function showIntro() {
+  if (localStorage.getItem('corpus_intro_done')) return;
+  const overlay = document.getElementById('intro-overlay');
+  // Inject owls once
+  const tpl = document.getElementById('owl-template');
+  if (tpl) {
+    const expressions = ['owl-neutral', 'owl-admiring', 'owl-action'];
+    overlay.querySelectorAll('[data-slot]').forEach((slot, i) => {
+      if (slot.children.length === 0) {
+        const node = tpl.content.cloneNode(true);
+        const svg = node.querySelector('svg');
+        svg.classList.add(expressions[i]);
+        slot.appendChild(node);
+      }
+    });
+  }
+  if (!_introCarouselInited) {
+    _initIntroCarousel();
+    _introCarouselInited = true;
+  }
+  overlay.style.display = 'block';
+}
+
+function closeIntro() {
+  localStorage.setItem('corpus_intro_done', '1');
+  document.getElementById('intro-overlay').style.display = 'none';
+}
+
+function _initIntroCarousel() {
+  const overlay = document.getElementById('intro-overlay');
+  const rail = overlay.querySelector('#intro-rail');
+  const topBar = overlay.querySelector('#intro-top');
+  const skipBtn = overlay.querySelector('#intro-skip');
+  const slides = rail.querySelectorAll('.slide');
+  const dots = overlay.querySelectorAll('.dot[data-i]');
+  let idx = 0;
+
+  function goTo(n) {
+    idx = Math.max(0, Math.min(slides.length - 1, n));
+    rail.style.transform = 'translateX(' + (idx * (100/3)) + '%)';
+    dots.forEach((d, i) => {
+      d.classList.toggle('active', i === idx);
+      d.classList.toggle('done', i < idx);
+    });
+    slides.forEach((s, i) => { s.dataset.active = (i === idx) ? 'true' : 'false'; });
+    topBar.classList.toggle('dark', idx === 1);
+  }
+
+  overlay.querySelectorAll('[data-action="next"]').forEach(b =>
+    b.addEventListener('click', () => goTo(idx + 1)));
+  overlay.querySelectorAll('[data-action="finish"]').forEach(b =>
+    b.addEventListener('click', closeIntro));
+  skipBtn.addEventListener('click', closeIntro);
+  dots.forEach(d => d.addEventListener('click', () => goTo(+d.dataset.i)));
+
+  // Swipe (RTL: swipe left = next)
+  let startX = null;
+  rail.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive: true});
+  rail.addEventListener('touchend', e => {
+    if (startX === null) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 50) { if (dx < 0) goTo(idx + 1); else goTo(idx - 1); }
+    startX = null;
+  });
+
+  // Confetti for slide 3
+  const confettiEl = overlay.querySelector('#intro-confetti');
+  if (confettiEl) {
+    const colors = ['#F59E0B','#FF6FA8','#9B6FE4','#FFFFFF','#FFD27A','#B995F3'];
+    for (let i = 0; i < 26; i++) {
+      const el = document.createElement('div');
+      el.className = 'conf';
+      el.style.left = (Math.random()*100) + '%';
+      el.style.background = colors[i % colors.length];
+      el.style.animationDelay = (Math.random()*4) + 's';
+      el.style.animationDuration = (3 + Math.random()*2.5) + 's';
+      el.style.transform = 'rotate(' + (Math.random()*360) + 'deg)';
+      el.style.width = (5 + Math.random()*6) + 'px';
+      el.style.height = (10 + Math.random()*8) + 'px';
+      confettiEl.appendChild(el);
+    }
+  }
+
+  goTo(0);
+}
+
 async function authLogout() {
   console.log('Logout clicked');
-  if (currentUser) {
-    try { await sb.auth.signOut(); } catch(e) { console.error('[Auth] signOut error:', e); }
-  }
+  // Don't await - just fire and forget
+  try { sb.auth.signOut(); } catch(e) {}
   currentUser = null;
   appStarted = false;
   const lang = state.lang;
@@ -2396,9 +3425,13 @@ async function authLogout() {
     xp: 0, streak: 0, dailyStreak: 0, correctInRow: 0,
     completedDays: {}, unlockedThinkers: [],
     lang, currentScreen: 'home', currentWeek: null, currentDay: null,
-    currentSection: 0, readerXP: 0, quizAnswered: false, quizCorrect: false
+    currentSection: 0, readerXP: 0, quizAnswered: false, quizCorrect: false,
+    userEmail: '', userMeta: {}, activeDays: {}, todayCompleted: 0,
+    activeDates: [], lastActiveDate: '', streakHistory: {}
   };
   try { localStorage.removeItem('corpus_state'); } catch(e) {}
+  try { localStorage.removeItem('corpus_onboarding_done'); } catch(e) {}
+  try { localStorage.removeItem('corpus_intro_done'); } catch(e) {}
   showAuthScreen();
 }
 
@@ -5996,7 +7029,7 @@ const UI = {
     streak:'רצף', level:'רמה', thinkers:'הוגים שנאספו', weeks:'שבועות',
     comingSoon:'בקרוב', maxLevel:'רמה מקסימלית!', backArrow:'→',
     nextBtn:'המשך ←', finishBtn:'סיום היום ✓',
-    labels:{ idea:'💡 רעיון', source:'📜 מקור', explanation:'🔍 הסבר', depth:'🧠 עומק', quiz:'❓ שאלת הבנה', reflection:'✦ לחשוב' },
+    labels:{ idea:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-idea"/></svg> רעיון', source:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-source"/></svg> מקור', explanation:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-explain"/></svg> הסבר', depth:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-depth"/></svg> עומק', quiz:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-question"/></svg> שאלת הבנה', reflection:'✦ לחשוב' },
     reflectPrompt:'קח רגע עם השאלות האלה:',
     quizLetters:['א','ב','ג'],
     streakBonus:(n) => `🔥 רצף ${n} נכונות! +10 XP בונוס!`,
@@ -6020,7 +7053,7 @@ const UI = {
     streak:'Streak', level:'Level', thinkers:'Collected Thinkers', weeks:'Weeks',
     comingSoon:'Coming soon', maxLevel:'Maximum level!', backArrow:'←',
     nextBtn:'Continue →', finishBtn:'Complete Day ✓',
-    labels:{ idea:'💡 Idea', source:'📜 Source', explanation:'🔍 Explanation', depth:'🧠 Deeper', quiz:'❓ Comprehension', reflection:'✦ Reflect' },
+    labels:{ idea:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-idea"/></svg> Idea', source:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-source"/></svg> Source', explanation:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-explain"/></svg> Explanation', depth:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-depth"/></svg> Deeper', quiz:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-question"/></svg> Comprehension', reflection:'✦ Reflect' },
     reflectPrompt:'Take a moment with these questions:',
     quizLetters:['A','B','C'],
     streakBonus:(n) => `🔥 ${n}-streak! +10 XP bonus!`,
@@ -6179,6 +7212,13 @@ let state = {
   readerXP: 0,
   quizAnswered: false,
   quizCorrect: false,
+  activeDays: {},
+  todayCompleted: 0,
+  userEmail: '',
+  userMeta: {},
+  lastActiveDate: '',
+  activeDates: [],
+  streakHistory: {},
 };
 
 function saveStateLocal() {
@@ -6230,11 +7270,15 @@ function showScreen(id) {
   document.getElementById('screen-' + id).classList.add('active');
   state.currentScreen = id;
   window.scrollTo(0, 0);
+  const hideNavScreens = ['reader', 'week'];
+  const nav = document.getElementById('bottom-nav');
+  if (nav) nav.style.display = hideNavScreens.includes(id) ? 'none' : 'flex';
 }
 
 function goHome() {
   renderHome();
   showScreen('home');
+  updateBottomNav('home');
 }
 
 function goBack() {
@@ -6296,6 +7340,14 @@ document.addEventListener('click', function(e) {
   }
 });
 
+document.addEventListener('click', function(e) {
+  const dd = document.getElementById('pf-lang-dropdown');
+  const btn = document.getElementById('pf-lang-btn');
+  if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) {
+    dd.style.display = 'none';
+  }
+});
+
 function toggleLang() {
   state.lang = state.lang === 'he' ? 'en' : 'he';
   saveState();
@@ -6315,6 +7367,12 @@ function toggleLang() {
   } else {
     renderHome();
   }
+}
+
+function isWeekCompleted(weekId) {
+  const week = getW().find(w => w.id === weekId);
+  if (!week) return false;
+  return week.days.every(d => state.completedDays[weekId + '-' + d.id]);
 }
 
 function renderHome() {
@@ -6369,9 +7427,14 @@ function renderHome() {
     const heroSub = document.getElementById('hero-continue-sub');
     const heroBtn = document.getElementById('btn-hero-continue');
     if (nextDay) {
-      heroTitle.textContent = state.lang === 'he' ? 'המשך מאיפה שעצרת' : 'Continue where you left off';
+      const noneCompleted = Object.keys(state.completedDays).length === 0;
+      heroTitle.textContent = noneCompleted
+        ? (state.lang === 'he' ? 'מוכן להתחיל?' : 'Ready to start?')
+        : (state.lang === 'he' ? 'המשך מאיפה שעצרת' : 'Continue where you left off');
       heroSub.textContent = ui.dayLabel(nextDay.id, nextDay.thinker) + ' · ' + nextWeek.title;
-      heroBtn.textContent = state.lang === 'he' ? 'המשך ←' : 'Continue →';
+      heroBtn.textContent = noneCompleted
+        ? (state.lang === 'he' ? 'התחל ←' : 'Start →')
+        : (state.lang === 'he' ? 'המשך ←' : 'Continue →');
       heroBtn.style.display = '';
       heroBtn._nextWeek = nextWeek.id;
       heroBtn._nextDay = nextDay.id;
@@ -6430,39 +7493,41 @@ function renderHome() {
           ww.days.some(d => !state.completedDays[ww.id + '-' + d.id])) &&
           w.days && w.days.some(d => !state.completedDays[w.id + '-' + d.id]) &&
           !getW().slice(0, getW().indexOf(w)).some(pw => !pw.locked && pw.days && pw.days.some(d => !state.completedDays[pw.id + '-' + d.id]));
-        const bonusUnlocked = !w.isBonus || (
-          getW().find(wk => wk.id === 1)?.days.every(d => state.completedDays['1-' + d.id]) &&
-          getW().find(wk => wk.id === 2)?.days.every(d => state.completedDays['2-' + d.id])
-        );
+        const weekLockMap = {
+          1: true,
+          2: isWeekCompleted(1),
+          3: isWeekCompleted(2),
+          'bonus1': isWeekCompleted(2),
+          4: isWeekCompleted(3),
+        };
+        const isUnlocked = weekLockMap[w.id] !== undefined ? weekLockMap[w.id] : true;
         const div = document.createElement('div');
         let cls = 'week-item';
-        if (w.locked || (w.isBonus && !bonusUnlocked)) cls += ' locked';
+        if (w.locked || !isUnlocked) cls += ' locked';
         else if (allDone) cls += ' completed-week';
         else if (isCurrent) cls += ' current-week';
         if (w.isBonus) cls += ' bonus-week';
         div.className = cls;
-        if (w.isBonus && !bonusUnlocked) {
-          div.title = state.lang === 'en' ? 'Complete weeks 1 and 2 to unlock this bonus week' : 'כדי לפתוח את שבוע הבונוס יש לסיים את שבועות 1 ו-2';
+        if (!isUnlocked) {
+          div.title = state.lang === 'en' ? 'Complete the previous week to unlock' : 'סיים את השבוע הקודם כדי לפתוח';
         }
         div.innerHTML = `
-          ${w.isBonus ? (bonusUnlocked
-            ? `<div class="bonus-badge">BONUS</div>`
-            : `<div class="bonus-badge" style="background:#9B9B9B">🔒 סיים שבועות 1-2</div>`) : ''}
+          ${w.isBonus ? `<div class="bonus-badge">BONUS</div>` : ''}
+          ${!isUnlocked ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0.35;font-size:28px">🔒</div>` : ''}
           <svg viewBox="0 0 32 32" width="40" height="40" style="flex-shrink:0"><use href="#n-${w.id}"/></svg>
           <div class="week-info">
-            <div class="week-title">${w.title}</div>
-            <div class="week-meta">${(w.locked || (w.isBonus && !bonusUnlocked)) ? ui.comingSoon : ui.daysOf(completedCount, totalDays)}</div>
+            <div class="week-title">${state.lang === 'en' ? (w.titleEn || w.title) : w.title}</div>
+            <div class="week-meta">${(w.locked || !isUnlocked) ? ui.comingSoon : ui.daysOf(completedCount, totalDays)}</div>
           </div>
           ${allDone ? '<div class="week-check">✓</div>' : '<span class="item-chevron"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B4FD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></span>'}
         `;
-        if (!w.locked && (!w.isBonus || bonusUnlocked)) div.onclick = () => { renderWeek(w.id); showScreen('week'); };
+        if (!w.locked && isUnlocked) div.onclick = () => { renderWeek(w.id); showScreen('week'); };
         wl.appendChild(div);
       } catch(weekErr) { console.error('renderHome: week row error', w && w.id, weekErr); }
     });
   } catch(e) { console.error('renderHome: weeks list error', e); }
 
   populateCarousel();
-  requestAnimationFrame(startOnboarding);
 }
 
 function populateCarousel() {
@@ -6722,7 +7787,7 @@ function renderReader() {
     else if (pct >= 0.5) { msgClass = 'good';    msgText = 'כל הכבוד! הבנת את הרעיון המרכזי 👍'; }
     else                 { msgClass = 'ok';       msgText = 'כדאי לחזור על הנושא - תמשיך להתאמן! 💪'; }
     card.innerHTML = `
-      <div class="section-type-label">📊 סיכום</div>
+      <div class="section-type-label"><svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-summary"/></svg> סיכום</div>
       <div class="quiz-summary">
         <div class="quiz-summary-stars">${stars}</div>
         <div class="quiz-summary-score">${correct}/${total}</div>
@@ -6927,7 +7992,32 @@ function finishDay() {
 
   state.xp += state.readerXP;
   state.completedDays[key] = true;
-  state.dailyStreak++;
+  state.todayCompleted = (state.todayCompleted || 0) + 1;
+  const todayIndex = new Date().getDay();
+  if (!state.activeDays) state.activeDays = {};
+  state.activeDays[todayIndex] = true;
+  const today = new Date().toISOString().split('T')[0];
+  if (state.lastActiveDate !== today) {
+    state.lastActiveDate = today;
+    if (!state.activeDates) state.activeDates = [];
+    if (!state.activeDates.includes(today)) {
+      state.activeDates.push(today);
+    }
+    let streak = 0;
+    let checkDate = new Date();
+    while (true) {
+      const dateStr = checkDate.toISOString().split('T')[0];
+      if (state.activeDates.includes(dateStr)) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    state.dailyStreak = streak;
+    state.streakHistory = state.streakHistory || {};
+    state.streakHistory[today] = state.dailyStreak;
+  }
 
   // Unlock thinker
   const thinkerId = day.thinkerId;
@@ -7282,6 +8372,11 @@ window.addEventListener('resize', () => {
 
 function startOnboarding() {
   if (localStorage.getItem('corpus_onboarding_done')) return;
+  if (state.currentScreen !== 'home') return;
+  const homeScreen = document.getElementById('screen-home');
+  if (!homeScreen || !homeScreen.classList.contains('active')) return;
+  const authScreen = document.getElementById('screen-auth');
+  if (authScreen && authScreen.classList.contains('active')) return;
   const overlay = document.getElementById('onboarding-overlay');
   overlay.style.display = 'block';
   requestAnimationFrame(() => {
@@ -7440,8 +8535,15 @@ async function enterApp(user) {
       posthog.capture('user_logged_in', { method });
     } catch(e) {}
   }
+  if (user) {
+    state.userEmail = user.email || '';
+    state.userMeta = user.user_metadata || {};
+    saveStateLocal();
+  }
   hideAuthScreen();
   renderHome();
+  showIntro();
+  setTimeout(startOnboarding, 500);
 }
 
 function initUI() {
@@ -7503,6 +8605,195 @@ function initUI() {
 
 // Safari may defer DOMContentLoaded relative to script execution order.
 // Use readyState check with DOMContentLoaded fallback to guarantee initUI runs.
+function updateBottomNav(active) {
+  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('bnav-' + active);
+  if (btn) btn.classList.add('active');
+}
+
+function renderPantheon() {
+  const thinkers = getT();
+  const unlocked = state.unlockedThinkers || [];
+  const thinkerIds = thinkers.map(t => t.id);
+  const validUnlocked = unlocked.filter(id => thinkerIds.includes(id));
+  const unlockedCount = validUnlocked.length;
+  const totalCount = thinkers.length;
+
+  const statsEl = document.getElementById('pantheon-stats');
+  if (statsEl) {
+    statsEl.innerHTML = state.lang === 'en'
+      ? `<span>${unlockedCount} of ${totalCount} thinkers unlocked</span>`
+      : `<span>${unlockedCount} מתוך ${totalCount} הוגים נפתחו</span>`;
+  }
+
+  const grid = document.getElementById('pantheon-grid');
+  if (!grid) return;
+
+  grid.innerHTML = thinkers.map(t => {
+    const isUnlocked = validUnlocked.includes(t.id);
+    return `
+      <div class="pantheon-card ${isUnlocked ? '' : 'locked'}" onclick="${isUnlocked ? `openThinkerModal('${t.id}')` : ''}">
+        <img src="${t.image}" alt="${t.name}" loading="lazy">
+        <div class="pantheon-card-overlay"></div>
+        ${!isUnlocked ? '<div class="pantheon-lock-icon">🔒</div>' : ''}
+        <div class="pantheon-card-info">
+          <div class="pantheon-card-name">${state.lang === 'en' ? (t.nameEn || t.name) : t.name}</div>
+          <div class="pantheon-card-era">${t.era || ''}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function showPantheonScreen() {
+  updateBottomNav('pantheon');
+  renderPantheon();
+  showScreen('pantheon');
+  document.getElementById('pantheon-streak').textContent = state.dailyStreak;
+  document.getElementById('pantheon-xp').textContent = state.xp;
+  document.getElementById('pantheon-level').textContent = getLevel(state.xp);
+}
+
+function renderProfile() {
+  const isEn = state.lang === 'en';
+
+  const user = currentUser;
+  const fullName = user?.user_metadata?.full_name || user?.user_metadata?.name || (isEn ? 'Philosopher' : 'פילוסוף');
+  const email = user?.email || '';
+  const avatarUrl = user?.user_metadata?.avatar_url || '';
+  const createdAt = user?.created_at || '';
+  const joinYear = createdAt ? new Date(createdAt).getFullYear() : '';
+
+  const avatarEl = document.getElementById('pf-avatar');
+  if (avatarEl) {
+    avatarEl.innerHTML = avatarUrl
+      ? `<img src="${avatarUrl}" alt="${fullName}">`
+      : (fullName ? fullName[0].toUpperCase() : '?');
+  }
+  const nameEl = document.getElementById('pf-name');
+  if (nameEl) nameEl.textContent = fullName;
+  const emailEl = document.getElementById('pf-email');
+  if (emailEl) emailEl.textContent = email;
+  const sinceEl = document.getElementById('pf-since');
+  if (sinceEl && joinYear) sinceEl.textContent = (isEn ? 'Member since ' : 'חבר מאז ') + joinYear;
+
+  // Streak
+  const streakEl = document.getElementById('pf-streak-num');
+  if (streakEl) streakEl.textContent = state.dailyStreak || 0;
+  const streakLabel = document.getElementById('pf-streak-label');
+  if (streakLabel) streakLabel.textContent = isEn ? 'Day Streak' : 'ימים ברצף';
+
+  // Week dots
+  const dayLabels = ['א','ב','ג','ד','ה','ו','ש'];
+  const dayLabelsEn = ['S','M','T','W','T','F','S'];
+  const labels = isEn ? dayLabelsEn : dayLabels;
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  const activeDates = state.activeDates || [];
+  const weekRow = document.getElementById('pf-week-row');
+  if (weekRow) {
+    weekRow.innerHTML = labels.map((d, i) => {
+      const dayDate = new Date(today);
+      dayDate.setDate(today.getDate() - today.getDay() + i);
+      const dateStr = dayDate.toISOString().split('T')[0];
+      const isActive = activeDates.includes(dateStr);
+      const isToday = i === today.getDay();
+      const streakOnDay = state.streakHistory?.[dateStr];
+      let cls = 'pf-week-circle';
+      if (isActive) cls += ' active';
+      if (isToday) cls += ' today';
+      const tapAttr = streakOnDay ? `onclick="showStreakTooltip(this, ${streakOnDay}, '${dateStr}')"` : '';
+      return `<div class="pf-week-dot">
+        <div class="${cls}" ${tapAttr}>${isActive ? '✓' : d}</div>
+        <div class="pf-week-day-label">${d}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // XP + Level
+  const xp = state.xp || 0;
+  const levels = getLvls();
+  const levelIndex = getLevel(xp) - 1;
+  const currentLevel = levels[levelIndex];
+  const nextLevel = levels[levelIndex + 1];
+
+  const levelNameEl = document.getElementById('pf-level-name');
+  const xpValEl = document.getElementById('pf-xp-val');
+  const xpFill = document.getElementById('pf-xp-fill');
+  const xpNext = document.getElementById('pf-xp-next');
+
+  if (currentLevel) {
+    if (levelNameEl) levelNameEl.textContent = isEn ? (currentLevel.nameEn || currentLevel.name) : currentLevel.name;
+    if (xpValEl) xpValEl.textContent = xp + ' XP';
+    if (nextLevel) {
+      const progress = Math.min(100, ((xp - currentLevel.min) / (nextLevel.min - currentLevel.min)) * 100);
+      setTimeout(() => { if (xpFill) xpFill.style.width = progress + '%'; }, 150);
+      if (xpNext) xpNext.textContent = (isEn ? 'Next: ' : 'הבא: ') + (isEn ? (nextLevel.nameEn || nextLevel.name) : nextLevel.name) + ' — עוד ' + (nextLevel.min - xp) + ' XP';
+    } else {
+      if (xpFill) xpFill.style.width = '100%';
+      if (xpNext) xpNext.textContent = isEn ? 'Maximum level!' : 'רמה מקסימלית!';
+    }
+  }
+
+  const logoutBtn = document.getElementById('pf-logout-btn');
+  if (logoutBtn) logoutBtn.textContent = isEn ? 'Sign Out' : 'התנתק';
+
+  updateLangUI();
+}
+
+function showStreakTooltip(el, streakVal, dateStr) {
+  document.querySelectorAll('.pf-week-circle').forEach(c => {
+    c.style.borderColor = '';
+    c.style.borderWidth = '';
+  });
+  el.style.borderColor = '#F59E0B';
+  el.style.borderWidth = '3px';
+  const streakEl = document.getElementById('pf-streak-num');
+  if (streakEl) {
+    streakEl.textContent = streakVal;
+  }
+  setTimeout(() => {
+    el.style.borderColor = '';
+    el.style.borderWidth = '';
+    if (streakEl) {
+      streakEl.textContent = state.dailyStreak || 0;
+    }
+  }, 3000);
+}
+
+function toggleLangDropdown() {
+  const dd = document.getElementById('pf-lang-dropdown');
+  if (dd) dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+
+function setAppLang(lang) {
+  state.lang = lang;
+  saveStateLocal();
+  document.getElementById('pf-lang-dropdown').style.display = 'none';
+  updateLangUI();
+  renderHome();
+  renderProfile();
+  renderPantheon();
+}
+
+function updateLangUI() {
+  const isEn = state.lang === 'en';
+  const langBtn = document.getElementById('pf-lang-label');
+  if (langBtn) langBtn.textContent = isEn ? 'Language' : 'שפה';
+  const current = document.getElementById('pf-lang-current');
+  if (current) current.textContent = isEn ? 'English' : 'עברית';
+  const checkHe = document.getElementById('pf-lang-check-he');
+  const checkEn = document.getElementById('pf-lang-check-en');
+  if (checkHe) checkHe.textContent = isEn ? '' : '✓';
+  if (checkEn) checkEn.textContent = isEn ? '✓' : '';
+}
+
+function showProfileScreen() {
+  updateBottomNav('profile');
+  showScreen('profile');
+  renderProfile();
+}
+
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
   initUI();
 } else {
@@ -7511,5 +8802,166 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 
 
 </script>
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="bottom-nav-btn" id="bnav-pantheon" onclick="showPantheonScreen()">
+    <svg viewBox="0 0 64 64" width="34" height="34"><use href="#ic-pantheon"/></svg>
+  </button>
+  <button class="bottom-nav-btn active" id="bnav-home" onclick="goHome()">
+    <svg viewBox="0 0 64 64" width="34" height="34"><use href="#ic-home"/></svg>
+  </button>
+  <button class="bottom-nav-btn" id="bnav-profile" onclick="showProfileScreen()">
+    <svg viewBox="0 0 64 64" width="34" height="34"><use href="#ic-personal"/></svg>
+  </button>
+</nav>
+
+<!-- INTRO CAROUSEL -->
+<div id="intro-overlay" style="display:none;position:fixed;inset:0;z-index:1100;direction:rtl;background:#0E0626;overflow:hidden">
+
+  <!-- Top chrome: progress dots + skip -->
+  <div class="top" id="intro-top">
+    <div class="dots">
+      <div class="dot active" data-i="0"></div>
+      <div class="dot" data-i="1"></div>
+      <div class="dot" data-i="2"></div>
+    </div>
+    <button class="skip" id="intro-skip">דלג</button>
+  </div>
+
+  <!-- Carousel rail -->
+  <div class="rail" id="intro-rail">
+
+    <!-- SLIDE 1 — COSMOS / WELCOME -->
+    <section class="slide s1" data-active="true">
+      <div class="moon anim d1"></div>
+      <div class="shoot"></div>
+      <div class="stars" aria-hidden="true">
+        <div class="star tiny"  style="top:10%;right:24%"></div>
+        <div class="star"       style="top:14%;right:48%;animation-delay:.4s"></div>
+        <div class="star tiny"  style="top:8%;left:30%;animation-delay:1.1s"></div>
+        <div class="star lg"    style="top:22%;left:12%;animation-delay:.7s"></div>
+        <div class="star"       style="top:28%;right:8%;animation-delay:1.5s"></div>
+        <div class="star tiny"  style="top:34%;right:36%;animation-delay:.2s"></div>
+        <div class="star tiny"  style="top:44%;left:8%;animation-delay:.9s"></div>
+        <div class="star"       style="top:46%;right:16%;animation-delay:1.7s"></div>
+        <div class="star tiny"  style="top:6%;right:8%;animation-delay:.5s"></div>
+        <div class="star tiny"  style="top:38%;left:26%;animation-delay:1.3s"></div>
+        <div class="star lg"    style="top:54%;left:18%;animation-delay:.6s"></div>
+      </div>
+      <svg class="constellation" viewBox="0 0 480 900" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M 380 90 L 250 130 L 110 200 L 60 320"/>
+        <path d="M 250 130 L 350 240 L 420 250"/>
+        <path d="M 110 200 L 170 360 L 60 320"/>
+      </svg>
+      <div class="stage anim d1">
+        <div class="owl-holder floating" data-slot="0"></div>
+      </div>
+      <div class="copy">
+        <div class="steplab anim">שלב 1 מתוך 3</div>
+        <h1 class="anim d1">ברוך הבא ל־Corpus</h1>
+        <p class="anim d2">אפליקציה ללמידת הרעיונות הגדולים של ההיסטוריה — רעיון אחד ביום, מההוגים הגדולים של כל הזמנים.</p>
+        <div class="cta-row anim d3">
+          <button class="cta cta-primary" data-action="next">בוא נתחיל <span class="cta-arrow">→</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 2 — DAYLIGHT / TOPIC ORBIT -->
+    <section class="slide s2">
+      <div class="rays anim d1" aria-hidden="true">
+        <svg viewBox="-100 -100 200 200">
+          <g fill="#FFD27A" opacity=".55">
+            <polygon points="0,-95 -6,-50 6,-50"/>
+            <polygon points="0,-95 -6,-50 6,-50" transform="rotate(30)"/>
+            <polygon points="0,-95 -6,-50 6,-50" transform="rotate(60)"/>
+            <polygon points="0,-95 -6,-50 6,-50" transform="rotate(90)"/>
+            <polygon points="0,-95 -6,-50 6,-50" transform="rotate(120)"/>
+            <polygon points="0,-95 -6,-50 6,-50" transform="rotate(150)"/>
+            <polygon points="0,-95 -6,-50 6,-50" transform="rotate(180)"/>
+            <polygon points="0,-95 -6,-50 6,-50" transform="rotate(210)"/>
+            <polygon points="0,-95 -6,-50 6,-50" transform="rotate(240)"/>
+            <polygon points="0,-95 -6,-50 6,-50" transform="rotate(270)"/>
+            <polygon points="0,-95 -6,-50 6,-50" transform="rotate(300)"/>
+            <polygon points="0,-95 -6,-50 6,-50" transform="rotate(330)"/>
+          </g>
+          <circle r="62" fill="#FFE6A6" opacity=".5"/>
+          <circle r="42" fill="#FFF0C2" opacity=".7"/>
+        </svg>
+      </div>
+      <div class="orbit">
+        <div class="topic t1 anim d1"><span class="dot-color" style="background:#7B4FD4"></span>מוסר</div>
+        <div class="topic t2 anim d2"><span class="dot-color" style="background:#FF6FA8"></span>מציאות</div>
+        <div class="topic t3 anim d3"><span class="dot-color" style="background:#F59E0B"></span>ספק</div>
+        <div class="topic t4 anim d4"><span class="dot-color" style="background:#9B6FE4"></span>חירות</div>
+      </div>
+      <div class="spark sp1">✦</div>
+      <div class="spark sp2">✧</div>
+      <div class="spark sp3">✦</div>
+      <div class="stage anim d1">
+        <div class="owl-holder floating" data-slot="1"></div>
+      </div>
+      <div class="copy">
+        <div class="steplab anim">שלב 2 מתוך 3</div>
+        <h1 class="anim d1">איך זה עובד?</h1>
+        <p class="anim d2">בכל פרק רעיון גדול אחר — מוסר, מציאות, ספק ועוד. בכל יום תובנה קצרה עם טקסט, מקור, ושאלות קלילות.</p>
+        <div class="cta-row anim d3">
+          <button class="cta cta-primary" data-action="next">הבא <span class="cta-arrow">→</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 3 — REWARDS / CELEBRATION -->
+    <section class="slide s3">
+      <div class="burst anim d1" aria-hidden="true">
+        <svg viewBox="-260 -260 520 520">
+          <g fill="#FFD27A">
+            <polygon points="0,-250 -14,-90 14,-90"/>
+            <polygon points="0,-250 -14,-90 14,-90" transform="rotate(22.5)"/>
+            <polygon points="0,-250 -14,-90 14,-90" transform="rotate(45)"/>
+            <polygon points="0,-250 -14,-90 14,-90" transform="rotate(67.5)"/>
+            <polygon points="0,-250 -14,-90 14,-90" transform="rotate(90)"/>
+            <polygon points="0,-250 -14,-90 14,-90" transform="rotate(112.5)"/>
+            <polygon points="0,-250 -14,-90 14,-90" transform="rotate(135)"/>
+            <polygon points="0,-250 -14,-90 14,-90" transform="rotate(157.5)"/>
+            <polygon points="0,-250 -14,-90 14,-90" transform="rotate(180)"/>
+            <polygon points="0,-250 -14,-90 14,-90" transform="rotate(202.5)"/>
+            <polygon points="0,-250 -14,-90 14,-90" transform="rotate(225)"/>
+            <polygon points="0,-250 -14,-90 14,-90" transform="rotate(247.5)"/>
+            <polygon points="0,-250 -14,-90 14,-90" transform="rotate(270)"/>
+            <polygon points="0,-250 -14,-90 14,-90" transform="rotate(292.5)"/>
+            <polygon points="0,-250 -14,-90 14,-90" transform="rotate(315)"/>
+            <polygon points="0,-250 -14,-90 14,-90" transform="rotate(337.5)"/>
+          </g>
+        </svg>
+      </div>
+      <div class="confetti" id="intro-confetti"></div>
+      <div class="badge b-xp anim d2">
+        <div class="ico"><svg viewBox="0 0 64 64"><use href="#icon-xp"/></svg></div>
+        <div class="meta"><span class="num">+50 XP</span><span class="lbl">לכל לומדה</span></div>
+      </div>
+      <div class="badge b-streak anim d3">
+        <div class="ico"><svg viewBox="0 0 64 64"><use href="#icon-streak"/></svg></div>
+        <div class="meta"><span class="num">7 ימים</span><span class="lbl">streak יומי</span></div>
+      </div>
+      <div class="badge b-pantheon anim d4">
+        <div class="ico"><svg viewBox="0 0 64 64"><use href="#ic-pantheon"/></svg></div>
+        <div class="meta"><span class="num">פנתיאון</span><span class="lbl">פתח הוגים</span></div>
+      </div>
+      <div class="stage anim d1">
+        <div class="owl-holder floating" data-slot="2"></div>
+      </div>
+      <div class="copy">
+        <div class="steplab anim">שלב 3 מתוך 3</div>
+        <h1 class="anim d1">למד, צבור, התקדם</h1>
+        <p class="anim d2">כל לומדה שתסיים מעניקה לך XP, בונה streak יומי, ופותחת הוגים חדשים בפנתיאון שלך.</p>
+        <div class="cta-row anim d3">
+          <button class="cta cta-primary" data-action="finish">בואו נתחיל <span class="cta-arrow">→</span></button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+</div>
+
 </body>
 </html>

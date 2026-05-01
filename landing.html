@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Corpus — רעיונות גדולים. חמש דקות ביום.</title>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Heebo', sans-serif;
+      background: #F8F5FF;
+      color: #2A1266;
+      direction: rtl;
+      text-align: right;
+    }
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(160deg, #3D1F7A 0%, #2A1266 100%);
+      padding: 64px 24px 56px;
+      text-align: center;
+    }
+    .hero-logo {
+      font-size: 18px;
+      font-weight: 900;
+      color: #B995F3;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+    .hero-title {
+      font-size: 36px;
+      font-weight: 900;
+      color: #FFFFFF;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+    .hero-title span {
+      color: #F59E0B;
+    }
+    .hero-subtitle {
+      font-size: 16px;
+      color: #B995F3;
+      line-height: 1.7;
+      margin-bottom: 40px;
+      max-width: 360px;
+      margin-right: auto;
+      margin-left: auto;
+    }
+    .cta-btn {
+      display: inline-block;
+      background: #F59E0B;
+      color: #2A1266;
+      font-size: 17px;
+      font-weight: 900;
+      padding: 16px 40px;
+      border-radius: 50px;
+      text-decoration: none;
+      border: 2px solid #2A1266;
+      transition: transform 0.2s;
+    }
+    .cta-btn:active { transform: scale(0.97); }
+
+    /* PROBLEM */
+    .problem {
+      padding: 56px 24px;
+      text-align: center;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .problem-q {
+      font-size: 24px;
+      font-weight: 900;
+      color: #2A1266;
+      line-height: 1.4;
+      margin-bottom: 16px;
+    }
+    .problem-sub {
+      font-size: 15px;
+      color: #7B4FD4;
+      line-height: 1.7;
+    }
+
+    /* SOLUTION */
+    .solution {
+      background: #FFFFFF;
+      padding: 48px 24px;
+    }
+    .solution-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #F59E0B;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .solution-items {
+      max-width: 480px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .solution-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 20px;
+      background: #F8F5FF;
+      border-radius: 16px;
+      border: 1.5px solid rgba(123,79,212,0.15);
+    }
+    .solution-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+    .solution-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: #2A1266;
+      line-height: 1.5;
+    }
+
+    /* WEEKS */
+    .weeks {
+      padding: 48px 24px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .weeks-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #2A1266;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .weeks-sub {
+      font-size: 14px;
+      color: #7B4FD4;
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .weeks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .week-card {
+      background: #FFFFFF;
+      border: 1.5px solid rgba(123,79,212,0.18);
+      border-radius: 16px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .week-num {
+      width: 40px;
+      height: 40px;
+      background: #7B4FD4;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 900;
+      color: white;
+      flex-shrink: 0;
+    }
+    .week-info {}
+    .week-name {
+      font-size: 15px;
+      font-weight: 800;
+      color: #2A1266;
+    }
+    .week-days {
+      font-size: 12px;
+      color: #9B7FC9;
+      margin-top: 2px;
+    }
+    .week-card.bonus {
+      border-color: #F59E0B;
+      background: #FFFBF0;
+    }
+    .week-card.bonus .week-num {
+      background: #F59E0B;
+      color: #2A1266;
+    }
+
+    /* CTA FINAL */
+    .cta-final {
+      background: linear-gradient(160deg, #3D1F7A 0%, #2A1266 100%);
+      padding: 56px 24px;
+      text-align: center;
+    }
+    .cta-final-title {
+      font-size: 26px;
+      font-weight: 900;
+      color: #FFFFFF;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+    .cta-final-sub {
+      font-size: 14px;
+      color: #B995F3;
+      margin-bottom: 32px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: #9B7FC9;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="container">
+      <div class="hero-logo">Corpus</div>
+      <h1 class="hero-title">רעיונות גדולים.<br><span>חמש דקות ביום.</span></h1>
+      <p class="hero-subtitle">Corpus מביאה את הפילוסופיה הגדולה של כל הזמנים — ישר לטלפון שלך. בלי מאמץ.</p>
+      <a href="https://omeroth.github.io/corpus-app/" class="cta-btn">התחל ללמוד</a>
+    </div>
+  </div>
+
+  <!-- PROBLEM -->
+  <div class="problem">
+    <div class="container">
+      <div class="problem-q">כמה שעות ביום אתה גולל בלי כוונה?</div>
+      <div class="problem-sub">רוב הזמן שלנו בטלפון עובר על תוכן שנשכח תוך שניות. יש דרך אחרת.</div>
+    </div>
+  </div>
+
+  <!-- SOLUTION -->
+  <div class="solution">
+    <div class="solution-title">הפתרון</div>
+    <div class="solution-items">
+      <div class="solution-item">
+        <div class="solution-icon">⏱️</div>
+        <div class="solution-text">5 דקות ביום, בלי מאמץ.</div>
+      </div>
+      <div class="solution-item">
+        <div class="solution-icon">📈</div>
+        <div class="solution-text">מצטבר — כל יום מוסיף עוד שכבה של הבנה.</div>
+      </div>
+      <div class="solution-item">
+        <div class="solution-icon">🌍</div>
+        <div class="solution-text">רעיונות שישנו את הדרך שאתה רואה את העולם.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEKS -->
+  <div class="weeks">
+    <div class="weeks-title">מה לומדים?</div>
+    <div class="weeks-sub">לומדות מרתקות על הפילוסופים הגדולים של כל הזמנים</div>
+    <div class="weeks-list">
+      <div class="week-card">
+        <div class="week-num">1</div>
+        <div class="week-info">
+          <div class="week-name">מהי פילוסופיה?</div>
+          <div class="week-days">7 לומדות · סוקרטס, אפלטון, ראסל ועוד</div>
+        </div>
+      </div>
+      <div class="week-card">
+        <div class="week-num">2</div>
+        <div class="week-info">
+          <div class="week-name">מוסר ואתיקה</div>
+          <div class="week-days">7 לומדות · קאנט, מיל, אריסטו ועוד</div>
+        </div>
+      </div>
+      <div class="week-card">
+        <div class="week-num">3</div>
+        <div class="week-info">
+          <div class="week-name">ספק וידע</div>
+          <div class="week-days">7 לומדות · דקארט, יום, גטייר ועוד</div>
+        </div>
+      </div>
+      <div class="week-card">
+        <div class="week-num">4</div>
+        <div class="week-info">
+          <div class="week-name">מהי המציאות?</div>
+          <div class="week-days">7 לומדות · ספינוזה, ברקלי, ביוסטרום ועוד</div>
+        </div>
+      </div>
+      <div class="week-card bonus">
+        <div class="week-num">★</div>
+        <div class="week-info">
+          <div class="week-name">אתיקה ובינה מלאכותית</div>
+          <div class="week-days">שבוע בונוס · קאנט, מיל, ניטשה ועוד</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA FINAL -->
+  <div class="cta-final">
+    <div class="container">
+      <div class="cta-final-title">מוכן להתחיל?</div>
+      <div class="cta-final-sub">הצטרף לאקדמיה. חינם.</div>
+      <a href="https://omeroth.github.io/corpus-app/" class="cta-btn">התחל ללמוד</a>
+    </div>
+  </div>
+
+  <footer>
+    © 2026 Corpus · כל הזכויות שמורות
+  </footer>
+
+</body>
+</html>
