@@ -8535,6 +8535,12 @@ async function enterApp(user) {
       const method = identities.length > 0 ? identities[0].provider : 'email';
       posthog.capture('user_logged_in', { method });
     } catch(e) {}
+    try {
+      posthog.identify(user.id, {
+        email: user.email,
+        name: user.user_metadata?.full_name || user.user_metadata?.name || ''
+      });
+    } catch(e) {}
   }
   if (user) {
     state.userEmail = user.email || '';
