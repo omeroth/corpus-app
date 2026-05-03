@@ -95,27 +95,28 @@
     pointer-events: none;
   }
   .stats-subheader {
+    margin: 0 12px 8px;
+    background: #FFFFFF;
+    border: 1px solid #E6DCF5;
+    border-radius: 12px;
+    padding: 8px 16px;
     display: flex;
     justify-content: center;
-    gap: 36px;
-    align-items: center;
-    padding: 10px 16px;
-    background: rgba(123,79,212,0.04);
-    border-bottom: 1px solid rgba(123,79,212,0.08);
+    gap: 28px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #2A1266;
     position: sticky;
     top: 52px;
-    z-index: 99;
-    background: #FFFFFF;
+    z-index: 50;
   }
   .topbar-stat {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: 15px;
-    font-weight: 700;
-    color: #3D1F7A;
+    gap: 5px;
     position: relative;
     cursor: default;
+    padding: 0 5px;
   }
   .topbar-stat:hover::after {
     content: attr(title);
@@ -830,6 +831,68 @@
   }
   .week-item:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(123,79,212,0.1); }
   .week-item.locked { opacity: 0.5; cursor: default; }
+  .week-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; background: #FFFFFF; border: 1.5px solid #F0E8FB; cursor: pointer; direction: rtl; transition: transform 0.15s; margin-bottom: 10px; }
+  .week-row:active { transform: scale(0.98); }
+  .week-row-bonus { background: #FFFBF0; border-color: #F5B544; }
+  .week-row-locked { opacity: 0.78; cursor: default; background: #F8F5FF; border: 1.5px dashed #C9BFE0; }
+  .week-row-num { width: 36px; height: 36px; border-radius: 50%; background: #7B4FD4; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; flex-shrink: 0; box-shadow: 0 2px 0 #2A1266; }
+  .week-row-num-bonus { background: #F5B544; box-shadow: 0 2px 0 #C7892C; color: #2A1266; }
+  .week-row-num-locked { background: #C9BFE0; box-shadow: 0 2px 0 #8D7DAE; }
+  .next-lesson-btn { display: block; width: 100%; margin-top: 12px; padding: 14px; background: #7B4FD4; color: white; border: 2px solid #2A1266; border-radius: 50px; font-size: 16px; font-weight: 800; cursor: pointer; font-family: inherit; box-shadow: 0 3px 0 #2A1266; transition: transform 0.15s; }
+  .next-lesson-btn:active { transform: scale(0.97); }
+  .week-row-completed { opacity: 0.75; cursor: default; }
+  .week-row-active { border-color: #7B4FD4; box-shadow: 0 2px 12px rgba(123,79,212,0.12); }
+  .week-row-num-completed { background: #7B4FD4; box-shadow: 0 2px 0 #2A1266; color: white; }
+  .week-row-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .week-row-ttl { font-weight: 700; font-size: 14px; color: #2A1266; }
+  .week-row-sub { font-size: 11px; color: #8D7DAE; }
+  .week-row-chev { color: #B6A8D4; font-size: 18px; font-weight: 700; }
+  .week-row-bonus-special { background: linear-gradient(135deg, #FFFBF0 0%, #FFF3D0 100%); border: 1.5px solid #F5B544; box-shadow: 0 2px 12px rgba(245,181,68,0.15); }
+  .week-row-bonus-locked { background: #F8F5FF; border: 1.5px dashed #C9BFE0; box-shadow: none; opacity: 0.78; cursor: default; }
+  .week-row-bonus-badge { flex-shrink: 0; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+  .week-row-bonus-tag { font-size: 9px; font-weight: 900; letter-spacing: 0.14em; color: #C7892C; text-transform: uppercase; margin-bottom: 2px; }
+  .week-row-bonus-locked-1 { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 16px; background: #F5EFFE; border: 1.5px dashed #B6A8D4; opacity: 0.85; margin-bottom: 10px; direction: rtl; }
+  .week-row-bonus-locked-2 { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 16px; background: linear-gradient(180deg, #F5EFFE 0%, #FBF1E2 100%); border: 1.5px dashed #7B4FD4; margin-bottom: 10px; direction: rtl; animation: p2-warm 2.8s ease-in-out infinite; }
+  @keyframes p2-warm { 0%, 100% { box-shadow: 0 0 0 0 rgba(245,181,68,0); } 50% { box-shadow: 0 0 0 3px rgba(245,181,68,0.25); } }
+  .week-bonus-lock { flex-shrink: 0; }
+  .week-row-bonus-locked-1 .week-bonus-lock { animation: p1-breathe 3.6s ease-in-out infinite; opacity: 0.7; }
+  @keyframes p1-breathe { 0%, 100% { transform: translateY(0) scale(1); opacity: 0.7; } 50% { transform: translateY(-1px) scale(1.04); opacity: 0.95; } }
+  .week-row-bonus-locked-2 .week-bonus-lock { animation: p2-rattle 2.4s ease-in-out infinite; transform-origin: 50% 80%; }
+  @keyframes p2-rattle { 0%, 100% { transform: rotate(0) translateY(0); } 25% { transform: rotate(-4deg) translateY(-1px); } 50% { transform: rotate(0) translateY(-2px); } 75% { transform: rotate(4deg) translateY(-1px); } }
+  .week-bonus-progress { margin-top: 5px; height: 4px; border-radius: 2px; background: #fff; border: 1px solid #E6DCF5; overflow: hidden; margin-bottom: 3px; }
+  .week-bonus-progress span { display: block; height: 100%; background: linear-gradient(90deg, #9B6FE4, #7B4FD4, #9B6FE4); background-size: 200% 100%; border-radius: 2px; animation: p1-shine 3s linear infinite; }
+  @keyframes p1-shine { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .week-bonus-progress-warm span { background: linear-gradient(90deg, #7B4FD4, #F5B544, #FFD982, #F5B544, #7B4FD4); background-size: 300% 100%; animation: p2-flow 2.4s linear infinite; }
+  @keyframes p2-flow { 0% { background-position: 0 0; } 100% { background-position: -300% 0; } }
+  .week-bonus-step { font-size: 10px; color: #8D7DAE; font-weight: 700; }
+  .unlock-overlay-wrap { position: absolute; inset: 0; background: radial-gradient(circle at 50% 42%, rgba(255,217,130,.95) 0%, rgba(245,181,68,.82) 28%, rgba(42,18,102,.92) 70%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 32px; animation: p3-fade .4s ease-out both; }
+  @keyframes p3-fade { from{opacity:0} to{opacity:1} }
+  .unlock-pulse { position: absolute; border-radius: 50%; border: 2px solid #FFD982; width: 220px; height: 220px; pointer-events: none; animation: p3-ring 2s ease-out infinite; }
+  .unlock-pulse.p2 { width: 320px; height: 320px; animation-delay: .5s; }
+  @keyframes p3-ring { 0% { transform: scale(.4); opacity: .7; } 100% { transform: scale(1.4); opacity: 0; } }
+  .unlock-star { position: absolute; pointer-events: none; animation: p3-star 1.8s ease-in-out infinite; transform-origin: center; }
+  .unlock-star.s1 { width: 22px; height: 22px; top: 16%; left: 14%; animation-delay: .4s; }
+  .unlock-star.s2 { width: 16px; height: 16px; top: 20%; right: 14%; animation-delay: .7s; }
+  .unlock-star.s3 { width: 14px; height: 14px; bottom: 22%; left: 18%; animation-delay: 1s; }
+  .unlock-star.s4 { width: 20px; height: 20px; bottom: 18%; right: 16%; animation-delay: 1.3s; }
+  @keyframes p3-star { 0%, 100% { transform: scale(0) rotate(0); opacity: 0; } 30% { transform: scale(1.2) rotate(180deg); opacity: 1; } 60% { transform: scale(1) rotate(360deg); opacity: .9; } 80% { transform: scale(.8) rotate(420deg); opacity: .4; } }
+  .unlock-lock-big { width: 120px; height: 120px; filter: drop-shadow(0 0 28px rgba(255,217,130,.9)); animation: p3-pop .9s cubic-bezier(.34,1.56,.64,1) .15s both, p3-float 3s ease-in-out 1.05s infinite; z-index: 1; }
+  @keyframes p3-pop { 0% { transform: scale(.2) translateY(20px) rotate(-12deg); opacity: 0; } 60% { transform: scale(1.18) translateY(-4px) rotate(3deg); opacity: 1; } 100% { transform: scale(1) translateY(0) rotate(0); opacity: 1; } }
+  @keyframes p3-float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-5px) rotate(-1.5deg); } }
+  .unlock-h3 { font-size: 24px; font-weight: 900; color: #FFFFFF; margin: 0; animation: p3-rise .6s ease-out .55s both; z-index: 1; }
+  .unlock-p { font-size: 13px; color: #FFD982; font-weight: 600; margin: 0; line-height: 1.6; animation: p3-rise .6s ease-out .7s both; z-index: 1; }
+  @keyframes p3-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .unlock-cta-btn { margin-top: 8px; background: linear-gradient(180deg, #FFD982, #F5B544); border: 1px solid #C7892C; color: #3a2400; font-weight: 800; font-size: 15px; padding: 12px 32px; border-radius: 999px; cursor: pointer; font-family: inherit; box-shadow: 0 2px 0 #C7892C, inset 0 1px 0 rgba(255,255,255,.5); animation: p3-rise .6s ease-out .85s both, p3-cta-bob 1.8s ease-in-out 1.5s infinite; z-index: 1; }
+  @keyframes p3-cta-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+  .week-row-bonus-unlocked { position: relative; background: radial-gradient(ellipse at 75% 0%, rgba(255,217,130,.45) 0%, transparent 60%), linear-gradient(180deg, #FFFBEC 0%, #FFEED0 100%); border: 2px solid #F5B544; border-radius: 18px; padding: 12px 16px; box-shadow: 0 0 0 3px rgba(245,181,68,.18), 0 4px 14px -4px rgba(245,181,68,.4); cursor: pointer; direction: rtl; margin-bottom: 10px; overflow: hidden; display: flex; flex-direction: column; gap: 8px; transition: transform 0.15s; }
+  .week-row-bonus-unlocked:active { transform: scale(0.98); }
+  .week-row-bonus-unlocked-top { display: flex; align-items: center; justify-content: space-between; }
+  .week-bonus-ribbon { display: inline-flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #3a2400; background: linear-gradient(180deg, #FFD982, #F5B544); border: 1px solid #C7892C; padding: 2px 8px; border-radius: 999px; box-shadow: 0 1px 0 #C7892C; }
+  .week-bonus-open-flag { font-size: 9px; font-weight: 800; color: #3C8C5A; display: inline-flex; align-items: center; gap: 3px; }
+  .week-row-bonus-unlocked-body { display: flex; align-items: center; gap: 10px; padding-right: 8px; }
+  .week-bonus-disc { flex-shrink: 0; filter: drop-shadow(0 4px 8px rgba(245,181,68,.45)); align-self: flex-start; margin-top: 4px; }
+  .week-bonus-chips { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+  .week-bonus-chip { font-size: 9px; font-weight: 700; background: rgba(255,255,255,.7); border: 1px solid #E6CFA0; color: #5E37A8; padding: 2px 6px; border-radius: 999px; }
   .week-num {
     width: 44px;
     height: 44px;
@@ -2561,6 +2624,29 @@
       <circle cx="43" cy="45" r="5" fill="none" stroke="#C7892C" stroke-width="0.8" stroke-dasharray="1.5 1"/>
       <path d="M43 41 L 44 44 L 47 44.4 L 44.6 46.2 L 45.4 49 L 43 47.4 L 40.6 49 L 41.4 46.2 L 39 44.4 L 42 44 Z" fill="#FFFFFF" stroke="#2A1266" stroke-width="1" stroke-linejoin="round"/>
     </symbol>
+    <symbol id="ic-bonus" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="22" fill="#F5B544" stroke="#2A1266" stroke-width="2"/>
+      <path d="M32 10 A 22 22 0 0 1 32 54 A 18 22 0 0 0 32 10 Z" fill="#C7892C" opacity=".55"/>
+      <circle cx="32" cy="32" r="19.5" fill="none" stroke="#7B4FD4" stroke-width="1" opacity=".55"/>
+      <path d="M16 22 Q 20 14 28 12" stroke="#FFFFFF" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".95"/>
+      <path d="M32 18 L 35.2 28 L 45.6 28 L 37.2 34.2 L 40.4 44.2 L 32 38 L 23.6 44.2 L 26.8 34.2 L 18.4 28 L 28.8 28 Z" fill="#FFFFFF" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M50 42 L 50.8 43.6 L 52.4 44 L 50.8 44.5 L 50 46.2 L 49.2 44.5 L 47.6 44 L 49.2 43.6 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="0.6" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="ic-lock-open" viewBox="0 0 64 64">
+      <path d="M23 30 V 20 Q 23 8 32 8 Q 41 8 41 20 V 22" fill="none" stroke="#2A1266" stroke-width="4.4" stroke-linecap="round"/>
+      <path d="M23 30 V 20 Q 23 8 32 8 Q 41 8 41 20 V 22" fill="none" stroke="#7B4FD4" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M24.6 26 V 20 Q 24.6 11 30 9.6" stroke="#D4BFFA" stroke-width="1" fill="none" stroke-linecap="round" opacity=".9"/>
+      <rect x="14.5" y="29.5" width="35" height="26" rx="3.4" fill="#2A1266" stroke="#2A1266" stroke-width="1.6"/>
+      <rect x="13" y="28" width="34" height="26" rx="3.6" fill="#7B4FD4" stroke="#2A1266" stroke-width="1.8"/>
+      <path d="M30 28 H 44 Q 47 28 47 31 V 51 Q 47 54 44 54 H 30 Z" fill="#5E37A8" opacity=".55"/>
+      <path d="M16 32 V 50" stroke="#D4BFFA" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".9"/>
+      <circle cx="30" cy="38" r="3.6" fill="#2A1266" stroke="#FFD982" stroke-width="1.8"/>
+      <path d="M30 40.6 L 28.4 49 L 31.6 49 Z" fill="#2A1266" stroke="#FFD982" stroke-width="1.5" stroke-linejoin="round"/>
+      <circle cx="30" cy="37.4" r="1" fill="#FFD982"/>
+      <path d="M54 24 L 55 26 L 57 27 L 55 28 L 54 30 L 53 28 L 51 27 L 53 26 Z" fill="#FFD982" stroke="#C7892C" stroke-width="0.6" stroke-linejoin="round"/>
+      <path d="M50 16 L 50.6 17.4 L 52 18 L 50.6 18.6 L 50 20 L 49.4 18.6 L 48 18 L 49.4 17.4 Z" fill="#FFD982" stroke="#C7892C" stroke-width="0.5" stroke-linejoin="round"/>
+      <path d="M12 18 L 12.8 19.6 L 14.4 20 L 12.8 20.5 L 12 22.2 L 11.2 20.5 L 9.6 20 L 11.2 19.6 Z" fill="#FFD982" stroke="#C7892C" stroke-width="0.5" stroke-linejoin="round"/>
+    </symbol>
   </defs>
 </svg>
 
@@ -3138,6 +3224,7 @@
       </div>
     </div>
     <button class="nav-btn" id="modal-continue-btn" onclick="closeCompleteModal()" style="display:none">המשך</button>
+    <button class="next-lesson-btn" id="modal-next-btn" style="display:none"></button>
   </div>
 </div>
 
@@ -7375,6 +7462,75 @@ function isWeekCompleted(weekId) {
   return week.days.every(d => state.completedDays[weekId + '-' + d.id]);
 }
 
+function getWeekProgress(weekId) {
+  const week = getW().find(w => w.id === weekId);
+  if (!week) return 0;
+  const total = week.days.length;
+  const completed = week.days.filter(d => state.completedDays[weekId + '-' + d.id]).length;
+  return total > 0 ? completed / total : 0;
+}
+
+function getPrevWeekProgress(weekId) {
+  if (weekId === 'bonus1') return getBonusProgress();
+  const weekOrder = [1, 2, 3, 4];
+  const idx = weekOrder.indexOf(weekId);
+  if (idx <= 0) return 1;
+  return getWeekProgress(weekOrder[idx - 1]);
+}
+
+function getBonusProgress() {
+  const week1 = getW().find(w => w.id === 1);
+  const week2 = getW().find(w => w.id === 2);
+  if (!week1 || !week2) return 0;
+  const total = week1.days.length + week2.days.length;
+  const completed =
+    week1.days.filter(d => state.completedDays['1-' + d.id]).length +
+    week2.days.filter(d => state.completedDays['2-' + d.id]).length;
+  return total > 0 ? completed / total : 0;
+}
+
+function showUnlockOverlay() {
+  const isEn = state.lang === 'en';
+  const titleEl = document.getElementById('unlock-title');
+  const subtitleEl = document.getElementById('unlock-subtitle');
+  const ctaEl = document.getElementById('unlock-cta');
+  if (titleEl) titleEl.textContent = isEn ? 'Bonus Week Unlocked!' : 'פרק בונוס נפתח!';
+  if (subtitleEl) subtitleEl.textContent = isEn ? 'Ethics and Artificial Intelligence · Kant meets ChatGPT' : 'אתיקה ובינה מלאכותית · קאנט פוגש את ChatGPT';
+  if (ctaEl) ctaEl.textContent = isEn ? "Let's go →" : 'בוא נראה ←';
+
+  const overlay = document.getElementById('unlock-overlay');
+  const inner = document.getElementById('unlock-overlay-inner');
+  overlay.style.display = 'block';
+
+  if (inner) {
+    inner.style.animation = 'none';
+    inner.offsetHeight;
+    inner.style.animation = '';
+  }
+  const lockIcon = document.querySelector('.unlock-lock-big');
+  if (lockIcon) {
+    lockIcon.style.animation = 'none';
+    lockIcon.offsetHeight;
+    lockIcon.style.animation = '';
+  }
+  document.querySelectorAll('.unlock-star').forEach(s => {
+    s.style.animation = 'none';
+    s.offsetHeight;
+    s.style.animation = '';
+  });
+}
+
+function closeUnlockOverlay() {
+  document.getElementById('unlock-overlay').style.display = 'none';
+  const bonusWeek = getW().find(w => w.id === 'bonus1');
+  if (bonusWeek) {
+    renderWeek('bonus1');
+    showScreen('week');
+  } else {
+    renderHome();
+  }
+}
+
 function renderHome() {
   const ui = u();
   // Dir + toggle label
@@ -7497,31 +7653,85 @@ function renderHome() {
           1: true,
           2: isWeekCompleted(1),
           3: isWeekCompleted(2),
-          'bonus1': isWeekCompleted(2),
+          'bonus1': isWeekCompleted(1) && isWeekCompleted(2),
           4: isWeekCompleted(3),
         };
         const isUnlocked = weekLockMap[w.id] !== undefined ? weekLockMap[w.id] : true;
         const div = document.createElement('div');
-        let cls = 'week-item';
-        if (w.locked || !isUnlocked) cls += ' locked';
-        else if (allDone) cls += ' completed-week';
-        else if (isCurrent) cls += ' current-week';
-        if (w.isBonus) cls += ' bonus-week';
-        div.className = cls;
-        if (!isUnlocked) {
-          div.title = state.lang === 'en' ? 'Complete the previous week to unlock' : 'סיים את השבוע הקודם כדי לפתוח';
+        const isEn = state.lang === 'en';
+        if (!w.locked && isUnlocked) {
+          if (w.isBonus) {
+            div.className = 'week-row-bonus-unlocked';
+            div.innerHTML = `
+              <div class="week-row-bonus-unlocked-top">
+                <div class="week-bonus-ribbon">★ ${isEn ? 'BONUS WEEK' : 'פרק בונוס'}</div>
+              </div>
+              <div class="week-row-bonus-unlocked-body">
+                <svg class="week-bonus-disc" viewBox="0 0 64 64" width="52" height="52" style="margin-top:-9px;align-self:flex-start"><use href="#ic-bonus"/></svg>
+                <div class="week-row-meta">
+                  <div class="week-row-ttl" style="color:#2A1266;font-weight:800">${isEn ? (w.titleEn || w.title) : w.title}</div>
+                  <div class="week-row-sub" style="color:#7B4FD4;font-weight:700">${w.days.length} ${isEn ? 'lessons' : 'לומדות'}</div>
+                  <div class="week-bonus-chips">
+                    <span class="week-bonus-chip">קאנט</span>
+                    <span class="week-bonus-chip">מיל</span>
+                    <span class="week-bonus-chip">אריסטו</span>
+                    <span class="week-bonus-chip">ניטשה</span>
+                    <span class="week-bonus-chip">סוקרטס</span>
+                  </div>
+                </div>
+                <div class="week-row-chev" style="color:#C7892C">‹</div>
+              </div>
+            `;
+          } else {
+            div.className = 'week-row';
+            div.innerHTML = `
+              <div class="week-row-num">${w.id}</div>
+              <div class="week-row-meta">
+                <div class="week-row-ttl">${isEn ? (w.titleEn || w.title) : w.title}</div>
+                <div class="week-row-sub">${w.days.length} ${isEn ? 'lessons' : 'לומדות'} · ${Math.round(getWeekProgress(w.id)*100)}% ${isEn ? 'completed' : 'הושלם'}</div>
+              </div>
+              <div class="week-row-chev">‹</div>
+            `;
+          }
+          div.onclick = () => { renderWeek(w.id); showScreen('week'); };
+        } else {
+          if (w.isBonus) {
+            const bonusProgress = getPrevWeekProgress('bonus1');
+            if (bonusProgress < 0.75) {
+              div.className = 'week-row-bonus-locked-1';
+              div.innerHTML = `
+                <svg class="week-bonus-lock" viewBox="0 0 64 64" width="32" height="32"><use href="#ic-lock"/></svg>
+                <div class="week-row-meta">
+                  <span class="week-row-ttl">פרק בונוס נעול</span>
+                  <span class="week-row-sub">${isEn ? 'Complete weeks 1 & 2 to unlock' : 'השלם את שבועות 1 ו-2 לפתיחה'}</span>
+                  <div class="week-bonus-progress"><span style="width:${Math.round(bonusProgress*100)}%"></span></div>
+                  <div class="week-bonus-step">${isEn ? Math.round(bonusProgress*100) + '% completed' : Math.round(bonusProgress*100) + '% הושלם'}</div>
+                </div>
+              `;
+            } else {
+              div.className = 'week-row-bonus-locked-2';
+              div.innerHTML = `
+                <svg class="week-bonus-lock" viewBox="0 0 64 64" width="34" height="34"><use href="#ic-lock-glow"/></svg>
+                <div class="week-row-meta">
+                  <span class="week-row-ttl">פרק בונוס · קרוב מאוד</span>
+                  <span class="week-row-sub" style="color:#7B4FD4;font-weight:700">${isEn ? 'Almost there!' : 'עוד קצת!'}</span>
+                  <div class="week-bonus-progress week-bonus-progress-warm"><span style="width:${Math.round(bonusProgress*100)}%"></span></div>
+                  <div class="week-bonus-step" style="color:#7B4FD4;font-weight:800">${isEn ? 'One more lesson ✦' : 'עוד לומדה אחת ✦'}</div>
+                </div>
+              `;
+            }
+          } else {
+            div.className = 'week-row week-row-locked';
+            div.innerHTML = `
+              <div class="week-row-num week-row-num-locked">${w.id}</div>
+              <div class="week-row-meta">
+                <div class="week-row-ttl" style="color:#8D7DAE">${isEn ? (w.titleEn || w.title) : w.title}</div>
+                <div class="week-row-sub">${isEn ? 'Complete previous week to unlock' : 'סיים את השבוע הקודם כדי לפתוח'}</div>
+              </div>
+              <svg viewBox="0 0 64 64" width="30" height="30"><use href="#ic-lock"/></svg>
+            `;
+          }
         }
-        div.innerHTML = `
-          ${w.isBonus ? `<div class="bonus-badge">BONUS</div>` : ''}
-          ${!isUnlocked ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0.35;font-size:28px">🔒</div>` : ''}
-          <svg viewBox="0 0 32 32" width="40" height="40" style="flex-shrink:0"><use href="#n-${w.id}"/></svg>
-          <div class="week-info">
-            <div class="week-title">${state.lang === 'en' ? (w.titleEn || w.title) : w.title}</div>
-            <div class="week-meta">${(w.locked || !isUnlocked) ? ui.comingSoon : ui.daysOf(completedCount, totalDays)}</div>
-          </div>
-          ${allDone ? '<div class="week-check">✓</div>' : '<span class="item-chevron"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B4FD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></span>'}
-        `;
-        if (!w.locked && isUnlocked) div.onclick = () => { renderWeek(w.id); showScreen('week'); };
         wl.appendChild(div);
       } catch(weekErr) { console.error('renderHome: week row error', w && w.id, weekErr); }
     });
@@ -7590,22 +7800,46 @@ function renderWeek(weekId) {
 
   const dl = document.getElementById('days-list');
   dl.innerHTML = '';
+  const isEn = state.lang === 'en';
   week.days.forEach((day, idx) => {
     const key = weekId + '-' + day.id;
     const completed = state.completedDays[key];
     const locked = idx > 0 && !state.completedDays[weekId + '-' + week.days[idx-1].id];
     const div = document.createElement('div');
-    div.className = 'day-item' + (locked ? ' locked' : '') + (completed ? ' completed' : '');
-    div.innerHTML = `
-      <div class="day-circle">${completed ? '✓' : locked ? '🔒' : (idx + 1)}</div>
-      <div class="day-info">
-        <div class="day-title">${day.title}</div>
-        <div class="day-thinker">${day.thinker}</div>
-      </div>
-      ${day.xp > 0 ? `<div class="day-xp">⭐ ${day.xp}</div>` : ''}
-      <span class="item-chevron"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B4FD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></span>
-    `;
-    if (!locked) div.onclick = () => openReader(weekId, day.id);
+    const title = isEn ? (day.titleEn || day.title) : day.title;
+    if (completed) {
+      div.className = 'week-row week-row-completed';
+      div.style.cursor = 'pointer';
+      div.innerHTML = `
+        <div class="week-row-num week-row-num-completed">✓</div>
+        <div class="week-row-meta">
+          <div class="week-row-ttl">${title}</div>
+          <div class="week-row-sub">${isEn ? 'Completed' : 'הושלם'}</div>
+        </div>
+      `;
+      div.onclick = () => openReader(weekId, day.id);
+    } else if (locked) {
+      div.className = 'week-row week-row-locked';
+      div.innerHTML = `
+        <div class="week-row-num week-row-num-locked">${day.id}</div>
+        <div class="week-row-meta">
+          <div class="week-row-ttl" style="color:#8D7DAE">${title}</div>
+          <div class="week-row-sub">${isEn ? 'Complete previous lesson' : 'סיים את הלומדה הקודמת'}</div>
+        </div>
+        <svg viewBox="0 0 64 64" width="24" height="24"><use href="#ic-lock"/></svg>
+      `;
+    } else {
+      div.className = 'week-row week-row-active';
+      div.innerHTML = `
+        <div class="week-row-num">${day.id}</div>
+        <div class="week-row-meta">
+          <div class="week-row-ttl">${title}</div>
+          <div class="week-row-sub">${isEn ? 'Continue' : 'המשך'}</div>
+        </div>
+        <div class="week-row-chev">‹</div>
+      `;
+      div.onclick = () => openReader(weekId, day.id);
+    }
     dl.appendChild(div);
   });
 }
@@ -7929,6 +8163,52 @@ function closeQuizFeedbackModal() {
   }
 }
 
+function setupNextBtn(week, day) {
+  const btn = document.getElementById('modal-next-btn');
+  if (!btn) return;
+  const isEn = state.lang === 'en';
+  const currentDayIndex = week.days.findIndex(d => d.id === day.id);
+  const nextDay = week.days[currentDayIndex + 1];
+  if (nextDay) {
+    btn.textContent = isEn ? 'Next Lesson →' : 'ללומדה הבאה ›';
+    btn.onclick = () => goToNextDay();
+  } else {
+    btn.textContent = isEn ? 'Next Week →' : 'לשבוע הבא ›';
+    btn.onclick = () => goToNextWeek();
+  }
+  btn.style.display = '';
+}
+
+function goToNextDay() {
+  closeCompleteModal();
+  const weeks = getW();
+  const currentWeek = weeks.find(w => w.id === state.currentWeek);
+  if (!currentWeek) return goHome();
+  const currentDayIndex = currentWeek.days.findIndex(d => d.id === state.currentDay);
+  const nextDay = currentWeek.days[currentDayIndex + 1];
+  if (nextDay) {
+    openReader(state.currentWeek, nextDay.id);
+  } else {
+    goHome();
+  }
+}
+
+function goToNextWeek() {
+  closeCompleteModal();
+  const currentId = state.currentWeek;
+  let nextWeekId = null;
+  if (currentId === 1) nextWeekId = 2;
+  else if (currentId === 2) nextWeekId = isWeekCompleted(1) ? 3 : null;
+  else if (currentId === 3) nextWeekId = 4;
+  const nextWeek = nextWeekId ? getW().find(w => w.id === nextWeekId) : null;
+  if (nextWeek) {
+    renderWeek(nextWeekId);
+    showScreen('week');
+  } else {
+    goHome();
+  }
+}
+
 function finishDay() {
   const week = getW().find(w => w.id === state.currentWeek);
   const day = week.days.find(d => d.id === state.currentDay);
@@ -8042,6 +8322,12 @@ function finishDay() {
     if (completedInWeek === totalDays) posthog.capture('week_completed', { week: state.currentWeek });
   } catch(e) {}
 
+  if (state.currentWeek === 2 && state.currentDay === 7 && isWeekCompleted(2) && isWeekCompleted(1) && !state.bonusUnlockShown) {
+    state.bonusUnlockShown = true;
+    saveStateLocal();
+    setTimeout(() => showUnlockOverlay(), 1000);
+  }
+
   // Show complete modal
   const thinker = getT().find(t => t.id === thinkerId);
   const ui = u();
@@ -8074,6 +8360,7 @@ function finishDay() {
   document.getElementById('modal-complete').classList.add('active');
   launchConfetti();
 
+  setupNextBtn(week, day);
   if (thinker) {
     setTimeout(() => flipCard.classList.add('flipped'), 1500);
     setTimeout(() => {
@@ -8096,6 +8383,8 @@ function finishDay() {
 
 function closeCompleteModal() {
   document.getElementById('modal-complete').classList.remove('active');
+  const nb = document.getElementById('modal-next-btn');
+  if (nb) nb.style.display = 'none';
   const shouldShowShare = state.currentWeek === 1 && state.currentDay === 7;
   renderWeek(state.currentWeek);
   showScreen('week');
@@ -8968,6 +9257,21 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 
   </div>
 
+</div>
+
+<div id="unlock-overlay" style="display:none;position:fixed;inset:0;z-index:1200;direction:rtl">
+  <div id="unlock-overlay-inner" class="unlock-overlay-wrap">
+    <div class="unlock-pulse p2"></div>
+    <div class="unlock-pulse"></div>
+    <svg class="unlock-star s1" viewBox="0 0 64 64"><use href="#ic-star-burst"/></svg>
+    <svg class="unlock-star s2" viewBox="0 0 64 64"><use href="#ic-star-burst"/></svg>
+    <svg class="unlock-star s3" viewBox="0 0 64 64"><use href="#ic-star-burst"/></svg>
+    <svg class="unlock-star s4" viewBox="0 0 64 64"><use href="#ic-star-burst"/></svg>
+    <svg class="unlock-lock-big" viewBox="0 0 64 64"><use href="#ic-lock-open"/></svg>
+    <h3 class="unlock-h3" id="unlock-title">פרק בונוס נפתח!</h3>
+    <p class="unlock-p" id="unlock-subtitle">אתיקה ובינה מלאכותית · קאנט פוגש את ChatGPT</p>
+    <button class="unlock-cta-btn" onclick="closeUnlockOverlay()" id="unlock-cta">בוא נראה ←</button>
+  </div>
 </div>
 
 </body>
