@@ -76,29 +76,26 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    direction: ltr;
-    padding: 0 16px;
-    height: 52px;
-    background: #FFFFFF;
-    border-bottom: 1px solid rgba(123,79,212,0.08);
-    box-shadow: 0 1px 8px rgba(123,79,212,0.06);
-    position: sticky;
+    background: #F8F5FF;
+    padding: 12px 16px;
+    position: fixed;
     top: 0;
-    z-index: 100;
-  }
-  .topbar-logo-wrap {
-    position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    direction: ltr;
-    text-align: center;
-    pointer-events: none;
+    width: 100%;
+    max-width: 480px;
+    z-index: 100;
+    box-sizing: border-box;
+  }
+  .topbar-logo-wrap {
+    font-weight: 800;
+    font-size: 14px;
+    color: #7B4FD4;
   }
   .stats-subheader {
-    margin: 0 12px 8px;
     background: #FFFFFF;
     border: 1px solid #E6DCF5;
-    border-radius: 12px;
+    border-radius: 14px 14px 14px 14px;
     padding: 8px 16px;
     display: flex;
     justify-content: center;
@@ -106,9 +103,13 @@
     font-size: 10.5px;
     font-weight: 700;
     color: #2A1266;
-    position: sticky;
-    top: 52px;
-    z-index: 50;
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    z-index: 99;
+    box-sizing: border-box;
   }
   .topbar-stat {
     display: inline-flex;
@@ -189,6 +190,7 @@
   /* ── Scrollable content ── */
   .scroll-content {
     padding: 20px;
+    padding-top: 110px;
     padding-bottom: 80px;
   }
 
@@ -705,7 +707,7 @@
   .pantheon-card-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(42,18,102,0.88) 0%, rgba(42,18,102,0.4) 30%, transparent 55%);
+    background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.1) 35%, transparent 60%);
   }
   .pantheon-card-info {
     position: absolute;
@@ -720,11 +722,13 @@
     font-weight: 800;
     color: #FFFFFF;
     line-height: 1.2;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
   }
   .pantheon-card-era {
     font-size: 10px;
-    color: #B995F3;
+    color: rgba(255,255,255,0.85);
     margin-top: 2px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
   }
   .pantheon-card.locked {
     cursor: default;
@@ -1339,19 +1343,55 @@
   .btn-reader-back:hover { background: rgba(123,79,212,0.08); }
 
   /* ── Reader ── */
-  .reader-topbar {
+  .reader-header-unit {
     position: sticky;
     top: 0;
     z-index: 100;
-    background: #FFFFFF;
-    border-bottom: 1px solid rgba(123,79,212,0.08);
-    box-shadow: 0 1px 8px rgba(123,79,212,0.06);
+    background: #F8F5FF;
+    display: flex;
+    flex-direction: column;
+  }
+  .reader-topbar .topbar-logo-wrap {
+    font-size: 14px;
+    font-weight: 800;
+    color: #7B4FD4;
+    letter-spacing: normal;
+    font-family: inherit;
+  }
+  .reader-topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 12px 16px;
+    background: #F8F5FF;
     direction: ltr;
-    padding: 0 16px;
-    height: 52px;
+  }
+  .reader-back-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+  }
+  .reader-back-btn:hover {
+    background: rgba(123,79,212,0.1);
+  }
+  .reader-settings-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
   }
   .reader-back-nav-btn {
     background: none;
@@ -2115,18 +2155,6 @@
     flex-shrink: 0;
   }
   .lang-toggle-btn:hover { background: var(--border); color: var(--text); }
-  .reader-back-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 20px;
-    padding: 6px 10px;
-    color: #7B4FD4;
-    border-radius: 8px;
-    transition: background 0.2s;
-    font-weight: 600;
-  }
-  .reader-back-btn:hover { background: rgba(123,79,212,0.1); }
   .settings-btn {
     background: none;
     border: none;
@@ -2396,14 +2424,11 @@
 
   /* ── Section Dots ── */
   .section-dots {
-    position: sticky;
-    top: 52px;
-    z-index: 99;
     display: flex;
     justify-content: center;
     gap: 6px;
     padding: 8px 0;
-    background: white;
+    background: #F8F5FF;
     box-shadow: 0 1px 4px rgba(123,79,212,0.06);
   }
   .section-dot {
@@ -3141,9 +3166,9 @@
   ═══════════════════════════════ -->
   <div id="screen-week" class="screen">
     <div class="topbar">
-      <button class="topbar-back" id="week-back-btn" onclick="goHome()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-      <div class="topbar-title" id="week-screen-title"></div>
       <div style="width:36px"></div>
+      <div class="topbar-title" id="week-screen-title"></div>
+      <button class="topbar-back" id="week-back-btn" onclick="goHome()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
     </div>
     <div class="scroll-content">
       <div id="days-list"></div>
@@ -3155,23 +3180,23 @@
   ═══════════════════════════════ -->
   <div id="screen-reader" class="screen reader-screen-shell">
     <div class="reading-progress-bar" id="reading-progress-bar"></div>
+    <div class="reader-header-unit">
     <div class="reader-topbar">
-      <button class="reader-back-nav-btn" onclick="goBack()">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#7B4FD4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6"></polyline>
+      <button class="reader-back-btn" onclick="goBack()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B4FD4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: scaleX(-1);">
+          <polyline points="9 18 15 12 9 6"/>
         </svg>
       </button>
-      <div class="topbar-logo-wrap">
-        <div class="topbar-logo">Corpus</div>
-      </div>
-      <button class="settings-btn" onclick="toggleSettings()">
+      <div class="topbar-logo-wrap"><div class="topbar-logo">Corpus</div></div>
+      <button class="reader-settings-btn" onclick="toggleSettings()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7B4FD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
       </button>
     </div>
     <div class="section-dots" id="section-dots"></div>
+    </div>
     <div class="reader-scroll-area" id="reader-content"></div>
     <div class="reader-btn-bar" id="reader-btn-bar"></div>
   </div>
@@ -7360,6 +7385,7 @@ function showScreen(id) {
   const hideNavScreens = ['reader', 'week'];
   const nav = document.getElementById('bottom-nav');
   if (nav) nav.style.display = hideNavScreens.includes(id) ? 'none' : 'flex';
+  requestAnimationFrame(fixStatsPosition);
 }
 
 function goHome() {
@@ -7531,6 +7557,18 @@ function closeUnlockOverlay() {
   }
 }
 
+function fixStatsPosition() {
+  const topbar = document.querySelector('.topbar');
+  const stats = document.querySelector('.stats-subheader');
+  if (topbar && stats) {
+    stats.style.top = topbar.offsetHeight + 'px';
+    const scrollContent = document.querySelector('.scroll-content');
+    if (scrollContent) {
+      scrollContent.style.paddingTop = (topbar.offsetHeight + stats.offsetHeight + 8) + 'px';
+    }
+  }
+}
+
 function renderHome() {
   const ui = u();
   // Dir + toggle label
@@ -7618,7 +7656,7 @@ function renderHome() {
               <div class="thinker-name">${t.name}</div>
               <div class="thinker-era">${t.era}</div>
             </div>
-            ${unlocked ? '' : '<div class="thinker-card-lock">🔒</div>'}
+            ${unlocked ? '' : '<div class="thinker-card-lock"><svg viewBox="0 0 64 64" width="20" height="20"><use href="#ic-lock"/></svg></div>'}
           `;
         } else {
           card.className = 'thinker-card ' + (unlocked ? 'unlocked' : 'locked');
@@ -7626,7 +7664,7 @@ function renderHome() {
             <div class="thinker-emoji">${t.emoji}</div>
             <div class="thinker-name">${t.name}</div>
             <div class="thinker-era">${t.era}</div>
-            ${unlocked ? '' : '<div class="thinker-card-lock">🔒</div>'}
+            ${unlocked ? '' : '<div class="thinker-card-lock"><svg viewBox="0 0 64 64" width="20" height="20"><use href="#ic-lock"/></svg></div>'}
           `;
         }
         if (unlocked) card.onclick = () => openThinkerModal(t.id);
@@ -7738,6 +7776,7 @@ function renderHome() {
   } catch(e) { console.error('renderHome: weeks list error', e); }
 
   populateCarousel();
+  requestAnimationFrame(fixStatsPosition);
 }
 
 function populateCarousel() {
@@ -8931,11 +8970,11 @@ function renderPantheon() {
       <div class="pantheon-card ${isUnlocked ? '' : 'locked'}" onclick="${isUnlocked ? `openThinkerModal('${t.id}')` : ''}">
         <img src="${t.image}" alt="${t.name}" loading="lazy">
         <div class="pantheon-card-overlay"></div>
-        ${!isUnlocked ? '<div class="pantheon-lock-icon">🔒</div>' : ''}
-        <div class="pantheon-card-info">
+        ${!isUnlocked ? '<div class="pantheon-lock-icon"><svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-lock"/></svg></div>' : ''}
+        ${isUnlocked ? `<div class="pantheon-card-info">
           <div class="pantheon-card-name">${state.lang === 'en' ? (t.nameEn || t.name) : t.name}</div>
           <div class="pantheon-card-era">${t.era || ''}</div>
-        </div>
+        </div>` : ''}
       </div>
     `;
   }).join('');
@@ -8948,6 +8987,7 @@ function showPantheonScreen() {
   document.getElementById('pantheon-streak').textContent = state.dailyStreak;
   document.getElementById('pantheon-xp').textContent = state.xp;
   document.getElementById('pantheon-level').textContent = getLevel(state.xp);
+  requestAnimationFrame(fixStatsPosition);
 }
 
 function renderProfile() {
