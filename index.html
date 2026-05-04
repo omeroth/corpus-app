@@ -1365,6 +1365,7 @@
     padding: 12px 16px;
     background: #F8F5FF;
     direction: ltr;
+    position: relative;
   }
   .reader-back-btn {
     background: none;
@@ -2176,8 +2177,9 @@
   .settings-panel {
     position: fixed;
     top: 56px;
-    right: 16px;
-    z-index: 1000;
+    right: auto;
+    left: auto;
+    z-index: 500;
     background: white;
     border-radius: 16px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.12);
@@ -3194,6 +3196,17 @@
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
       </button>
+      <div class="settings-panel" id="settings-panel" style="display:none">
+        <button class="lang-toggle-btn" id="lang-toggle-btn" onclick="toggleLang()">English</button>
+        <div class="settings-section">
+          <div class="settings-label" id="settings-text-size-label">גודל טקסט</div>
+          <div class="settings-text-size-row">
+            <button class="text-size-btn" onclick="changeTextSize(-1)">A-</button>
+            <span class="text-size-current" id="text-size-current">100%</span>
+            <button class="text-size-btn" onclick="changeTextSize(1)">A+</button>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="section-dots" id="section-dots"></div>
     </div>
@@ -3203,18 +3216,6 @@
 
 </div>
 
-<!-- Settings panel (global, fixed position) -->
-<div class="settings-panel" id="settings-panel" style="display:none">
-  <button class="lang-toggle-btn" id="lang-toggle-btn" onclick="toggleLang()">English</button>
-  <div class="settings-section">
-    <div class="settings-label" id="settings-text-size-label">גודל טקסט</div>
-    <div class="settings-text-size-row">
-      <button class="text-size-btn" onclick="changeTextSize(-1)">A-</button>
-      <span class="text-size-current" id="text-size-current">100%</span>
-      <button class="text-size-btn" onclick="changeTextSize(1)">A+</button>
-    </div>
-  </div>
-</div>
 
 <!-- ═══════════════════════════════
      MODALS
@@ -7441,14 +7442,29 @@ function changeTextSize(direction) {
 
 function toggleSettings() {
   const panel = document.getElementById('settings-panel');
-  panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+  if (!panel) return;
+  if (panel.style.display === 'none' || panel.style.display === '') {
+    const btn = document.querySelector('.reader-settings-btn') || document.querySelector('.settings-btn');
+    if (btn) {
+      const rect = btn.getBoundingClientRect();
+      panel.style.position = 'fixed';
+      panel.style.top = (rect.bottom + 4) + 'px';
+      panel.style.left = (rect.right - 200) + 'px';
+      panel.style.right = 'auto';
+      panel.style.zIndex = '9999';
+    }
+    setTimeout(() => { panel.style.display = 'flex'; }, 10);
+  } else {
+    panel.style.display = 'none';
+  }
 }
 
 document.addEventListener('click', function(e) {
   const panel = document.getElementById('settings-panel');
+  const settingsBtn = document.querySelector('.reader-settings-btn') || document.querySelector('.settings-btn');
   if (!panel || panel.style.display === 'none') return;
-  const isSettingsBtn = e.target.closest('.settings-btn');
-  if (!isSettingsBtn && !panel.contains(e.target)) {
+  if (settingsBtn && settingsBtn.contains(e.target)) return;
+  if (!panel.contains(e.target)) {
     panel.style.display = 'none';
   }
 });
