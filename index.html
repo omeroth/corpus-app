@@ -2449,6 +2449,70 @@
     background: #9B6FE4;
   }
 
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .anim-fade-up { animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) both; }
+  .anim-fade { animation: fadeIn 0.45s ease both; }
+
+  .btn-press {
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  }
+  .btn-press:active {
+    transform: scale(0.97);
+  }
+  .week-row, .hero-continue-card, .bottom-nav-btn, .next-lesson-btn,
+  .unlock-cta-btn, .pf-logout-btn, .pf-lang-btn, .week-row-bonus-unlocked {
+    transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.12s ease;
+  }
+  .week-row:active, .hero-continue-card:active, .bottom-nav-btn:active, .next-lesson-btn:active,
+  .unlock-cta-btn:active, .pf-logout-btn:active, .pf-lang-btn:active, .week-row-bonus-unlocked:active {
+    transform: scale(0.95);
+  }
+
+  @keyframes ripple {
+    from { transform: scale(0); opacity: 0.3; }
+    to { transform: scale(2.5); opacity: 0; }
+  }
+  .ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(123,79,212,0.2);
+    width: 60px;
+    height: 60px;
+    margin-top: -30px;
+    margin-left: -30px;
+    animation: ripple 0.7s ease-out both;
+    pointer-events: none;
+  }
+
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(24px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideInRight {
+    from { opacity: 0; transform: translateX(-24px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .anim-slide-in { animation: slideInLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) both; }
+  .anim-slide-back { animation: slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) both; }
+
+  @keyframes glideInRight {
+    from { opacity: 0.4; transform: translateX(40px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes glideInLeft {
+    from { opacity: 0.4; transform: translateX(-40px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .anim-section-next { animation: glideInRight 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+  .anim-section-prev { animation: glideInLeft 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
@@ -7389,18 +7453,28 @@ function showScreen(id) {
   requestAnimationFrame(fixStatsPosition);
 }
 
+function animateScreen(el, animClass) {
+  if (!el) return;
+  el.classList.remove('anim-fade-up', 'anim-fade', 'anim-slide-in', 'anim-slide-back');
+  void el.offsetWidth;
+  el.classList.add(animClass);
+}
+
 function goHome() {
   renderHome();
   showScreen('home');
   updateBottomNav('home');
+  animateScreen(document.getElementById('screen-home'), 'anim-fade');
 }
 
 function goBack() {
   if (state.currentScreen === 'reader') {
     renderWeek(state.currentWeek);
     showScreen('week');
+    animateScreen(document.getElementById('screen-week'), 'anim-slide-back');
   } else {
     goHome();
+    animateScreen(document.getElementById('screen-home'), 'anim-slide-back');
   }
 }
 
@@ -7410,7 +7484,12 @@ function readerGoBack() {
     state.quizAnswered = false;
     renderReader();
     const scrollArea = document.getElementById('reader-content');
-    if (scrollArea) scrollArea.scrollTop = 0;
+    if (scrollArea) {
+      scrollArea.scrollTop = 0;
+      scrollArea.classList.remove('anim-section-next', 'anim-section-prev');
+      void scrollArea.offsetWidth;
+      scrollArea.classList.add('anim-section-prev');
+    }
   } else {
     if (state.currentWeek) {
       renderWeek(state.currentWeek);
@@ -7447,9 +7526,12 @@ function toggleSettings() {
     const btn = document.querySelector('.reader-settings-btn') || document.querySelector('.settings-btn');
     if (btn) {
       const rect = btn.getBoundingClientRect();
+      const appContainer = document.querySelector('.screen.active');
+      const appRect = appContainer.getBoundingClientRect();
       panel.style.position = 'fixed';
       panel.style.top = (rect.bottom + 4) + 'px';
-      panel.style.left = (rect.right - 200) + 'px';
+      const leftPos = appRect.left + 60;
+      panel.style.left = leftPos + 'px';
       panel.style.right = 'auto';
       panel.style.zIndex = '9999';
     }
@@ -7460,20 +7542,37 @@ function toggleSettings() {
 }
 
 document.addEventListener('click', function(e) {
-  const panel = document.getElementById('settings-panel');
-  const settingsBtn = document.querySelector('.reader-settings-btn') || document.querySelector('.settings-btn');
-  if (!panel || panel.style.display === 'none') return;
-  if (settingsBtn && settingsBtn.contains(e.target)) return;
-  if (!panel.contains(e.target)) {
-    panel.style.display = 'none';
-  }
-});
-
-document.addEventListener('click', function(e) {
+  // Close lang dropdown
   const dd = document.getElementById('pf-lang-dropdown');
-  const btn = document.getElementById('pf-lang-btn');
-  if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) {
+  const langBtn = document.getElementById('pf-lang-btn');
+  if (dd && langBtn && !langBtn.contains(e.target) && !dd.contains(e.target)) {
     dd.style.display = 'none';
+  }
+
+  // Close settings panel
+  const panel = document.getElementById('settings-panel');
+  if (panel && panel.style.display !== 'none') {
+    const isSettingsBtn = e.target.closest('.reader-settings-btn') || e.target.closest('.settings-btn');
+    if (!isSettingsBtn && !panel.contains(e.target)) {
+      panel.style.display = 'none';
+    }
+  }
+
+  // Ripple effect
+  const isSettingsBtn = e.target.closest('.reader-settings-btn') || e.target.closest('.settings-btn');
+  if (!isSettingsBtn) {
+    const card = e.target.closest('.week-row, .hero-continue-card');
+    if (card) {
+      const ripple = document.createElement('div');
+      ripple.className = 'ripple-effect';
+      const rect = card.getBoundingClientRect();
+      ripple.style.left = (e.clientX - rect.left) + 'px';
+      ripple.style.top = (e.clientY - rect.top) + 'px';
+      card.style.position = 'relative';
+      card.style.overflow = 'hidden';
+      card.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 700);
+    }
   }
 });
 
@@ -7747,7 +7846,7 @@ function renderHome() {
               <div class="week-row-chev">‹</div>
             `;
           }
-          div.onclick = () => { renderWeek(w.id); showScreen('week'); };
+          div.onclick = () => { renderWeek(w.id); showScreen('week'); animateScreen(document.getElementById('screen-week'), 'anim-slide-in'); };
         } else {
           if (w.isBonus) {
             const bonusProgress = getPrevWeekProgress('bonus1');
@@ -7909,6 +8008,7 @@ function openReader(weekId, dayId) {
   state.dayQuizResults = [];
   renderReader();
   showScreen('reader');
+  animateScreen(document.getElementById('screen-reader'), 'anim-slide-in');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -8137,7 +8237,12 @@ function nextSection() {
     state.quizAnswered = false;
     renderReader();
     const scrollArea = document.getElementById('reader-content');
-    if (scrollArea) scrollArea.scrollTop = 0;
+    if (scrollArea) {
+      scrollArea.scrollTop = 0;
+      scrollArea.classList.remove('anim-section-next', 'anim-section-prev');
+      void scrollArea.offsetWidth;
+      scrollArea.classList.add('anim-section-next');
+    }
   }
 }
 
@@ -9004,6 +9109,7 @@ function showPantheonScreen() {
   document.getElementById('pantheon-xp').textContent = state.xp;
   document.getElementById('pantheon-level').textContent = getLevel(state.xp);
   requestAnimationFrame(fixStatsPosition);
+  animateScreen(document.getElementById('screen-pantheon'), 'anim-fade-up');
 }
 
 function renderProfile() {
@@ -9144,6 +9250,7 @@ function showProfileScreen() {
   updateBottomNav('profile');
   showScreen('profile');
   renderProfile();
+  animateScreen(document.getElementById('screen-profile'), 'anim-fade-up');
 }
 
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
