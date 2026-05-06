@@ -87,6 +87,29 @@
     z-index: 100;
     box-sizing: border-box;
   }
+  .pantheon-header-unit {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #F8F5FF;
+  }
+  #screen-profile .topbar,
+  #screen-pantheon .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #F8F5FF;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    box-sizing: border-box;
+    margin-left: 0;
+    margin-right: 0;
+    left: 0;
+    right: 0;
+  }
   .topbar-logo-wrap {
     font-weight: 800;
     font-size: 14px;
@@ -680,11 +703,12 @@
   }
   .pantheon-card {
     border-radius: 18px;
-    overflow: hidden;
+    overflow: visible;
     position: relative;
     aspect-ratio: 3/4;
     cursor: pointer;
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+    perspective: 1000px;
   }
   .pantheon-card:hover {
     transform: translateY(-6px);
@@ -735,6 +759,101 @@
   }
   .pantheon-card.locked img {
     filter: grayscale(100%) brightness(0.4);
+  }
+  .pantheon-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+  .pantheon-card.flipped .pantheon-card-inner {
+    transform: rotateY(180deg);
+  }
+  .pantheon-card-front,
+  .pantheon-card-back {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  .pantheon-card-back {
+    transform: rotateY(180deg);
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(185,149,243,0.4) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(155,111,228,0.3) 0%, transparent 50%),
+      linear-gradient(135deg, #3D1F7A 0%, #5E37A8 50%, #7B4FD4 100%);
+    border: 1px solid rgba(185,149,243,0.3);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    text-align: center;
+    gap: 8px;
+  }
+  .pantheon-card-back::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(185,149,243,0.15) 1px, transparent 0);
+    background-size: 20px 20px;
+    border-radius: 18px;
+    pointer-events: none;
+  }
+  .pantheon-card-back::after {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    border: 1px solid rgba(185,149,243,0.2);
+    border-radius: 12px;
+    pointer-events: none;
+  }
+  .card-back-star {
+    font-size: 14px;
+    color: #FFD982;
+    opacity: 0.9;
+    margin-bottom: 4px;
+    position: relative;
+    z-index: 1;
+  }
+  .pantheon-card-back-name {
+    font-size: 17px;
+    font-weight: 900;
+    color: #FFFFFF;
+    line-height: 1.2;
+    text-shadow: 0 2px 12px rgba(123,79,212,0.8);
+    letter-spacing: -0.01em;
+    position: relative;
+    z-index: 1;
+  }
+  .pantheon-card-back-era {
+    font-size: 10px;
+    color: #FFD982;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+  }
+  .pantheon-card-back-quote {
+    font-size: 10px;
+    color: rgba(212,191,250,0.9);
+    line-height: 1.6;
+    font-style: italic;
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(185,149,243,0.15);
+    position: relative;
+    z-index: 1;
   }
   .pantheon-card.locked .pantheon-card-name {
     color: #6B5A8A;
@@ -1156,6 +1275,7 @@
     z-index: 200;
     padding-bottom: env(safe-area-inset-bottom);
     box-shadow: 0 -2px 16px rgba(123,79,212,0.08);
+    direction: ltr;
   }
   .bottom-nav-btn {
     position: relative;
@@ -3125,26 +3245,28 @@
        PANTHEON SCREEN
   ═══════════════════════════════ -->
   <div id="screen-pantheon" class="screen">
-    <div class="topbar">
-      <div style="width:36px"></div>
-      <div class="topbar-logo-wrap">
-        <div class="topbar-logo">Corpus</div>
+    <div class="pantheon-header-unit">
+      <div class="topbar">
+        <div style="width:36px"></div>
+        <div class="topbar-logo-wrap">
+          <div class="topbar-logo">Corpus</div>
+        </div>
+        <div style="width:36px"></div>
       </div>
-      <div style="width:36px"></div>
-    </div>
-    <div class="stats-subheader">
-      <span class="topbar-stat" title="Streak">
-        <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-streak"/></svg>
-        <span id="pantheon-streak">0</span>
-      </span>
-      <span class="topbar-stat" title="XP">
-        <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-xp"/></svg>
-        <span id="pantheon-xp">0</span>
-      </span>
-      <span class="topbar-stat" title="Level">
-        <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-level"/></svg>
-        <span id="pantheon-level">1</span>
-      </span>
+      <div class="stats-subheader">
+        <span class="topbar-stat" title="Streak">
+          <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-streak"/></svg>
+          <span id="pantheon-streak">0</span>
+        </span>
+        <span class="topbar-stat" title="XP">
+          <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-xp"/></svg>
+          <span id="pantheon-xp">0</span>
+        </span>
+        <span class="topbar-stat" title="Level">
+          <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-level"/></svg>
+          <span id="pantheon-level">1</span>
+        </span>
+      </div>
     </div>
     <div class="scroll-content" style="padding-bottom:80px">
       <div class="pantheon-stats" id="pantheon-stats"></div>
@@ -3178,11 +3300,11 @@
     <!-- XP Card -->
     <div class="pf-card pf-xp-card">
       <div class="pf-xp-top">
-        <span class="pf-xp-level" id="pf-level-name"></span>
         <div style="display:flex;align-items:center;gap:6px">
           <span class="pf-xp-val" id="pf-xp-val"></span>
           <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-xp"/></svg>
         </div>
+        <span class="pf-xp-level" id="pf-level-name"></span>
       </div>
       <div class="pf-xp-track">
         <div class="pf-xp-fill" id="pf-xp-fill"></div>
@@ -3231,10 +3353,10 @@
        WEEK SCREEN
   ═══════════════════════════════ -->
   <div id="screen-week" class="screen">
-    <div class="topbar">
-      <div style="width:36px"></div>
-      <div class="topbar-title" id="week-screen-title"></div>
+    <div class="topbar" id="week-topbar">
       <button class="topbar-back" id="week-back-btn" onclick="goHome()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+      <div class="topbar-title" id="week-screen-title"></div>
+      <div style="width:36px"></div>
     </div>
     <div class="scroll-content">
       <div id="days-list"></div>
@@ -7673,6 +7795,13 @@ function closeUnlockOverlay() {
 }
 
 function fixStatsPosition() {
+  document.querySelectorAll('.topbar').forEach(t => {
+    if (t.closest('#screen-profile') || t.closest('#screen-pantheon')) {
+      t.style.transform = 'none';
+    }
+  });
+  if (state.currentScreen === 'profile') return;
+  if (state.currentScreen === 'pantheon') return;
   const topbar = document.querySelector('.topbar');
   const stats = document.querySelector('.stats-subheader');
   if (topbar && stats) {
@@ -7790,6 +7919,7 @@ function renderHome() {
 
   // Weeks list
   const wl = document.getElementById('weeks-list');
+  wl.style.direction = state.lang === 'en' ? 'ltr' : 'rtl';
   wl.innerHTML = '';
   try {
     getW().forEach(w => {
@@ -7815,6 +7945,7 @@ function renderHome() {
         if (!w.locked && isUnlocked) {
           if (w.isBonus) {
             div.className = 'week-row-bonus-unlocked';
+            div.style.direction = isEn ? 'ltr' : 'rtl';
             div.innerHTML = `
               <div class="week-row-bonus-unlocked-top">
                 <div class="week-bonus-ribbon">★ ${isEn ? 'BONUS WEEK' : 'פרק בונוס'}</div>
@@ -7825,11 +7956,11 @@ function renderHome() {
                   <div class="week-row-ttl" style="color:#2A1266;font-weight:800">${isEn ? (w.titleEn || w.title) : w.title}</div>
                   <div class="week-row-sub" style="color:#7B4FD4;font-weight:700">${w.days.length} ${isEn ? 'lessons' : 'לומדות'}</div>
                   <div class="week-bonus-chips">
-                    <span class="week-bonus-chip">קאנט</span>
-                    <span class="week-bonus-chip">מיל</span>
-                    <span class="week-bonus-chip">אריסטו</span>
-                    <span class="week-bonus-chip">ניטשה</span>
-                    <span class="week-bonus-chip">סוקרטס</span>
+                    <span class="week-bonus-chip">${isEn ? 'Kant' : 'קאנט'}</span>
+                    <span class="week-bonus-chip">${isEn ? 'Mill' : 'מיל'}</span>
+                    <span class="week-bonus-chip">${isEn ? 'Aristotle' : 'אריסטו'}</span>
+                    <span class="week-bonus-chip">${isEn ? 'Nietzsche' : 'ניטשה'}</span>
+                    <span class="week-bonus-chip">${isEn ? 'Socrates' : 'סוקרטס'}</span>
                   </div>
                 </div>
                 <div class="week-row-chev" style="color:#C7892C">‹</div>
@@ -7837,6 +7968,7 @@ function renderHome() {
             `;
           } else {
             div.className = 'week-row';
+            div.style.direction = isEn ? 'ltr' : 'rtl';
             div.innerHTML = `
               <div class="week-row-num">${w.id}</div>
               <div class="week-row-meta">
@@ -7852,10 +7984,11 @@ function renderHome() {
             const bonusProgress = getPrevWeekProgress('bonus1');
             if (bonusProgress < 0.75) {
               div.className = 'week-row-bonus-locked-1';
+              div.style.direction = isEn ? 'ltr' : 'rtl';
               div.innerHTML = `
                 <svg class="week-bonus-lock" viewBox="0 0 64 64" width="32" height="32"><use href="#ic-lock"/></svg>
                 <div class="week-row-meta">
-                  <span class="week-row-ttl">פרק בונוס נעול</span>
+                  <span class="week-row-ttl">${isEn ? 'Bonus Week Locked' : 'פרק בונוס נעול'}</span>
                   <span class="week-row-sub">${isEn ? 'Complete weeks 1 & 2 to unlock' : 'השלם את שבועות 1 ו-2 לפתיחה'}</span>
                   <div class="week-bonus-progress"><span style="width:${Math.round(bonusProgress*100)}%"></span></div>
                   <div class="week-bonus-step">${isEn ? Math.round(bonusProgress*100) + '% completed' : Math.round(bonusProgress*100) + '% הושלם'}</div>
@@ -7863,10 +7996,11 @@ function renderHome() {
               `;
             } else {
               div.className = 'week-row-bonus-locked-2';
+              div.style.direction = isEn ? 'ltr' : 'rtl';
               div.innerHTML = `
                 <svg class="week-bonus-lock" viewBox="0 0 64 64" width="34" height="34"><use href="#ic-lock-glow"/></svg>
                 <div class="week-row-meta">
-                  <span class="week-row-ttl">פרק בונוס · קרוב מאוד</span>
+                  <span class="week-row-ttl">${isEn ? 'Bonus Week · Almost there' : 'פרק בונוס · קרוב מאוד'}</span>
                   <span class="week-row-sub" style="color:#7B4FD4;font-weight:700">${isEn ? 'Almost there!' : 'עוד קצת!'}</span>
                   <div class="week-bonus-progress week-bonus-progress-warm"><span style="width:${Math.round(bonusProgress*100)}%"></span></div>
                   <div class="week-bonus-step" style="color:#7B4FD4;font-weight:800">${isEn ? 'One more lesson ✦' : 'עוד לומדה אחת ✦'}</div>
@@ -7875,6 +8009,7 @@ function renderHome() {
             }
           } else {
             div.className = 'week-row week-row-locked';
+            div.style.direction = isEn ? 'ltr' : 'rtl';
             div.innerHTML = `
               <div class="week-row-num week-row-num-locked">${w.id}</div>
               <div class="week-row-meta">
@@ -7952,6 +8087,9 @@ function renderWeek(weekId) {
   const wb = document.getElementById('week-back-btn');
   if (wb) wb.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>';
 
+  const weekTopbar = document.getElementById('week-topbar');
+  if (weekTopbar) weekTopbar.style.direction = state.lang === 'en' ? 'ltr' : 'rtl';
+
   const dl = document.getElementById('days-list');
   dl.innerHTML = '';
   const isEn = state.lang === 'en';
@@ -7964,6 +8102,7 @@ function renderWeek(weekId) {
     if (completed) {
       div.className = 'week-row week-row-completed';
       div.style.cursor = 'pointer';
+      div.style.direction = isEn ? 'ltr' : 'rtl';
       div.innerHTML = `
         <div class="week-row-num week-row-num-completed">✓</div>
         <div class="week-row-meta">
@@ -7974,6 +8113,7 @@ function renderWeek(weekId) {
       div.onclick = () => openReader(weekId, day.id);
     } else if (locked) {
       div.className = 'week-row week-row-locked';
+      div.style.direction = isEn ? 'ltr' : 'rtl';
       div.innerHTML = `
         <div class="week-row-num week-row-num-locked">${day.id}</div>
         <div class="week-row-meta">
@@ -7984,6 +8124,7 @@ function renderWeek(weekId) {
       `;
     } else {
       div.className = 'week-row week-row-active';
+      div.style.direction = isEn ? 'ltr' : 'rtl';
       div.innerHTML = `
         <div class="week-row-num">${day.id}</div>
         <div class="week-row-meta">
@@ -9087,18 +9228,48 @@ function renderPantheon() {
 
   grid.innerHTML = thinkers.map(t => {
     const isUnlocked = validUnlocked.includes(t.id);
+    const displayName = state.lang === 'en' ? (t.nameEn || t.name) : t.name;
+    if (isUnlocked) {
+      return `
+        <div class="pantheon-card" onclick="flipThinkerCard(this, '${t.id}')">
+          <div class="pantheon-card-inner">
+            <div class="pantheon-card-front">
+              <img src="${t.image}" alt="${t.name}" loading="lazy">
+              <div class="pantheon-card-overlay"></div>
+              <div class="pantheon-card-info">
+                <div class="pantheon-card-name">${displayName}</div>
+                <div class="pantheon-card-era">${t.era || ''}</div>
+              </div>
+            </div>
+            <div class="pantheon-card-back">
+              <div class="card-back-star">✦</div>
+              <div class="pantheon-card-back-name">${displayName}</div>
+              <div class="pantheon-card-back-era">${t.era || ''}</div>
+              <div class="pantheon-card-back-quote">${t.quote || t.quoteEn || ''}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
     return `
-      <div class="pantheon-card ${isUnlocked ? '' : 'locked'}" onclick="${isUnlocked ? `openThinkerModal('${t.id}')` : ''}">
-        <img src="${t.image}" alt="${t.name}" loading="lazy">
-        <div class="pantheon-card-overlay"></div>
-        ${!isUnlocked ? '<div class="pantheon-lock-icon"><svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-lock"/></svg></div>' : ''}
-        ${isUnlocked ? `<div class="pantheon-card-info">
-          <div class="pantheon-card-name">${state.lang === 'en' ? (t.nameEn || t.name) : t.name}</div>
-          <div class="pantheon-card-era">${t.era || ''}</div>
-        </div>` : ''}
+      <div class="pantheon-card locked">
+        <div class="pantheon-card-inner">
+          <div class="pantheon-card-front">
+            <img src="${t.image}" alt="${t.name}" loading="lazy">
+            <div class="pantheon-card-overlay"></div>
+            <div class="pantheon-lock-icon"><svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-lock"/></svg></div>
+          </div>
+        </div>
       </div>
     `;
   }).join('');
+}
+
+function flipThinkerCard(card, thinkerId) {
+  document.querySelectorAll('.pantheon-card.flipped').forEach(c => {
+    if (c !== card) c.classList.remove('flipped');
+  });
+  card.classList.toggle('flipped');
 }
 
 function showPantheonScreen() {
@@ -9108,7 +9279,26 @@ function showPantheonScreen() {
   document.getElementById('pantheon-streak').textContent = state.dailyStreak;
   document.getElementById('pantheon-xp').textContent = state.xp;
   document.getElementById('pantheon-level').textContent = getLevel(state.xp);
-  requestAnimationFrame(fixStatsPosition);
+  requestAnimationFrame(() => {
+    const pantheonTopbar = document.querySelector('#screen-pantheon .topbar');
+    const pantheonStats = document.querySelector('#screen-pantheon .stats-subheader');
+    if (pantheonTopbar) {
+      pantheonTopbar.style.transform = 'none';
+      pantheonTopbar.style.position = 'sticky';
+      pantheonTopbar.style.top = '0';
+      pantheonTopbar.style.zIndex = '100';
+      pantheonTopbar.style.background = '#F8F5FF';
+      pantheonTopbar.style.width = '100%';
+    }
+    if (pantheonStats) {
+      pantheonStats.style.position = 'sticky';
+      pantheonStats.style.top = pantheonTopbar ? pantheonTopbar.offsetHeight + 'px' : '54px';
+      pantheonStats.style.zIndex = '99';
+      pantheonStats.style.transform = 'none';
+      pantheonStats.style.left = 'auto';
+      pantheonStats.style.width = '100%';
+    }
+  });
   animateScreen(document.getElementById('screen-pantheon'), 'anim-fade-up');
 }
 
@@ -9262,14 +9452,14 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 
 </script>
 <nav class="bottom-nav" id="bottom-nav">
-  <button class="bottom-nav-btn" id="bnav-pantheon" onclick="showPantheonScreen()">
-    <svg viewBox="0 0 64 64" width="34" height="34"><use href="#ic-pantheon"/></svg>
+  <button class="bottom-nav-btn" id="bnav-profile" onclick="showProfileScreen()">
+    <svg viewBox="0 0 64 64" width="34" height="34"><use href="#ic-personal"/></svg>
   </button>
   <button class="bottom-nav-btn active" id="bnav-home" onclick="goHome()">
     <svg viewBox="0 0 64 64" width="34" height="34"><use href="#ic-home"/></svg>
   </button>
-  <button class="bottom-nav-btn" id="bnav-profile" onclick="showProfileScreen()">
-    <svg viewBox="0 0 64 64" width="34" height="34"><use href="#ic-personal"/></svg>
+  <button class="bottom-nav-btn" id="bnav-pantheon" onclick="showPantheonScreen()">
+    <svg viewBox="0 0 64 64" width="34" height="34"><use href="#ic-pantheon"/></svg>
   </button>
 </nav>
 
