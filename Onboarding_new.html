@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Corpus - Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#2A1266;
+    --purple:#7B4FD4;
+    --purple-light:#9B6FE4;
+    --lilac:#B995F3;
+    --bg:#F8F5FF;
+    --amber:#F59E0B;
+    --pink:#FF6FA8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{font-family:'Inter',sans-serif;color:var(--ink);direction:ltr;text-align:left;
+    -webkit-font-smoothing:antialiased;height:100%;overflow:hidden;background:#0E0626}
+
+  /* ===== Phone frame on desktop ===== */
+  body{display:grid;place-items:center}
+  .phone{
+    width:100%;max-width:480px;height:100dvh;max-height:900px;
+    position:relative;overflow:hidden;background:var(--bg);
+    box-shadow:0 30px 80px -20px rgba(42,18,102,.4);
+  }
+  @media(min-width:520px){.phone{border-radius:36px;height:880px;border:1px solid rgba(42,18,102,.08)}}
+
+  /* ===== Carousel rail ===== */
+  .rail{position:absolute;inset:0;display:flex;width:300%;
+    transition:transform .65s cubic-bezier(.7,0,.2,1);will-change:transform}
+  .rail.is-still{transition:transform 0s}
+  .slide{flex:0 0 33.3333%;height:100%;position:relative;overflow:hidden;
+    display:flex;flex-direction:column;justify-content:flex-end;padding:24px 28px 32px}
+
+  /* ===== Top chrome (progress + skip) ===== */
+  .top{position:absolute;top:18px;left:0;right:0;padding:0 22px;
+    display:flex;align-items:center;justify-content:space-between;z-index:30}
+  .dots{display:flex;gap:7px}
+  .dot{width:24px;height:5px;border-radius:99px;background:rgba(255,255,255,.28);
+    transition:background .35s,width .35s;border:0;padding:0;cursor:pointer}
+  .dot.active{width:34px;background:#FFFFFF}
+  .dot.done{background:rgba(255,255,255,.7)}
+  .skip{font:inherit;font-size:14px;font-weight:500;color:rgba(255,255,255,.85);
+    background:transparent;border:0;padding:6px 10px;cursor:pointer;letter-spacing:-.01em}
+  .skip:hover{color:#fff}
+
+  /* When on the bright daylight slide, flip top chrome to dark */
+  .top.dark .dot{background:rgba(42,18,102,.22)}
+  .top.dark .dot.active{background:var(--ink)}
+  .top.dark .dot.done{background:rgba(42,18,102,.55)}
+  .top.dark .skip{color:rgba(42,18,102,.7)}
+  .top.dark .skip:hover{color:var(--ink)}
+
+  /* ===== Shared text & CTA ===== */
+  .copy{position:relative;z-index:5;padding-bottom:8px}
+  .copy h1{font-size:30px;font-weight:800;letter-spacing:-.025em;line-height:1.15;
+    margin-bottom:14px;text-wrap:balance}
+  .copy p{font-size:16.5px;line-height:1.55;font-weight:400;opacity:.92;text-wrap:pretty;max-width:34ch}
+  .cta-row{margin-top:26px;display:flex;align-items:center;gap:14px}
+  .cta{font:inherit;font-weight:700;font-size:17px;letter-spacing:-.01em;border:0;cursor:pointer;
+    padding:16px 28px;border-radius:18px;display:inline-flex;align-items:center;gap:10px;
+    transition:transform .15s ease,box-shadow .2s ease}
+  .cta:active{transform:translateY(1px) scale(.99)}
+  .cta-arrow{display:inline-block;font-size:20px;line-height:1}
+
+  /* ===== Owl staging ===== */
+  .stage{position:absolute;left:0;right:0;display:grid;place-items:center;pointer-events:none}
+  .owl-holder{position:relative;display:grid;place-items:center}
+  .owl-svg{width:100%;height:auto;display:block}
+  .owl-svg [data-expr]{display:none}
+  .owl-svg.owl-neutral [data-expr="neutral"]{display:inline}
+  .owl-svg.owl-determined [data-expr="determined"]{display:inline}
+  .owl-svg.owl-admiring [data-expr="admiring"]{display:inline}
+  .owl-svg.owl-action [data-expr="action"]{display:inline}
+
+  @keyframes floaty{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-12px) rotate(1.2deg)}}
+  .floating{animation:floaty 3.6s ease-in-out infinite;transform-origin:50% 80%}
+  @keyframes wave{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(14deg)}}
+  .owl-svg.owl-neutral [data-wave]{animation:wave 1.7s ease-in-out infinite;transform-origin:60px 110px}
+  @keyframes pointBob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+  .owl-svg.owl-action [data-point]{animation:pointBob 1.1s ease-in-out infinite}
+  @keyframes bounce{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+  .owl-svg.owl-admiring [data-bounce]{animation:bounce 1.4s ease-in-out infinite;transform-origin:100px 120px}
+
+  /* ===== Per-slide entry ===== */
+  .slide .anim{opacity:0;transform:translateY(18px);transition:opacity .55s ease,transform .55s ease}
+  .slide[data-active="true"] .anim{opacity:1;transform:none}
+  .slide[data-active="true"] .anim.d1{transition-delay:.12s}
+  .slide[data-active="true"] .anim.d2{transition-delay:.24s}
+  .slide[data-active="true"] .anim.d3{transition-delay:.36s}
+  .slide[data-active="true"] .anim.d4{transition-delay:.48s}
+
+  /* ============================================================
+     SLIDE 1 - COSMOS / NIGHT SKY
+     ============================================================ */
+  .s1{
+    background:
+      radial-gradient(ellipse at 50% 20%,#3A1E86 0%,transparent 55%),
+      radial-gradient(ellipse at 80% 80%,#5E37A8 0%,transparent 60%),
+      linear-gradient(180deg,#0E0626 0%,#1F0B5C 60%,#2A1266 100%);
+    color:#fff;
+  }
+  .s1 .copy h1{color:#fff}
+  .s1 .copy p{color:rgba(255,255,255,.78)}
+  .s1 .cta-primary{
+    background:#fff;color:var(--ink);
+    box-shadow:0 14px 36px -10px rgba(0,0,0,.55),inset 0 -3px 0 rgba(42,18,102,.08);
+  }
+  .s1 .cta-primary:hover{box-shadow:0 18px 44px -10px rgba(0,0,0,.65),inset 0 -3px 0 rgba(42,18,102,.08)}
+
+  .s1 .stage{top:8%;height:54%}
+  .s1 .owl-holder{width:78%;max-width:340px}
+
+  /* clickable floating icons base */
+  .float-ic{position:absolute;background:transparent;border:0;padding:0;cursor:pointer;
+    z-index:6;transition:transform .15s ease,filter .2s ease}
+  .float-ic:hover{transform:scale(1.18)}
+  .float-ic:active{transform:scale(.94)}
+  .float-ic:focus-visible{outline:2px solid #F59E0B;outline-offset:4px;border-radius:50%}
+
+  /* stars (clickable) */
+  .star{width:6px;height:6px;border-radius:50%;background:#fff;
+    box-shadow:0 0 8px 2px rgba(255,255,255,.6)}
+  .star.lg{width:9px;height:9px;background:#FFE9B0;box-shadow:0 0 12px 3px rgba(255,210,122,.7)}
+  .star.tiny{width:5px;height:5px;opacity:.7}
+  @keyframes twinkle{0%,100%{opacity:.5;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+  .float-ic.star{animation:twinkle 3s ease-in-out infinite}
+  .float-ic.star:hover{animation-play-state:paused;background:#FFE9B0;box-shadow:0 0 18px 6px rgba(255,210,122,.9)}
+
+  /* moon (clickable) */
+  .moon{position:absolute;top:14%;left:14%;width:54px;height:54px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#FFF0C7 0%,#F5B544 60%,#C97D1A 100%);
+    box-shadow:0 0 30px 6px rgba(245,181,68,.45),inset -6px -8px 0 rgba(42,18,102,.18);
+    border:0;cursor:pointer;z-index:6;transition:transform .2s ease,box-shadow .2s ease}
+  .moon::after{content:"";position:absolute;inset:0;border-radius:50%;
+    background:radial-gradient(circle at 70% 70%,rgba(42,18,102,.18) 0,transparent 35%),
+               radial-gradient(circle at 50% 30%,rgba(42,18,102,.15) 0,transparent 25%)}
+  .moon:hover{transform:scale(1.12) rotate(-8deg);box-shadow:0 0 50px 12px rgba(245,181,68,.7),inset -6px -8px 0 rgba(42,18,102,.18)}
+  .moon:focus-visible{outline:2px solid #fff;outline-offset:4px}
+
+  /* constellation lines (drawn-in animation) */
+  .constellation{position:absolute;inset:0;pointer-events:none;width:100%;height:100%}
+  .constellation path{stroke:rgba(255,233,176,.55);stroke-width:1;fill:none;
+    stroke-dasharray:200;stroke-dashoffset:200;
+    transition:stroke-dashoffset 1.6s ease .5s}
+  .slide[data-active="true"] .constellation path{stroke-dashoffset:0}
+
+  /* shooting star (clickable) */
+  @keyframes shoot{
+    0%{transform:translate(-30px,-30px) rotate(20deg);opacity:0}
+    10%{opacity:1}
+    70%{opacity:1}
+    100%{transform:translate(360px,180px) rotate(20deg);opacity:0}}
+  .shoot{position:absolute;top:18%;left:0;width:90px;height:2px;
+    background:linear-gradient(90deg,transparent,#FFE9B0,#fff);
+    border-radius:2px;animation:shoot 5s ease-in 2s infinite;
+    border:0;padding:0;cursor:pointer;z-index:6}
+
+  /* tooltip ribbon for clicked icon */
+  .nudge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.6);
+    background:rgba(255,255,255,.95);color:var(--ink);
+    padding:10px 16px;border-radius:14px;font-weight:700;font-size:14px;
+    box-shadow:0 14px 36px -8px rgba(0,0,0,.4);
+    pointer-events:none;opacity:0;z-index:50;white-space:nowrap;
+    transition:opacity .25s ease,transform .25s ease}
+  .nudge.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+  /* ============================================================
+     SLIDE 2 - DAYLIGHT / TOPIC ORBIT
+     ============================================================ */
+  .s2{
+    background:
+      radial-gradient(ellipse at 50% 18%,#FFE6F2 0%,transparent 60%),
+      radial-gradient(ellipse at 90% 90%,#E4D2FB 0%,transparent 55%),
+      linear-gradient(180deg,#FBF6FF 0%,#F2E6FF 100%);
+    color:var(--ink);
+  }
+  .s2 .copy h1{color:var(--ink)}
+  .s2 .copy p{color:#5B4191}
+  .s2 .cta-primary{
+    background:var(--purple);color:#fff;
+    box-shadow:0 14px 32px -10px rgba(123,79,212,.55),inset 0 -3px 0 rgba(42,18,102,.25);
+  }
+
+  .s2 .stage{top:6%;height:58%}
+  .s2 .owl-holder{width:62%;max-width:260px;z-index:2}
+
+  /* sun rays radiating from behind owl */
+  .rays{position:absolute;top:50%;left:50%;width:340px;height:340px;
+    transform:translate(-50%,-50%);pointer-events:none;z-index:1}
+  .rays svg{width:100%;height:100%;display:block;animation:rotate 32s linear infinite}
+  @keyframes rotate{to{transform:rotate(360deg)}}
+
+  /* topic chips orbiting (clickable) */
+  .orbit{position:absolute;inset:0;z-index:3;pointer-events:none}
+  .topic{position:absolute;background:#fff;border:1.5px solid rgba(42,18,102,.1);
+    padding:9px 14px;border-radius:999px;font-size:13.5px;font-weight:700;color:var(--ink);
+    box-shadow:0 8px 22px -8px rgba(42,18,102,.25);
+    display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
+    cursor:pointer;font-family:inherit;transition:transform .15s ease,box-shadow .2s ease;
+    pointer-events:auto}
+  .topic:hover{transform:scale(1.08);box-shadow:0 12px 28px -8px rgba(42,18,102,.35)}
+  .topic:active{transform:scale(.96)}
+  .topic .dot-color{width:8px;height:8px;border-radius:50%}
+  .topic.t1{top:8%;right:6%;animation:floatA 5s ease-in-out infinite}
+  .topic.t2{top:30%;left:4%;animation:floatB 5.6s ease-in-out infinite}
+  .topic.t3{top:54%;right:0%;animation:floatA 6.2s ease-in-out infinite reverse}
+  .topic.t4{top:12%;left:10%;animation:floatB 4.8s ease-in-out infinite .3s}
+  @keyframes floatA{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+  @keyframes floatB{0%,100%{transform:translateY(0) rotate(2deg)}50%{transform:translateY(-8px) rotate(-2deg)}}
+
+  /* sparkles around owl (clickable) */
+  .spark{position:absolute;font-size:18px;color:var(--amber);font-weight:900;
+    text-shadow:0 0 10px rgba(245,158,11,.55);z-index:4;
+    background:transparent;border:0;cursor:pointer;font-family:inherit;
+    width:34px;height:34px;display:grid;place-items:center;border-radius:50%;
+    transition:transform .15s ease}
+  .spark:hover{transform:scale(1.4)}
+  @keyframes sparkPulse{0%,100%{transform:scale(.7) rotate(0);opacity:.4}50%{transform:scale(1.2) rotate(25deg);opacity:1}}
+  .spark.sp1{top:22%;right:18%;animation:sparkPulse 2.1s ease-in-out infinite}
+  .spark.sp2{top:46%;left:18%;animation:sparkPulse 2.4s ease-in-out infinite .4s}
+  .spark.sp3{bottom:28%;right:24%;animation:sparkPulse 2.6s ease-in-out infinite .8s;color:var(--pink)}
+
+  /* ============================================================
+     SLIDE 3 - REWARDS (background lightened so text reads)
+     ============================================================ */
+  .s3{
+    background:
+      radial-gradient(ellipse at 50% 12%,#FFF1D6 0%,transparent 50%),
+      radial-gradient(ellipse at 12% 88%,#FFE0EE 0%,transparent 55%),
+      linear-gradient(180deg,#FBF6FF 0%,#F2E6FF 100%);
+    color:var(--ink);
+  }
+  .s3 .copy h1{color:var(--ink)}
+  .s3 .copy p{color:#5B4191}
+  .s3 .cta-primary{
+    background:linear-gradient(180deg,#FFB74A 0%,#F59E0B 100%);
+    color:#3A1B00;
+    box-shadow:0 16px 38px -8px rgba(245,158,11,.6),
+      inset 0 -4px 0 rgba(154,82,0,.4),
+      inset 0 2px 0 rgba(255,255,255,.5);
+  }
+  .s3 .cta-primary:hover{box-shadow:0 22px 46px -8px rgba(245,158,11,.7),
+      inset 0 -4px 0 rgba(154,82,0,.4),inset 0 2px 0 rgba(255,255,255,.5)}
+
+  .s3 .stage{top:7%;height:55%}
+  .s3 .owl-holder{width:70%;max-width:300px;z-index:3}
+
+  /* sunburst rays behind owl - lightened */
+  .burst{position:absolute;top:46%;left:50%;width:520px;height:520px;
+    transform:translate(-50%,-50%);pointer-events:none;z-index:1;opacity:.3}
+  .burst svg{width:100%;height:100%;animation:rotate 28s linear infinite}
+
+  /* reward badges around owl (clickable) */
+  .badge{position:absolute;display:flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,.97);color:var(--ink);
+    padding:11px 14px 11px 12px;border-radius:18px;font-weight:800;font-size:14.5px;
+    box-shadow:0 14px 32px -10px rgba(42,18,102,.35);z-index:4;
+    border:0;cursor:pointer;font-family:inherit;text-align:left;
+    transition:transform .15s ease,box-shadow .2s ease}
+  .badge:hover{transform:scale(1.06);box-shadow:0 18px 38px -8px rgba(42,18,102,.5)}
+  .badge:active{transform:scale(.96)}
+  .badge .ico{width:38px;height:38px;display:grid;place-items:center;flex:0 0 38px;
+    filter:drop-shadow(0 2px 4px rgba(42,18,102,.2))}
+  .badge .ico svg{width:100%;height:100%;display:block}
+  .badge .num{font-size:17px;letter-spacing:-.01em}
+  .badge .lbl{font-size:11px;font-weight:600;opacity:.65;letter-spacing:.02em;display:block;line-height:1}
+  .badge .meta{display:flex;flex-direction:column;gap:1px;align-items:flex-start}
+  .badge.b-xp{top:18%;right:5%;animation:floatA 4.6s ease-in-out infinite}
+  .badge.b-streak{top:39%;left:3%;animation:floatB 5s ease-in-out infinite .3s}
+  .badge.b-pantheon{top:60%;right:8%;animation:floatA 5.4s ease-in-out infinite .6s}
+
+  /* Subtle flicker for the streak flame */
+  @keyframes flicker{0%,100%{transform:scaleY(1) scaleX(1)}50%{transform:scaleY(1.05) scaleX(.97)}}
+  .badge.b-streak .ico svg .flame-grp{transform-origin:50% 100%;animation:flicker 1.2s ease-in-out infinite;transform-box:fill-box}
+
+  /* confetti */
+  .confetti{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+  .conf{position:absolute;width:8px;height:14px;border-radius:2px;opacity:0;
+    animation:confFall 4s linear infinite}
+  @keyframes confFall{
+    0%{transform:translateY(-30px) rotate(0);opacity:0}
+    10%{opacity:1}
+    90%{opacity:1}
+    100%{transform:translateY(120vh) rotate(720deg);opacity:0}}
+
+  /* tiny step counter under cta */
+  .steplab{font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    opacity:.55;margin-bottom:14px}
+  .s1 .steplab{color:rgba(255,255,255,.7)}
+  .s2 .steplab,.s3 .steplab{color:var(--purple)}
+</style>
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- ===== Top chrome ===== -->
+  <div class="top" id="top">
+    <div class="dots">
+      <button class="dot active" data-i="0" aria-label="Step 1"></button>
+      <button class="dot" data-i="1" aria-label="Step 2"></button>
+      <button class="dot" data-i="2" aria-label="Step 3"></button>
+    </div>
+    <button class="skip" id="skip">Skip</button>
+  </div>
+
+  <!-- ===== Carousel rail ===== -->
+  <div class="rail" id="rail">
+
+    <!-- ============ SLIDE 1 - COSMOS ============ -->
+    <section class="slide s1" data-active="true">
+      <button class="moon anim d1" data-tip="The cosmos of ideas" aria-label="Moon"></button>
+      <button class="shoot" data-tip="Make a wish - and start learning" aria-label="Shooting star"></button>
+
+      <button class="float-ic star tiny"   style="top:10%;right:24%" data-tip="Aristotle" aria-label="Star: Aristotle"></button>
+      <button class="float-ic star"        style="top:14%;right:48%;animation-delay:.4s" data-tip="Plato" aria-label="Star: Plato"></button>
+      <button class="float-ic star tiny"   style="top:8%;left:30%;animation-delay:1.1s" data-tip="Kant" aria-label="Star: Kant"></button>
+      <button class="float-ic star lg"     style="top:22%;left:12%;animation-delay:.7s" data-tip="Nietzsche" aria-label="Star: Nietzsche"></button>
+      <button class="float-ic star"        style="top:28%;right:8%;animation-delay:1.5s" data-tip="Hume" aria-label="Star: Hume"></button>
+      <button class="float-ic star tiny"   style="top:34%;right:36%;animation-delay:.2s" data-tip="Descartes" aria-label="Star: Descartes"></button>
+      <button class="float-ic star tiny"   style="top:44%;left:8%;animation-delay:.9s" data-tip="Hegel" aria-label="Star: Hegel"></button>
+      <button class="float-ic star"        style="top:46%;right:16%;animation-delay:1.7s" data-tip="Spinoza" aria-label="Star: Spinoza"></button>
+      <button class="float-ic star tiny"   style="top:6%;right:8%;animation-delay:.5s" data-tip="Locke" aria-label="Star: Locke"></button>
+      <button class="float-ic star tiny"   style="top:38%;left:26%;animation-delay:1.3s" data-tip="Hobbes" aria-label="Star: Hobbes"></button>
+      <button class="float-ic star lg"     style="top:54%;left:18%;animation-delay:.6s" data-tip="Socrates" aria-label="Star: Socrates"></button>
+
+      <svg class="constellation" viewBox="0 0 480 900" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M 380 90 L 250 130 L 110 200 L 60 320"/>
+        <path d="M 250 130 L 350 240 L 420 250"/>
+        <path d="M 110 200 L 170 360 L 60 320"/>
+      </svg>
+
+      <div class="stage anim d1">
+        <div class="owl-holder floating" data-slot="0"></div>
+      </div>
+
+      <div class="copy">
+        <div class="steplab anim">Step 1 of 3</div>
+        <h1 class="anim d1">Welcome to Corpus</h1>
+        <p class="anim d2">An app for learning history's biggest ideas - one idea a day, from the greatest thinkers of all time.</p>
+        <div class="cta-row anim d3">
+          <button class="cta cta-primary" data-action="next">
+            Let's begin <span class="cta-arrow">→</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 2 - DAYLIGHT ============ -->
+    <section class="slide s2">
+      <div class="rays anim d1" aria-hidden="true">
+        <svg viewBox="-100 -100 200 200">
+          <g fill="#FFD27A" opacity=".55">
+            <g>
+              <polygon points="0,-95 -6,-50 6,-50"/>
+              <polygon points="0,-95 -6,-50 6,-50" transform="rotate(30)"/>
+              <polygon points="0,-95 -6,-50 6,-50" transform="rotate(60)"/>
+              <polygon points="0,-95 -6,-50 6,-50" transform="rotate(90)"/>
+              <polygon points="0,-95 -6,-50 6,-50" transform="rotate(120)"/>
+              <polygon points="0,-95 -6,-50 6,-50" transform="rotate(150)"/>
+              <polygon points="0,-95 -6,-50 6,-50" transform="rotate(180)"/>
+              <polygon points="0,-95 -6,-50 6,-50" transform="rotate(210)"/>
+              <polygon points="0,-95 -6,-50 6,-50" transform="rotate(240)"/>
+              <polygon points="0,-95 -6,-50 6,-50" transform="rotate(270)"/>
+              <polygon points="0,-95 -6,-50 6,-50" transform="rotate(300)"/>
+              <polygon points="0,-95 -6,-50 6,-50" transform="rotate(330)"/>
+            </g>
+          </g>
+          <circle r="62" fill="#FFE6A6" opacity=".5"/>
+          <circle r="42" fill="#FFF0C2" opacity=".7"/>
+        </svg>
+      </div>
+
+      <div class="orbit">
+        <button class="topic t1 anim d1" data-tip="Kant, Aristotle, Mill"><span class="dot-color" style="background:#7B4FD4"></span>Ethics</button>
+        <button class="topic t2 anim d2" data-tip="Plato, Berkeley, Kant"><span class="dot-color" style="background:#FF6FA8"></span>Reality</button>
+        <button class="topic t3 anim d3" data-tip="Descartes, Hume, Pyrrho"><span class="dot-color" style="background:#F59E0B"></span>Doubt</button>
+        <button class="topic t4 anim d4" data-tip="Sartre, Mill, Berlin"><span class="dot-color" style="background:#9B6FE4"></span>Freedom</button>
+      </div>
+
+      <button class="spark sp1" data-tip="A new insight">✦</button>
+      <button class="spark sp2" data-tip="Discover">✧</button>
+      <button class="spark sp3" data-tip="Reflect">✦</button>
+
+      <div class="stage anim d1">
+        <div class="owl-holder floating" data-slot="1"></div>
+      </div>
+
+      <div class="copy">
+        <div class="steplab anim">Step 2 of 3</div>
+        <h1 class="anim d1">How does it work?</h1>
+        <p class="anim d2">Each chapter explores a different big idea - ethics, reality, doubt, and more. Every day, a short insight with a passage, a source, and light questions.</p>
+        <div class="cta-row anim d3">
+          <button class="cta cta-primary" data-action="next">
+            Next <span class="cta-arrow">→</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLIDE 3 - REWARDS (light bg so text reads) ============ -->
+    <section class="slide s3">
+      <div class="burst anim d1" aria-hidden="true">
+        <svg viewBox="-260 -260 520 520">
+          <g fill="#FFD27A">
+            <g>
+              <polygon points="0,-250 -14,-90 14,-90"/>
+              <polygon points="0,-250 -14,-90 14,-90" transform="rotate(22.5)"/>
+              <polygon points="0,-250 -14,-90 14,-90" transform="rotate(45)"/>
+              <polygon points="0,-250 -14,-90 14,-90" transform="rotate(67.5)"/>
+              <polygon points="0,-250 -14,-90 14,-90" transform="rotate(90)"/>
+              <polygon points="0,-250 -14,-90 14,-90" transform="rotate(112.5)"/>
+              <polygon points="0,-250 -14,-90 14,-90" transform="rotate(135)"/>
+              <polygon points="0,-250 -14,-90 14,-90" transform="rotate(157.5)"/>
+              <polygon points="0,-250 -14,-90 14,-90" transform="rotate(180)"/>
+              <polygon points="0,-250 -14,-90 14,-90" transform="rotate(202.5)"/>
+              <polygon points="0,-250 -14,-90 14,-90" transform="rotate(225)"/>
+              <polygon points="0,-250 -14,-90 14,-90" transform="rotate(247.5)"/>
+              <polygon points="0,-250 -14,-90 14,-90" transform="rotate(270)"/>
+              <polygon points="0,-250 -14,-90 14,-90" transform="rotate(292.5)"/>
+              <polygon points="0,-250 -14,-90 14,-90" transform="rotate(315)"/>
+              <polygon points="0,-250 -14,-90 14,-90" transform="rotate(337.5)"/>
+            </g>
+          </g>
+        </svg>
+      </div>
+
+      <div class="confetti" id="confetti"></div>
+
+      <button class="badge b-xp anim d2" data-tip="Earn XP every lesson">
+        <div class="ico"><svg viewBox="0 0 64 64"><use href="#ic-xp"/></svg></div>
+        <div class="meta"><span class="num">+50 XP</span><span class="lbl">per lesson</span></div>
+      </button>
+      <button class="badge b-streak anim d3" data-tip="Keep your daily streak alive">
+        <div class="ico"><svg viewBox="0 0 64 64"><use href="#ic-streak"/></svg></div>
+        <div class="meta"><span class="num">7 days</span><span class="lbl">daily streak</span></div>
+      </button>
+      <button class="badge b-pantheon anim d4" data-tip="Unlock thinkers in your Pantheon">
+        <div class="ico"><svg viewBox="0 0 64 64"><use href="#ic-pantheon"/></svg></div>
+        <div class="meta"><span class="num">Pantheon</span><span class="lbl">unlock thinkers</span></div>
+      </button>
+
+      <div class="stage anim d1">
+        <div class="owl-holder floating" data-slot="2"></div>
+      </div>
+
+      <div class="copy">
+        <div class="steplab anim">Step 3 of 3</div>
+        <h1 class="anim d1">Learn, collect, progress</h1>
+        <p class="anim d2">Every lesson you complete earns XP, builds your daily streak, and unlocks new thinkers in your personal Pantheon.</p>
+        <div class="cta-row anim d3">
+          <button class="cta cta-primary" data-action="finish">
+            Let's go <span class="cta-arrow">→</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- floating tooltip ribbon -->
+  <div class="nudge" id="nudge"></div>
+
+</div>
+
+<!-- Brand icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="ic-xp" viewBox="0 0 64 64">
+      <path d="M32 8 C 34 20, 40 24, 52 28 C 40 32, 34 38, 32 56 C 30 38, 24 32, 12 28 C 24 24, 30 20, 32 8 Z"
+            fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M32 8 C 30 20, 24 24, 12 28 C 24 24, 30 16, 32 8 Z" fill="#9B6FE4"/>
+      <path d="M32 56 C 34 38, 40 32, 52 28 C 40 32, 34 38, 32 56 Z" fill="#5E37A8" opacity=".55"/>
+      <path d="M30 14 Q 32 22 30 28" stroke="#D4BFFA" stroke-width="2" fill="none" stroke-linecap="round" opacity=".9"/>
+      <circle cx="27" cy="22" r="1.8" fill="#FFFFFF"/>
+    </symbol>
+    <symbol id="ic-streak" viewBox="0 0 64 64">
+      <ellipse cx="32" cy="55" rx="14" ry="3" fill="#2A1266" opacity=".25"/>
+      <ellipse cx="32" cy="54" rx="13" ry="2.4" fill="#7B4FD4" stroke="#2A1266" stroke-width="1.6"/>
+      <ellipse cx="32" cy="53.4" rx="9" ry="1.2" fill="#B995F3" opacity=".8"/>
+      <g class="flame-grp">
+        <path d="M32 6 C 26 14, 18 22, 18 34 C 18 46, 26 52, 32 52 C 38 52, 46 46, 46 34 C 46 26, 40 24, 38 18 C 36 22, 34 22, 34 18 C 34 14, 33 10, 32 6 Z"
+              fill="#F59E0B" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+        <path d="M32 16 C 28 22, 24 28, 24 38 C 24 46, 28 50, 32 50 C 36 50, 42 46, 42 38 C 42 30, 38 28, 36 22 C 35 24, 33 24, 33 22 C 33 18, 32 16, 32 16 Z"
+              fill="#FFCF7A"/>
+        <path d="M32 28 C 28 32, 27 38, 30 44 C 32 48, 36 46, 37 42 C 38 36, 35 32, 32 28 Z"
+              fill="#7B4FD4" stroke="#2A1266" stroke-width="1.4" stroke-linejoin="round"/>
+        <path d="M30 34 Q 32 38 30 42" stroke="#D4BFFA" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".9"/>
+        <path d="M32 9 Q 33 14 32 18" stroke="#FFF3D0" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      </g>
+    </symbol>
+    <symbol id="ic-pantheon" viewBox="0 0 64 64">
+      <rect x="6" y="52" width="52" height="6" rx="1.4" fill="#7B4FD4" stroke="#2A1266" stroke-width="2" stroke-linejoin="round"/>
+      <rect x="9" y="48" width="46" height="5" rx="1.2" fill="#9B6FE4" stroke="#2A1266" stroke-width="2" stroke-linejoin="round"/>
+      <rect x="13" y="22" width="6" height="26" fill="#9B6FE4" stroke="#2A1266" stroke-width="2" stroke-linejoin="round"/>
+      <rect x="22" y="22" width="6" height="26" fill="#7B4FD4" stroke="#2A1266" stroke-width="2" stroke-linejoin="round"/>
+      <rect x="36" y="22" width="6" height="26" fill="#7B4FD4" stroke="#2A1266" stroke-width="2" stroke-linejoin="round"/>
+      <rect x="45" y="22" width="6" height="26" fill="#5E37A8" stroke="#2A1266" stroke-width="2" stroke-linejoin="round"/>
+      <rect x="9" y="18" width="46" height="5" rx="1.2" fill="#7B4FD4" stroke="#2A1266" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M9 18 L 32 5 L 55 18 Z" fill="#9B6FE4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M32 5 L 55 18 L 38 18 Z" fill="#5E37A8" opacity=".55"/>
+      <path d="M32 8.5 L 33.4 12 L 37 12.4 L 34.4 14.8 L 35.2 18.2 L 32 16.4 L 28.8 18.2 L 29.6 14.8 L 27 12.4 L 30.6 12 Z"
+            fill="#F59E0B" stroke="#2A1266" stroke-width="1.2" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<template id="owl-template">
+<svg class="owl-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Sophos">
+  <defs>
+    <clipPath id="bodyClip">
+      <path d="M100 22 C 40 22, 22 74, 30 130 C 36 176, 66 192, 100 192 C 134 192, 164 176, 170 130 C 178 74, 160 22, 100 22 Z"/>
+    </clipPath>
+  </defs>
+  <ellipse cx="100" cy="194" rx="54" ry="4" fill="#2A1B4A" opacity="0.18"/>
+  <g id="silhouette">
+    <path d="M100 18 C 36 18, 18 74, 26 132 C 34 180, 66 194, 100 194 C 134 194, 166 180, 174 132 C 182 74, 164 18, 100 18 Z" fill="#2A1266"/>
+    <path d="M100 22 C 40 22, 22 76, 30 132 C 38 178, 66 190, 100 190 C 134 190, 162 178, 170 132 C 178 76, 160 22, 100 22 Z" fill="#7B4FD4"/>
+    <g clip-path="url(#bodyClip)">
+      <path d="M100 22 Q 60 26 40 80 Q 26 140 50 186 Q 36 150 38 100 Q 52 42 100 22 Z" fill="#5E37A8" opacity=".55"/>
+      <ellipse cx="78" cy="38" rx="22" ry="10" fill="#B995F3" opacity=".75"/>
+    </g>
+  </g>
+  <g>
+    <path d="M58 26 Q54 -2 78 14 Q82 30 80 44 Q68 36 58 26 Z" fill="#5E37A8" stroke="#2A1266" stroke-width="2.4" stroke-linejoin="round"/>
+    <path d="M142 26 Q146 -2 122 14 Q118 30 120 44 Q132 36 142 26 Z" fill="#5E37A8" stroke="#2A1266" stroke-width="2.4" stroke-linejoin="round"/>
+  </g>
+  <g clip-path="url(#bodyClip)">
+    <ellipse cx="100" cy="136" rx="40" ry="46" fill="#FFFFFF"/>
+    <path d="M100 94 Q 132 100 138 136 Q 136 174 112 188 Q 128 170 128 140 Q 124 104 100 94 Z" fill="#EADCFB"/>
+    <g stroke="#C7AFEC" stroke-width="1.3" fill="none" stroke-linecap="round" opacity=".9">
+      <path d="M84 118 Q90 124 96 118"/><path d="M104 118 Q110 124 116 118"/>
+      <path d="M80 132 Q88 138 96 132"/><path d="M104 132 Q112 138 120 132"/>
+      <path d="M82 148 Q90 154 98 148"/><path d="M102 148 Q110 154 118 148"/>
+      <path d="M86 164 Q94 170 100 164"/><path d="M100 164 Q106 170 114 164"/>
+    </g>
+  </g>
+  <g id="feet">
+    <g transform="translate(80,188)">
+      <path d="M-13 -5 Q-15 6 -10 7 Q-6 5 -6 0 Z M-4 -6 Q-6 7 -2 7 Q2 6 0 0 Z M5 -5 Q2 6 6 7 Q11 6 9 0 Z" fill="#F59E0B" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+    </g>
+    <g transform="translate(120,188)">
+      <path d="M-13 -5 Q-15 6 -10 7 Q-6 5 -6 0 Z M-4 -6 Q-6 7 -2 7 Q2 6 0 0 Z M5 -5 Q2 6 6 7 Q11 6 9 0 Z" fill="#F59E0B" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+    </g>
+  </g>
+  <g data-expr="neutral">
+    <g data-wave>
+      <path d="M50 112 Q 22 86 26 50 Q 46 44 62 74 Q 70 96 66 122 Q 58 124 50 112 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M50 112 Q 38 90 36 62 Q 44 58 52 76 Q 62 96 62 118 Q 56 120 50 112 Z" fill="#5E37A8" opacity=".65"/>
+    </g>
+    <g>
+      <path d="M150 112 Q 170 116 168 146 Q 160 170 136 170 Q 130 154 132 132 Q 136 112 150 112 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M150 112 Q 164 116 162 142 Q 158 162 142 164 Q 138 152 140 134 Q 144 114 150 112 Z" fill="#5E37A8" opacity=".55"/>
+    </g>
+  </g>
+  <g data-expr="admiring">
+    <g data-bounce>
+      <g>
+        <path d="M62 106 Q 44 88 48 66 Q 68 60 78 86 Q 82 104 78 122 Q 68 122 62 106 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      </g>
+      <g>
+        <path d="M138 106 Q 156 88 152 66 Q 132 60 122 86 Q 118 104 122 122 Q 132 122 138 106 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      </g>
+    </g>
+  </g>
+  <g data-expr="action">
+    <g>
+      <path d="M54 112 Q 36 116 40 146 Q 48 172 68 170 Q 74 154 72 134 Q 66 114 54 112 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+    </g>
+    <g data-point>
+      <path d="M146 114 Q 172 124 174 158 Q 170 180 154 184 Q 144 176 142 156 Q 138 134 146 114 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+      <circle cx="162" cy="186" r="7" fill="#7B4FD4" stroke="#2A1266" stroke-width="2"/>
+    </g>
+  </g>
+  <g id="eyepatch">
+    <path d="M60 78 C 60 54, 140 54, 140 78 C 140 100, 122 108, 100 104 C 78 108, 60 100, 60 78 Z" fill="#4A2A8F" stroke="#2A1266" stroke-width="2" stroke-linejoin="round"/>
+  </g>
+  <g id="eyeWhites">
+    <circle cx="76" cy="82" r="15" fill="#FFFFFF" stroke="#2A1266" stroke-width="2"/>
+    <circle cx="124" cy="82" r="15" fill="#FFFFFF" stroke="#2A1266" stroke-width="2"/>
+  </g>
+  <g data-expr="neutral">
+    <circle cx="76" cy="82" r="9" fill="#2A1266"/><circle cx="124" cy="82" r="9" fill="#2A1266"/>
+    <circle cx="73" cy="79" r="3" fill="#FFFFFF"/><circle cx="79" cy="85" r="1.4" fill="#FFFFFF"/>
+    <circle cx="121" cy="79" r="3" fill="#FFFFFF"/><circle cx="127" cy="85" r="1.4" fill="#FFFFFF"/>
+    <ellipse cx="54" cy="106" rx="7" ry="3.5" fill="#FF9BC7" opacity=".7"/>
+    <ellipse cx="146" cy="106" rx="7" ry="3.5" fill="#FF9BC7" opacity=".7"/>
+  </g>
+  <g data-expr="admiring">
+    <g transform="translate(76,82)">
+      <path d="M0 7 C -10 -1, -12 -13, -4 -13 C -1 -13, 0 -10, 0 -8 C 0 -10, 1 -13, 4 -13 C 12 -13, 10 -1, 0 7 Z" fill="#FF6FA8" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+    </g>
+    <g transform="translate(124,82)">
+      <path d="M0 7 C -10 -1, -12 -13, -4 -13 C -1 -13, 0 -10, 0 -8 C 0 -10, 1 -13, 4 -13 C 12 -13, 10 -1, 0 7 Z" fill="#FF6FA8" stroke="#2A1266" stroke-width="1.8" stroke-linejoin="round"/>
+    </g>
+    <ellipse cx="54" cy="106" rx="8" ry="4" fill="#FF6FA8" opacity=".75"/>
+    <ellipse cx="146" cy="106" rx="8" ry="4" fill="#FF6FA8" opacity=".75"/>
+  </g>
+  <g data-expr="action">
+    <rect x="58" y="68" width="36" height="30" fill="#4A2A8F"/>
+    <rect x="106" y="68" width="36" height="30" fill="#4A2A8F"/>
+    <path d="M62 86 Q76 72 90 86" stroke="#2A1266" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M110 86 Q124 72 138 86" stroke="#2A1266" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <ellipse cx="52" cy="106" rx="9" ry="4.5" fill="#FF6FA8" opacity=".8"/>
+    <ellipse cx="148" cy="106" rx="9" ry="4.5" fill="#FF6FA8" opacity=".8"/>
+  </g>
+  <g id="beak">
+    <path d="M100 80 L 90 94 Q 100 104 110 94 Z" fill="#F59E0B" stroke="#2A1266" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M92 94 Q100 100 108 94" stroke="#7A4408" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>
+</template>
+
+<script>
+  // ===== Mount owls =====
+  const expressions = ['owl-neutral','owl-admiring','owl-action'];
+  const tpl = document.getElementById('owl-template');
+  document.querySelectorAll('[data-slot]').forEach((slot, i) => {
+    const node = tpl.content.cloneNode(true);
+    const svg = node.querySelector('svg');
+    svg.classList.add(expressions[i]);
+    slot.appendChild(node);
+  });
+
+  // ===== Carousel =====
+  const rail = document.getElementById('rail');
+  const slides = rail.querySelectorAll('.slide');
+  const dots = document.querySelectorAll('.dot');
+  const topBar = document.getElementById('top');
+  const skipBtn = document.getElementById('skip');
+  let idx = 0;
+
+  function goTo(n){
+    idx = Math.max(0, Math.min(slides.length-1, n));
+    rail.style.transform = `translateX(-${idx * (100/3)}%)`;
+    dots.forEach((d, i) => {
+      d.classList.toggle('active', i === idx);
+      d.classList.toggle('done', i < idx);
+    });
+    slides.forEach((s, i) => s.dataset.active = (i === idx) ? 'true' : 'false');
+    topBar.classList.toggle('dark', idx >= 1);
+  }
+
+  document.querySelectorAll('[data-action="next"]').forEach(b =>
+    b.addEventListener('click', () => goTo(idx + 1)));
+  document.querySelectorAll('[data-action="finish"]').forEach(b =>
+    b.addEventListener('click', () => {
+      b.animate([{transform:'scale(1)'},{transform:'scale(1.06)'},{transform:'scale(1)'}],
+        {duration:380,easing:'ease-out'});
+      window.parent.postMessage('intro-done', '*');
+    }));
+  skipBtn.addEventListener('click', () => window.parent.postMessage('intro-done', '*'));
+  dots.forEach(d => d.addEventListener('click', () => goTo(+d.dataset.i)));
+
+  // ===== swipe (LTR) =====
+  let startX = null;
+  rail.addEventListener('touchstart', e => startX = e.touches[0].clientX, {passive:true});
+  rail.addEventListener('touchend', e => {
+    if (startX === null) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 50){
+      // LTR: swipe left (dx<0) -> next; swipe right (dx>0) -> prev
+      if (dx < 0) goTo(idx + 1); else goTo(idx - 1);
+    }
+    startX = null;
+  });
+
+  window.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') goTo(idx + 1);
+    if (e.key === 'ArrowLeft')  goTo(idx - 1);
+  });
+
+  // ===== Floating-icon clicks: show tooltip nudge ===== 
+  const nudge = document.getElementById('nudge');
+  let nudgeTimer = null;
+  function showNudge(text){
+    nudge.textContent = text;
+    nudge.classList.add('show');
+    clearTimeout(nudgeTimer);
+    nudgeTimer = setTimeout(() => nudge.classList.remove('show'), 1400);
+  }
+  document.querySelectorAll('[data-tip]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      showNudge(el.dataset.tip);
+      el.animate(
+        [{transform:'scale(1)'},{transform:'scale(1.35)'},{transform:'scale(1)'}],
+        {duration:380,easing:'ease-out'}
+      );
+    });
+  });
+
+  // ===== Confetti for slide 3 =====
+  (function makeConfetti(){
+    const c = document.getElementById('confetti');
+    const colors = ['#F59E0B','#FF6FA8','#9B6FE4','#7B4FD4','#FFD27A','#B995F3'];
+    for (let i = 0; i < 26; i++){
+      const el = document.createElement('div');
+      el.className = 'conf';
+      el.style.left = (Math.random()*100) + '%';
+      el.style.background = colors[i % colors.length];
+      el.style.animationDelay = (Math.random()*4) + 's';
+      el.style.animationDuration = (3 + Math.random()*2.5) + 's';
+      el.style.transform = `rotate(${Math.random()*360}deg)`;
+      el.style.width = (5 + Math.random()*6) + 'px';
+      el.style.height = (10 + Math.random()*8) + 'px';
+      c.appendChild(el);
+    }
+  })();
+
+  goTo(0);
+</script>
+</body>
+</html>
