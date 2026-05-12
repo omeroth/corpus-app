@@ -2791,6 +2791,27 @@
     justify-content: center;
     margin: 0 auto;
   }
+  .dc-card-zone::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 85%;
+    height: 80%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 1;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(254,252,232,0.7) 0%,
+      rgba(254,240,138,0.5) 30%,
+      rgba(253,230,138,0.25) 60%,
+      transparent 80%
+    );
+    border-radius: 50%;
+    filter: blur(40px);
+    animation: halo-breathe-bg 3.5s ease-in-out infinite;
+  }
   .dc-thinker-screen .flip-card {
     position: relative;
     z-index: 2;
@@ -2900,17 +2921,9 @@
   @keyframes dc-fade-up { to { opacity: 1; transform: translateY(0); } }
   @keyframes dc-pop-in { to { opacity: 1; transform: scale(1); } }
   @keyframes dc-card-arrival { to { opacity: 1; transform: scale(1) translateY(0); } }
-  @keyframes halo-breathe {
-    0%, 100% {
-      filter: drop-shadow(0 0 40px rgba(254,252,232,0.85))
-              drop-shadow(0 0 80px rgba(254,240,138,0.55))
-              drop-shadow(0 0 140px rgba(253,230,138,0.35));
-    }
-    50% {
-      filter: drop-shadow(0 0 56px rgba(254,252,232,1))
-              drop-shadow(0 0 112px rgba(254,240,138,0.75))
-              drop-shadow(0 0 180px rgba(253,230,138,0.50));
-    }
+  @keyframes halo-breathe-bg {
+    0%, 100% { transform: translate(-50%, -50%) scale(1);    opacity: 0.85; }
+    50%       { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
   }
 
   /* ── Thinker Unlock Flip Card ── */
@@ -10578,7 +10591,6 @@ function showThinkerCardScreen(thinker, week, day) {
 
   // Drive card arrival with JS transitions (reliable across browsers)
   card.style.animation = 'none';
-  card.style.filter = 'none';
   card.style.transition = 'none';
   card.style.opacity = '0';
   card.style.transform = 'scale(0.7) translateY(40px)';
@@ -10588,11 +10600,6 @@ function showThinkerCardScreen(thinker, week, day) {
     card.style.opacity = '1';
     card.style.transform = 'scale(1) translateY(0)';
   }, 50);
-  // Start dramatic glow pulse once card has settled
-  setTimeout(() => {
-    card.style.animation = 'halo-breathe 3.5s ease-in-out infinite';
-  }, 1000);
-
   // Auto-flip after arrival settles
   setTimeout(() => {
     document.getElementById('thinker-unlock-box').classList.add('flipped');
