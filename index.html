@@ -2658,16 +2658,32 @@
     -webkit-backdrop-filter: blur(8px);
   }
   #modal-complete .modal-box {
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
     overflow: hidden;
     box-sizing: border-box;
-    padding: 24px;
+    padding: 0;
     text-align: start;
+  }
+  #modal-complete .modal-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 24px 24px 0;
+  }
+  #modal-complete .day-complete-actions {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 24px 20px;
   }
   /* Day Complete flip card - scoped to #modal-complete only */
   #modal-complete .flip-card {
     width: 100%;
     max-width: 360px;
-    height: 560px;
+    height: min(560px, 60vh);
     margin: 24px auto;
   }
   #modal-complete .flip-card-front {
@@ -2699,6 +2715,7 @@
   #modal-complete .flip-card-front .unlock-portrait-img {
     width: 100%;
     height: 100%;
+    max-height: min(380px, 42vh);
     object-fit: contain;
     object-position: center;
     display: block;
@@ -2727,12 +2744,6 @@
     font-size: 16px;
     line-height: 1.5;
     padding-top: 16px;
-  }
-  #modal-complete .day-complete-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 0 4px 4px;
   }
   #modal-complete .btn-back-home {
     display: block;
@@ -4187,28 +4198,30 @@
 <!-- Day complete modal -->
 <div class="modal-overlay" id="modal-complete">
   <div class="modal-box">
-    <div class="modal-title" id="complete-title">יום הושלם!</div>
-    <div class="modal-subtitle" id="complete-subtitle"></div>
-    <div class="modal-xp">
-      <div class="modal-xp-item">
-        <div class="modal-xp-value" id="complete-xp">+0</div>
-        <div class="modal-xp-label" id="modal-xp-earned-label">XP הרווחת</div>
-      </div>
-      <div class="modal-xp-item">
-        <div class="modal-xp-value" id="complete-streak">0</div>
-        <div class="modal-xp-label" id="modal-streak-label">רצף שאלות</div>
-      </div>
-    </div>
-    <div class="thinker-unlock flip-card" id="thinker-unlock-box" onclick="this.classList.toggle('flipped')">
-      <div class="flip-card-inner">
-        <div class="flip-card-front">
-          <div class="thinker-unlock-label" id="modal-unlock-label">🏛 הוגה נפתח!</div>
-          <div id="unlock-portrait"></div>
-          <div class="thinker-unlock-name" id="unlock-name"></div>
+    <div class="modal-content">
+      <div class="modal-title" id="complete-title">יום הושלם!</div>
+      <div class="modal-subtitle" id="complete-subtitle"></div>
+      <div class="modal-xp">
+        <div class="modal-xp-item">
+          <div class="modal-xp-value" id="complete-xp">+0</div>
+          <div class="modal-xp-label" id="modal-xp-earned-label">XP הרווחת</div>
         </div>
-        <div class="flip-card-back">
-          <div class="flip-card-back-bio" id="unlock-bio"></div>
-          <div class="flip-card-back-quote" id="unlock-quote"></div>
+        <div class="modal-xp-item">
+          <div class="modal-xp-value" id="complete-streak">0</div>
+          <div class="modal-xp-label" id="modal-streak-label">רצף שאלות</div>
+        </div>
+      </div>
+      <div class="thinker-unlock flip-card" id="thinker-unlock-box" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="thinker-unlock-label" id="modal-unlock-label">🏛 הוגה נפתח!</div>
+            <div id="unlock-portrait"></div>
+            <div class="thinker-unlock-name" id="unlock-name"></div>
+          </div>
+          <div class="flip-card-back">
+            <div class="flip-card-back-bio" id="unlock-bio"></div>
+            <div class="flip-card-back-quote" id="unlock-quote"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -9518,6 +9531,14 @@ function dayKey(weekId, dayId, subject) {
   } catch(e) {}
 })();
 
+function migrateDayQuizResults() {
+  if (Array.isArray(state.dayQuizResults)) {
+    state.dayQuizResults = {};
+    saveStateLocal();
+    console.log('[Migration] dayQuizResults converted from array to object');
+  }
+}
+
 function migrateCompletedDaysKeys() {
   const oldKeys = Object.keys(state.completedDays).filter(k =>
     !/^(philosophy|economics|psychology)-/.test(k) &&
@@ -9922,7 +9943,7 @@ function handleHeroContinue() {
       state.currentSection = ls.section;
       state.readerXP = 0;
       state.quizAnswered = false;
-      state.dayQuizResults = [];
+      state.dayQuizResults = {};
       renderReader();
       showScreen('reader');
     } else {
@@ -9952,7 +9973,7 @@ function openReader(weekId, dayId) {
   state.currentSection = 0;
   state.readerXP = 0;
   state.quizAnswered = false;
-  state.dayQuizResults = [];
+  state.dayQuizResults = {};
   renderReader();
   showScreen('reader');
   animateScreen(document.getElementById('screen-reader'), 'anim-slide-in');
@@ -10088,7 +10109,7 @@ function renderReader() {
       const btn = document.createElement('button');
       btn.className = 'quiz-option';
       btn.innerHTML = `<span class="opt-letter">${ui.quizLetters[i]}</span><span class="opt-text">${text}</span>`;
-      btn.onclick = () => handleQuiz(i, sec.correct, sec.explanation, btn);
+      btn.onclick = () => handleQuiz(i, sec.correct, sec.explanation, btn, state.currentSection);
       optsEl.appendChild(btn);
     });
 
@@ -10119,7 +10140,11 @@ function renderReader() {
     makeNextBtn(reflectionIsLast ? ui.finishBtn : ui.nextBtn, reflectionIsLast);
   }
   else if (sec.type === 'quiz_summary') {
-    const results = state.dayQuizResults || [];
+    const _dqKey = `${state.subject}-${state.currentWeek}-${state.currentDay}`;
+    const _dqMap = (state.dayQuizResults && !Array.isArray(state.dayQuizResults))
+      ? (state.dayQuizResults[_dqKey] || {})
+      : {};
+    const results = Object.values(_dqMap);
     const total = results.length;
     const correct = results.filter(Boolean).length;
     const pct = total > 0 ? correct / total : 0;
@@ -10237,7 +10262,7 @@ function nextSection() {
   }
 }
 
-function handleQuiz(chosen, correctIdx, explanation, btn) {
+function handleQuiz(chosen, correctIdx, explanation, btn, questionIdx) {
   if (state.quizAnswered) return;
   state.quizAnswered = true;
 
@@ -10275,8 +10300,10 @@ function handleQuiz(chosen, correctIdx, explanation, btn) {
 
   floatXP(earnedXP, btn);
 
-  if (!state.dayQuizResults) state.dayQuizResults = [];
-  state.dayQuizResults.push(isCorrect);
+  if (!state.dayQuizResults || Array.isArray(state.dayQuizResults)) state.dayQuizResults = {};
+  const _dqKey = `${state.subject}-${state.currentWeek}-${state.currentDay}`;
+  if (!state.dayQuizResults[_dqKey]) state.dayQuizResults[_dqKey] = {};
+  state.dayQuizResults[_dqKey][questionIdx] = isCorrect;
 
   try { posthog.capture('question_answered', { correct: isCorrect, week: state.currentWeek, day: state.currentDay }); } catch(e) {}
 
@@ -10820,10 +10847,14 @@ function startOnboarding() {
 function renderOnboardingStep() {
   const step = ONBOARDING_STEPS[onboardingStep];
 
-  // For the subject-select step, navigate to subject screen first then re-run
-  if (step.isSubjectSelect && state.currentScreen !== 'subject') {
-    showSubjectSelect();
-    setTimeout(() => renderOnboardingStep(), 400);
+  // For the subject-select step, open the drawer (slide-down animation) then re-run
+  if (step.isSubjectSelect && !_drawerOpen) {
+    if (state.currentScreen !== 'home') {
+      showScreen('home');
+      renderHome();
+    }
+    openDrawer();
+    setTimeout(() => renderOnboardingStep(), 500);
     return;
   }
 
@@ -11218,11 +11249,11 @@ function subjConfirm() {
       closeDrawer(() => { renderHome(); });
     } else if (!localStorage.getItem('corpus_onboarding_done') &&
                ONBOARDING_STEPS[onboardingStep] && ONBOARDING_STEPS[onboardingStep].isSubjectSelect) {
-      // Onboarding mode: navigate home then advance to the language step
-      document.body.classList.remove('on-subject-screen');
-      showScreen('home');
-      renderHome();
-      nextOnboardingStep();
+      // Onboarding mode: close drawer then advance to the language step
+      closeDrawer(() => {
+        renderHome();
+        nextOnboardingStep();
+      });
     } else {
       // First-time / standalone subject-select mode
       document.body.classList.remove('on-subject-screen');
@@ -11323,6 +11354,7 @@ function initUI() {
     console.log('[Init] THINKERS length:', THINKERS && THINKERS.length);
     loadState();
     migrateCompletedDaysKeys();
+    migrateDayQuizResults();
     applyTheme(state.subject);
     document.documentElement.dir = state.lang === 'en' ? 'ltr' : 'rtl';
     document.documentElement.lang = state.lang;
