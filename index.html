@@ -2767,8 +2767,8 @@
   /* Thinker screen */
   .dc-thinker-screen {
     justify-content: flex-start;
-    padding: 20px 16px 24px;
-    gap: 12px;
+    padding: 16px 16px 20px;
+    gap: 8px;
     overflow-y: auto;
   }
   .dc-thinker-title {
@@ -2790,7 +2790,8 @@
     align-items: center;
     justify-content: center;
     margin: 0 auto;
-    padding: 40px;
+    padding: 16px;
+    flex-shrink: 0;
   }
   .dc-card-zone::before {
     content: '';
@@ -2876,11 +2877,11 @@
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     width: 100%;
-    max-width: 420px;
-    margin-top: auto;
-    padding-top: 16px;
+    max-width: 360px;
+    margin: 0 auto;
+    padding-bottom: env(safe-area-inset-bottom, 8px);
     opacity: 0;
     transform: translateY(20px);
     animation: dc-fade-up 0.5s ease-out 1.3s forwards;
