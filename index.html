@@ -2790,26 +2790,28 @@
     align-items: center;
     justify-content: center;
     margin: 0 auto;
+    padding: 40px;
   }
   .dc-card-zone::before {
     content: '';
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 85%;
-    height: 80%;
+    width: 120%;
+    height: 110%;
     transform: translate(-50%, -50%);
     pointer-events: none;
     z-index: 1;
     background: radial-gradient(
       ellipse at center,
-      rgba(254,252,232,0.7) 0%,
-      rgba(254,240,138,0.5) 30%,
-      rgba(253,230,138,0.25) 60%,
-      transparent 80%
+      rgba(254,252,232,0.8) 0%,
+      rgba(254,240,138,0.6) 25%,
+      rgba(253,230,138,0.35) 50%,
+      rgba(253,224,71,0.15) 70%,
+      transparent 85%
     );
     border-radius: 50%;
-    filter: blur(40px);
+    filter: blur(35px);
     animation: halo-breathe-bg 3.5s ease-in-out infinite;
   }
   .dc-thinker-screen .flip-card {
@@ -2922,8 +2924,8 @@
   @keyframes dc-pop-in { to { opacity: 1; transform: scale(1); } }
   @keyframes dc-card-arrival { to { opacity: 1; transform: scale(1) translateY(0); } }
   @keyframes halo-breathe-bg {
-    0%, 100% { transform: translate(-50%, -50%) scale(1);    opacity: 0.85; }
-    50%       { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+    0%, 100% { transform: translate(-50%, -50%) scale(1);   opacity: 0.85; }
+    50%       { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
   }
 
   /* ── Thinker Unlock Flip Card ── */
