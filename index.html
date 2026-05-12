@@ -2651,101 +2651,233 @@
   }
 
   /* ── Completion modal fixes ── */
+  /* ── Day Complete — full-screen two-moment design ── */
   #modal-complete {
     z-index: 1500;
-    background: rgba(42,27,74,0.75);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: linear-gradient(180deg, var(--bg) 0%, var(--accent-tint) 100%);
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
-  #modal-complete .modal-box {
+  #modal-complete.active {
+    display: flex;
+  }
+  .dc-screen {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    max-height: 90vh;
-    overflow: hidden;
-    box-sizing: border-box;
-    padding: 0;
-    text-align: start;
-  }
-  #modal-complete .modal-content {
-    flex: 1;
-    min-height: 0;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
     overflow-y: auto;
-    padding: 24px 24px 0;
   }
-  #modal-complete .day-complete-actions {
+  /* Stats screen */
+  .dc-title {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--accent-dark);
+    text-align: center;
+    margin-bottom: 6px;
+    opacity: 0;
+    transform: translateY(-20px);
+    animation: dc-fade-down 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s forwards;
+  }
+  .dc-subtitle {
+    font-size: 16px;
+    color: var(--accent-muted);
+    text-align: center;
+    margin-bottom: 52px;
+    opacity: 0;
+    animation: dc-fade-in 0.5s ease-out 0.4s forwards;
+  }
+  .dc-stats-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 48px;
+    margin-bottom: 56px;
+  }
+  .dc-xp, .dc-streak {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+  }
+  .dc-xp {
+    opacity: 0;
+    transform: scale(0.5);
+    animation: dc-pop-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.7s forwards;
+  }
+  .dc-streak {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: dc-fade-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1.4s forwards;
+  }
+  .dc-sparkle {
+    font-size: 56px;
+    line-height: 1;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .dc-flame {
+    width: 56px;
+    height: 56px;
+    color: #F59E0B;
+    fill: currentColor;
+    margin-bottom: 8px;
+  }
+  .dc-xp-value, .dc-streak-value {
+    font-size: 80px;
+    font-weight: 900;
+    line-height: 1;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: -0.03em;
+  }
+  .dc-xp-value { color: var(--accent); }
+  .dc-streak-value { color: var(--accent-dark); }
+  .dc-xp-label, .dc-streak-label {
+    font-size: 13px;
+    color: var(--accent-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+  .dc-continue-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 16px 48px;
+    font-size: 17px;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: dc-fade-up 0.5s ease-out 2.2s forwards;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.15s;
+  }
+  .dc-continue-btn:active { transform: scale(0.93); }
+  /* Thinker screen */
+  .dc-thinker-screen {
+    justify-content: flex-start;
+    padding: 20px 16px 24px;
+    gap: 12px;
+    overflow-y: auto;
+  }
+  .dc-thinker-title {
+    flex-shrink: 0;
+    font-size: 13px;
+    color: var(--accent-muted);
+    text-align: center;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    opacity: 0;
+    animation: dc-fade-in 0.5s ease-out 0.1s forwards;
+  }
+  /* === Day Complete thinker card zone === */
+  .dc-card-zone {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+  }
+  .dc-thinker-screen .flip-card {
+    position: relative;
+    z-index: 2;
+    width: min(320px, calc(100vw - 48px));
+    height: min(520px, calc(100vh - 240px));
+    max-height: 560px;
+    min-height: 440px;
+    perspective: 1200px;
+    -webkit-perspective: 1200px;
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    /* opacity/transform/filter driven by JS */
+  }
+  .dc-thinker-screen .flip-card-inner {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .dc-thinker-screen .flip-card.flipped .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+  .dc-thinker-screen .flip-card-front,
+  .dc-thinker-screen .flip-card-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0;
+  }
+  .dc-thinker-screen .flip-card-front {
+    /* background-image, size, position set inline by JS */
+    background-color: transparent;
+  }
+  .dc-thinker-screen .flip-card-back {
+    transform: rotateY(180deg);
+    padding: 32px 24px;
+    gap: 16px;
+    justify-content: center;
+    background: linear-gradient(160deg, rgba(255,255,255,0.85) 0%, rgba(254,240,138,0.2) 100%);
+  }
+  .dc-thinker-screen .thinker-unlock-name { display: none; }
+  .dc-actions {
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding: 12px 24px 20px;
-  }
-  /* Day Complete flip card - scoped to #modal-complete only */
-  #modal-complete .flip-card {
     width: 100%;
-    max-width: 360px;
-    height: min(560px, 60vh);
-    margin: 24px auto;
-  }
-  #modal-complete .flip-card-front {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    padding: 16px 20px;
-    gap: 12px;
-  }
-  #modal-complete .flip-card-front .thinker-unlock-label {
-    flex: 0 0 auto;
-    text-align: center;
-    width: 100%;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: var(--accent);
-    text-transform: uppercase;
-  }
-  #modal-complete .flip-card-front > div:nth-child(2) {
-    flex: 1 1 auto;
-    min-height: 0;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  #modal-complete .flip-card-front .unlock-portrait-img {
-    width: 100%;
-    height: 100%;
-    max-height: min(380px, 42vh);
-    object-fit: contain;
-    object-position: center;
-    display: block;
-  }
-  #modal-complete .thinker-unlock-name {
-    flex: 0 0 auto;
-    text-align: center;
-    width: 100%;
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: var(--ink);
-  }
-  #modal-complete .flip-card-back {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 32px 28px;
-    gap: 16px;
-  }
-  #modal-complete .flip-card-back-bio {
-    font-size: 16px;
-    line-height: 1.6;
-  }
-  #modal-complete .flip-card-back-quote {
-    font-size: 16px;
-    line-height: 1.5;
+    max-width: 420px;
+    margin-top: auto;
     padding-top: 16px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: dc-fade-up 0.5s ease-out 1.3s forwards;
   }
-  #modal-complete .btn-back-home {
+  .dc-actions .next-lesson-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 800;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: filter 0.15s;
+  }
+  .dc-actions .next-lesson-btn:active { filter: brightness(0.88); }
+  .dc-actions .btn-back-home {
     display: block;
     width: 100%;
     padding: 14px;
@@ -2759,9 +2891,26 @@
     font-family: inherit;
     transition: transform 0.15s, background 0.15s;
   }
-  #modal-complete .btn-back-home:active {
-    transform: scale(0.97);
-    background: var(--accent-glow);
+  .dc-actions .btn-back-home:active { transform: scale(0.97); background: var(--accent-glow); }
+  .dc-thinker-screen .flip-card-back-bio { font-size: 15px; line-height: 1.6; }
+  .dc-thinker-screen .flip-card-back-quote { font-size: 15px; line-height: 1.5; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); }
+  /* Animations */
+  @keyframes dc-fade-in { to { opacity: 1; } }
+  @keyframes dc-fade-down { to { opacity: 1; transform: translateY(0); } }
+  @keyframes dc-fade-up { to { opacity: 1; transform: translateY(0); } }
+  @keyframes dc-pop-in { to { opacity: 1; transform: scale(1); } }
+  @keyframes dc-card-arrival { to { opacity: 1; transform: scale(1) translateY(0); } }
+  @keyframes halo-breathe {
+    0%, 100% {
+      filter: drop-shadow(0 0 40px rgba(254,252,232,0.85))
+              drop-shadow(0 0 80px rgba(254,240,138,0.55))
+              drop-shadow(0 0 140px rgba(253,230,138,0.35));
+    }
+    50% {
+      filter: drop-shadow(0 0 56px rgba(254,252,232,1))
+              drop-shadow(0 0 112px rgba(254,240,138,0.75))
+              drop-shadow(0 0 180px rgba(253,230,138,0.50));
+    }
   }
 
   /* ── Thinker Unlock Flip Card ── */
@@ -4197,24 +4346,31 @@
 
 <!-- Day complete modal -->
 <div class="modal-overlay" id="modal-complete">
-  <div class="modal-box">
-    <div class="modal-content">
-      <div class="modal-title" id="complete-title">יום הושלם!</div>
-      <div class="modal-subtitle" id="complete-subtitle"></div>
-      <div class="modal-xp">
-        <div class="modal-xp-item">
-          <div class="modal-xp-value" id="complete-xp">+0</div>
-          <div class="modal-xp-label" id="modal-xp-earned-label">XP הרווחת</div>
-        </div>
-        <div class="modal-xp-item">
-          <div class="modal-xp-value" id="complete-streak">0</div>
-          <div class="modal-xp-label" id="modal-streak-label">רצף שאלות</div>
-        </div>
+  <!-- MOMENT 1: Stats Reveal -->
+  <div class="dc-screen dc-stats-screen" id="dc-stats-screen">
+    <div class="dc-title" id="complete-title"></div>
+    <div class="dc-subtitle" id="complete-subtitle"></div>
+    <div class="dc-stats-zone">
+      <div class="dc-xp" id="dc-xp-block">
+        <div class="dc-sparkle">✦</div>
+        <div class="dc-xp-value" id="complete-xp">+0</div>
+        <div class="dc-xp-label" id="modal-xp-earned-label">XP earned</div>
       </div>
+      <div class="dc-streak" id="dc-streak-block">
+        <svg class="dc-flame" viewBox="0 0 64 64"><use href="#icon-streak"/></svg>
+        <div class="dc-streak-value" id="complete-streak">0</div>
+        <div class="dc-streak-label" id="modal-streak-label">Answer streak</div>
+      </div>
+    </div>
+    <button class="dc-continue-btn" id="dc-stats-continue"></button>
+  </div>
+  <!-- MOMENT 2: Thinker Card -->
+  <div class="dc-screen dc-thinker-screen" id="dc-thinker-screen" style="display:none">
+    <div class="dc-thinker-title" id="dc-thinker-title"></div>
+    <div class="dc-card-zone">
       <div class="thinker-unlock flip-card" id="thinker-unlock-box" onclick="this.classList.toggle('flipped')">
         <div class="flip-card-inner">
           <div class="flip-card-front">
-            <div class="thinker-unlock-label" id="modal-unlock-label">🏛 הוגה נפתח!</div>
             <div id="unlock-portrait"></div>
             <div class="thinker-unlock-name" id="unlock-name"></div>
           </div>
@@ -4225,9 +4381,9 @@
         </div>
       </div>
     </div>
-    <div class="day-complete-actions">
-      <button class="btn-back-home" id="modal-continue-btn" onclick="closeCompleteModal()" style="display:none">המשך</button>
+    <div class="dc-actions">
       <button class="next-lesson-btn" id="modal-next-btn" style="display:none"></button>
+      <button class="btn-back-home" id="modal-continue-btn" onclick="closeCompleteModal()"></button>
     </div>
   </div>
 </div>
@@ -9662,16 +9818,15 @@ function renderHome() {
   const rb = document.getElementById('reader-back-btn');
   if (rb) rb.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>';
 
-  // Modal labels
-  try {
-    document.getElementById('modal-xp-earned-label').textContent = ui.xpEarned;
-    document.getElementById('modal-streak-label').textContent = ui.answerStreak;
-    document.getElementById('modal-unlock-label').textContent = ui.unlockLabel;
-    document.getElementById('modal-continue-btn').textContent = ui.continueBtn;
-    document.getElementById('modal-levelup-title').textContent = ui.levelupTitle;
-    document.getElementById('modal-amazing-btn').textContent = ui.amazingBtn;
-    document.getElementById('modal-close-btn').textContent = ui.closeBtn;
-  } catch(e) { console.error('renderHome: modal label error', e); }
+  // Modal labels — use safe setter to avoid errors from removed elements
+  { const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.textContent = val; };
+    set('modal-xp-earned-label', ui.xpEarned);
+    set('modal-streak-label', ui.answerStreak);
+    set('modal-continue-btn', ui.continueBtn);
+    set('modal-levelup-title', ui.levelupTitle);
+    set('modal-amazing-btn', ui.amazingBtn);
+    set('modal-close-btn', ui.closeBtn);
+  }
 
   // Stats bar
   try {
@@ -10358,6 +10513,92 @@ function setupNextBtn(week, day) {
   }
 }
 
+function _showDcStats(titleText, subtitleText, xpAmount, streakCount, onContinue) {
+  const isEn = state.lang === 'en';
+  document.getElementById('complete-title').textContent = titleText;
+  document.getElementById('complete-subtitle').textContent = subtitleText;
+  document.getElementById('modal-xp-earned-label').textContent = isEn ? 'XP earned' : 'XP הרווחת';
+  document.getElementById('modal-streak-label').textContent = isEn ? 'Answer streak' : 'רצף שאלות';
+  document.getElementById('complete-streak').textContent = streakCount;
+
+  const xpEl = document.getElementById('complete-xp');
+  xpEl.textContent = '+0';
+
+  const continueBtn = document.getElementById('dc-stats-continue');
+  continueBtn.textContent = onContinue.label;
+  continueBtn.onclick = onContinue.fn;
+
+  // Reset stats screen animations
+  const statsScreen = document.getElementById('dc-stats-screen');
+  statsScreen.style.display = 'flex';
+  document.getElementById('dc-thinker-screen').style.display = 'none';
+
+  const modal = document.getElementById('modal-complete');
+  modal.classList.remove('active');
+  void modal.offsetWidth;
+  modal.classList.add('active');
+
+  setTimeout(() => animateXPCount(xpEl, xpAmount), 800);
+  setTimeout(() => launchConfetti(), 1200);
+}
+
+function showThinkerCardScreen(thinker, week, day) {
+  const isEn = state.lang === 'en';
+  const card = document.getElementById('thinker-unlock-box');
+
+  // Populate thinker data
+  const portrait = document.getElementById('unlock-portrait');
+  const front = card.querySelector('.flip-card-front');
+  if (thinker.image) {
+    front.style.backgroundImage = `url("${thinker.image}")`;
+    front.style.backgroundSize = 'contain';
+    front.style.backgroundPosition = 'center';
+    front.style.backgroundRepeat = 'no-repeat';
+    front.style.backgroundColor = 'transparent';
+    portrait.innerHTML = '';
+  } else {
+    front.style.backgroundImage = '';
+    portrait.innerHTML = `<div class="unlock-portrait-emoji">${thinker.emoji}</div>`;
+  }
+  document.getElementById('unlock-name').textContent = thinker.name;
+  document.getElementById('unlock-bio').textContent = thinker.bio || '';
+  document.getElementById('unlock-quote').textContent =
+    (isEn ? (thinker.quoteEn || thinker.quote) : thinker.quote) || '';
+  document.getElementById('thinker-unlock-box').classList.remove('flipped');
+  document.getElementById('dc-thinker-title').textContent =
+    isEn ? 'A new thinker joins the pantheon' : 'הוגה חדש מצטרף לפנתאון';
+
+  // Setup action buttons
+  setupNextBtn(week, day);
+  document.getElementById('modal-continue-btn').textContent = isEn ? 'Back to Home' : 'חזרה לבית';
+
+  // Switch screens
+  document.getElementById('dc-stats-screen').style.display = 'none';
+  document.getElementById('dc-thinker-screen').style.display = 'flex';
+
+  // Drive card arrival with JS transitions (reliable across browsers)
+  card.style.animation = 'none';
+  card.style.filter = 'none';
+  card.style.transition = 'none';
+  card.style.opacity = '0';
+  card.style.transform = 'scale(0.7) translateY(40px)';
+  void card.offsetWidth;
+  setTimeout(() => {
+    card.style.transition = 'opacity 0.6s ease-out, transform 0.9s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    card.style.opacity = '1';
+    card.style.transform = 'scale(1) translateY(0)';
+  }, 50);
+  // Start dramatic glow pulse once card has settled
+  setTimeout(() => {
+    card.style.animation = 'halo-breathe 3.5s ease-in-out infinite';
+  }, 1000);
+
+  // Auto-flip after arrival settles
+  setTimeout(() => {
+    document.getElementById('thinker-unlock-box').classList.add('flipped');
+  }, 1500);
+}
+
 function goToNextDay() {
   closeCompleteModal();
   const weeks = getW();
@@ -10380,45 +10621,40 @@ function finishDay() {
   const week = getW().find(w => w.id === state.currentWeek);
   const day = week.days.find(d => d.id === state.currentDay);
   const key = dayKey(state.currentWeek, state.currentDay);
+  const ui = u();
+  const isEn = state.lang === 'en';
 
-  // If day already completed - show completion screen without awarding XP
+  // If day already completed - stats only, no thinker card
   if (state.completedDays[key]) {
-    const ui = u();
-    document.getElementById('complete-title').textContent = ui.dayCompleted(day.id);
-    document.getElementById('complete-subtitle').textContent = day.title;
-    document.getElementById('complete-xp').textContent = '+0';
-    document.getElementById('complete-streak').textContent = state.correctInRow;
-    const _flipCard = document.getElementById('thinker-unlock-box');
-    _flipCard.classList.remove('flipped');
-    _flipCard.style.display = 'none';
-    document.getElementById('modal-continue-btn').style.display = '';
-    document.getElementById('modal-complete').classList.add('active');
-    launchConfetti();
+    _showDcStats(
+      ui.dayCompleted(day.id),
+      isEn ? (day.titleEn || day.title) : day.title,
+      0,
+      state.correctInRow,
+      { label: isEn ? 'Back to Home' : 'חזרה לבית', fn: closeCompleteModal }
+    );
     return;
   }
 
   const prevLevel = getLevel(state.xp);
 
-  // Day 0 (intro day): mark complete, no XP awarded, no thinker
+  // Day 0 (intro day): mark complete, no XP, no thinker
   if (day.id === 0) {
     state.completedDays[key] = true;
     try { saveState(); } catch(e) { saveStateLocal(); }
-    const ui0 = u();
-    document.getElementById('complete-title').textContent = ui0.dayCompleted(day.id);
-    document.getElementById('complete-subtitle').textContent = day.title;
-    document.getElementById('complete-xp').textContent = '+0';
-    document.getElementById('complete-streak').textContent = state.correctInRow;
-    document.getElementById('thinker-unlock-box').style.display = 'none';
-    document.getElementById('modal-continue-btn').style.display = '';
-    document.getElementById('modal-complete').classList.add('active');
-    launchConfetti();
+    _showDcStats(
+      ui.dayCompleted(day.id),
+      isEn ? (day.titleEn || day.title) : day.title,
+      0,
+      state.correctInRow,
+      { label: isEn ? 'Back to Home' : 'חזרה לבית', fn: closeCompleteModal }
+    );
     return;
   }
 
   // Day completion bonus + streak bonus
   state.readerXP += 30;
   state.readerXP += Math.min(state.dailyStreak * 2, 10);
-
   state.xp += state.readerXP;
   state.completedDays[key] = true;
   state.todayCompleted = (state.todayCompleted || 0) + 1;
@@ -10429,19 +10665,13 @@ function finishDay() {
   if (state.lastActiveDate !== today) {
     state.lastActiveDate = today;
     if (!state.activeDates) state.activeDates = [];
-    if (!state.activeDates.includes(today)) {
-      state.activeDates.push(today);
-    }
+    if (!state.activeDates.includes(today)) state.activeDates.push(today);
     let streak = 0;
     let checkDate = new Date();
     while (true) {
       const dateStr = checkDate.toISOString().split('T')[0];
-      if (state.activeDates.includes(dateStr)) {
-        streak++;
-        checkDate.setDate(checkDate.getDate() - 1);
-      } else {
-        break;
-      }
+      if (state.activeDates.includes(dateStr)) { streak++; checkDate.setDate(checkDate.getDate() - 1); }
+      else break;
     }
     state.dailyStreak = streak;
     state.streakHistory = state.streakHistory || {};
@@ -10451,16 +10681,13 @@ function finishDay() {
   // Unlock thinker
   const thinkerId = day.thinkerId;
   const isNewThinker = thinkerId && !state.unlockedThinkers.includes(thinkerId);
-  if (isNewThinker) {
-    state.unlockedThinkers.push(thinkerId);
-  }
+  if (isNewThinker) state.unlockedThinkers.push(thinkerId);
 
   // Week completion bonus
   const totalDays = getW().find(w => w.id === state.currentWeek).days.length;
-  const completedInWeek = getW().find(w => w.id === state.currentWeek).days.filter(d => state.completedDays[dayKey(state.currentWeek, d.id)]).length;
-  if (completedInWeek === totalDays) {
-    state.readerXP += 100;
-  }
+  const completedInWeek = getW().find(w => w.id === state.currentWeek).days
+    .filter(d => state.completedDays[dayKey(state.currentWeek, d.id)]).length;
+  if (completedInWeek === totalDays) state.readerXP += 100;
 
   const newLevel = getLevel(state.xp);
   try { saveState(); } catch(e) { saveStateLocal(); }
@@ -10476,47 +10703,18 @@ function finishDay() {
     setTimeout(() => showUnlockOverlay(), 1000);
   }
 
-  // Show complete modal
   const thinker = getT().find(t => t.id === thinkerId);
-  const ui = u();
-  document.getElementById('complete-title').textContent = ui.dayCompleted(day.id);
-  document.getElementById('complete-subtitle').textContent = day.title;
-  const xpEl = document.getElementById('complete-xp');
-  xpEl.textContent = '+0';
-  setTimeout(() => animateXPCount(xpEl, state.readerXP), 300);
-  document.getElementById('complete-streak').textContent = state.correctInRow;
+  const showThinker = !!(thinker && isNewThinker);
 
-  const flipCard = document.getElementById('thinker-unlock-box');
-  flipCard.classList.remove('flipped');
-  document.getElementById('modal-continue-btn').style.display = 'none';
-
-  if (thinker && isNewThinker) {
-    flipCard.style.display = 'block';
-    const portrait = document.getElementById('unlock-portrait');
-    if (thinker.image) {
-      portrait.innerHTML = `<img class="unlock-portrait-img" src="${thinker.image}" alt="${thinker.name}">`;
-    } else {
-      portrait.innerHTML = `<div class="unlock-portrait-emoji">${thinker.emoji}</div>`;
-    }
-    document.getElementById('unlock-name').textContent = thinker.name;
-    document.getElementById('unlock-bio').textContent = thinker.bio || '';
-    document.getElementById('unlock-quote').textContent = (state.lang === 'en' ? (thinker.quoteEn || thinker.quote) : thinker.quote) || '';
-  } else {
-    flipCard.style.display = 'none';
-  }
-
-  document.getElementById('modal-complete').classList.add('active');
-  launchConfetti();
-
-  setupNextBtn(week, day);
-  if (thinker && isNewThinker) {
-    setTimeout(() => flipCard.classList.add('flipped'), 2000);
-    setTimeout(() => {
-      document.getElementById('modal-continue-btn').style.display = '';
-    }, 2700);
-  } else {
-    document.getElementById('modal-continue-btn').style.display = '';
-  }
+  _showDcStats(
+    ui.dayCompleted(day.id),
+    isEn ? (day.titleEn || day.title) : day.title,
+    state.readerXP,
+    state.correctInRow,
+    showThinker
+      ? { label: isEn ? 'A new thinker awaits →' : 'הוגה חדש מחכה ←', fn: () => showThinkerCardScreen(thinker, week, day) }
+      : { label: isEn ? 'Back to Home' : 'חזרה לבית', fn: closeCompleteModal }
+  );
 
   if (newLevel > prevLevel) {
     setTimeout(() => {
@@ -10525,14 +10723,12 @@ function finishDay() {
       document.getElementById('modal-levelup').classList.add('active');
       const box = document.querySelector('#modal-levelup .modal-box');
       if (box) spawnLevelParticles(box);
-    }, 2200);
+    }, 3500);
   }
 }
 
 function closeCompleteModal() {
   document.getElementById('modal-complete').classList.remove('active');
-  const nb = document.getElementById('modal-next-btn');
-  if (nb) nb.style.display = 'none';
   const shouldShowShare = state.currentWeek === 1 && state.currentDay === 7;
   goHome();
   if (shouldShowShare) setTimeout(showSharePrompt, 400);
