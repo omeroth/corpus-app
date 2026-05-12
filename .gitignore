@@ -1,0 +1,15 @@
+# Python helper scripts (not part of the app)
+*.py
+__pycache__/
+*.pyc
+
+# macOS metadata files
+.DS_Store
+**/.DS_Store
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
