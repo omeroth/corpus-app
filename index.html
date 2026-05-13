@@ -21,6 +21,7 @@
 </script>
 <style>
   :root {
+    --bottom-nav-height: 54px;
     --bg: #F8F5FF;
     --surface: #FFFFFF;
     --surface-2: #EDE5FF;
@@ -1370,7 +1371,7 @@
     background: #fff;
     border-top: 1px solid #ECE3F8;
     padding: 6px 14px 10px;
-    height: 54px;
+    height: var(--bottom-nav-height);
     direction: ltr;
     position: fixed;
     bottom: 0;
@@ -3390,7 +3391,8 @@
   /* Fixed bottom practice card */
   #practice-card {
     position: fixed;
-    bottom: calc(54px + 8px);
+    bottom: var(--bottom-nav-height);
+    bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
     left: 50%; transform: translateX(-50%);
     width: calc(100% - 32px); max-width: calc(480px - 32px);
     z-index: 99; display: none; pointer-events: none;
@@ -5246,11 +5248,11 @@ const corpusData = {
           },
           {
             type: 'source',
-            title: 'מתוך "מבוא לאתיקה", הרצאות קרסטן הריס, אוניברסיטת Yale, 2013', titleEn: 'מתוך "מבוא לאתיקה", הרצאות קרסטן הריס, אוניברסיטת Yale, 2013',
+            title: 'מתוך "מבוא לאתיקה", הרצאות קרסטן הריס, אוניברסיטת Yale, 2013', titleEn: 'From "Introduction to Ethics", Karsten Harries lectures, Yale University, 2013',
             quote: '"ברוב הזמן אנחנו מוצאים את עצמנו שקועים במצבים שמכתיבים לנו מה לעשות. המשפחה, החברה, השכל הישר - כולם סיפקו לנו מפות שאנחנו מקבלים ללא עוררין. אנחנו עושים מה שעושים ולא מודאגים מזה. ואולם ישנם רגעים שבהם אמונות מוסכמות ומובנות מאליהן מתפוררות."',
-            quoteEn: '"ברוב הזמן אנחנו מוצאים את עצמנו שקועים במצבים שמכתיבים לנו מה לעשות. המשפחה, החברה, השכל הישר - כולם סיפקו לנו מפות שאנחנו מקבלים ללא עוררין. אנחנו עושים מה שעושים ולא מודאגים מזה. ואולם ישנם רגעים שבהם אמונות מוסכמות ומובנות מאליהן מתפוררות."',
+            quoteEn: '"Most of the time we find ourselves immersed in situations that dictate to us what to do. The family, society, common sense - all have supplied us with maps which we accept without question. We do what we do and are not troubled by it. But there are moments when accepted and self-evident beliefs fall apart."',
             attr: '- קרסטן הריס, מבוא לאתיקה, אוניברסיטת Yale (2013)',
-            attrEn: '- קרסטן הריס, מבוא לאתיקה, אוניברסיטת Yale (2013)',
+            attrEn: '- Karsten Harries, Introduction to Ethics, Yale University (2013)',
             content: '',
             contentEn: '',
           },
@@ -5600,9 +5602,9 @@ const corpusData = {
             type: 'source',
             title: 'מתוך "The Trolley Problem"', titleEn: 'From "The Trolley Problem"',
             quote: '"רובנו נרגיש שמותר לנו לסובב את הקרונית... אבל שאסור לנו לזרוק את האיש מהגשר. מדוע? מה ההבדל בין שני המקרים?"',
-            quoteEn: '"רובנו נרגיש שמותר לנו לסובב את הקרונית... אבל שאסור לנו לזרוק את האיש מהגשר. מדוע? מה ההבדל בין שני המקרים?"',
+            quoteEn: '"Most of us will feel that it is permissible to turn the trolley... but it is not permissible to throw the man off the bridge. Why? What is the difference between the two cases?"',
             attr: '- ג\'ודית ג\'רביס תומסון, Yale Law Journal, 1985',
-            attrEn: '- ג\'ודית ג\'רביס תומסון, Yale Law Journal, 1985',
+            attrEn: '- Judith Jarvis Thomson, Yale Law Journal, 1985',
             content: '',
             contentEn: '',
           },
@@ -7024,7 +7026,7 @@ const economicsData = {
             options: ['שכר הלימוד ששילם', 'הזמן שהקדיש ללימודים', 'המשכורת שלא הרוויח בשנים שלמד'],
             optionsEn: ['The tuition fee they paid', 'The time they dedicated to studies', 'The salary they did not earn during the years they studied'],
             correctIndex: 2,
-            explanation: 'עלות אלטרנטיבה היא תמיד מה שוויתרת עליו, לא מה ששילמת.',
+            explanation: 'עלות אלטרנטיבית היא תמיד מה שוויתרת עליו, לא מה ששילמת.',
             explanationEn: 'Opportunity cost is always what you gave up, not what you paid.',
           },
           {
@@ -7062,7 +7064,7 @@ const economicsData = {
             type: 'explanation',
             title: 'האופה, הקצב והאינטרס העצמי',
             titleEn: 'The Baker, the Butcher, and Self-Interest',
-            content: 'הדוגמה הקלאסית של סמית: אתה לא מצפה שהקצב יכין לך בשר מתוך אהבה. הוא עושה זאת כי הוא רוצה לשלם את שכר הדירה שלו. הנגר בנה את הכיסא שלך כי הוא צריך לפרנס את משפחתו. כל אחד פועל מתוך אינטרס עצמי - וסך כל הפעולות האלה יוצר שוק שמספק לאנשים מה שהם צריכים. זו לא כשל של המערכת - זה בדיוק איך היא אמורה לעבוד.',
+            content: 'הדוגמה הקלאסית של סמית: אתה לא מצפה שהקצב יכין לך בשר מתוך אהבה. הוא עושה זאת כי הוא רוצה לשלם את שכר הדירה שלו. הנגר בנה את הכיסא שלך כי הוא צריך לפרנס את משפחתו. כל אחד פועל מתוך אינטרס עצמי - וסך כל הפעולות האלה יוצר שוק שמספק לאנשים מה שהם צריכים. זה לא כשל של המערכת - זה בדיוק איך שהיא אמורה לעבוד.',
             contentEn: 'Smith\'s classic example: you don\'t expect the butcher to prepare your meat out of love. He does it because he wants to pay his rent. The carpenter built your chair because he needs to support his family. Each person acts out of self-interest - and the sum of all these actions creates a market that provides people with what they need. This is not a failure of the system - it is exactly how it is supposed to work.',
           },
           {
@@ -7402,12 +7404,12 @@ const economicsData = {
           },
           {
             type: 'quiz',
-            question: 'מהי "עלות אלטרנטיבה"?',
+            question: 'מהי "עלות אלטרנטיבית"?',
             questionEn: 'What is "Opportunity Cost"?',
             options: ['העלות הכספית הישירה של רכישת מוצר', 'ההפרש בין מחיר שוק למחיר טבעי', 'מה שוויתרת עליו כשבחרת אפשרות אחת על פני אחרת'],
             optionsEn: ['The direct monetary cost of purchasing a product', 'The difference between market price and natural price', 'What you gave up when you chose one option over another'],
             correctIndex: 2,
-            explanation: 'עלות אלטרנטיבה היא המושג שמסביר למה כל בחירה כרוכה בויתור. אפילו בחירה "בחינם" עולה משהו - את הזמן שהשקעת בה.',
+            explanation: 'עלות אלטרנטיבית היא המושג שמסביר למה כל בחירה כרוכה בויתור. אפילו בחירה "בחינם" עולה משהו - את הזמן שהשקעת בה.',
             explanationEn: 'Opportunity cost is the concept that explains why every choice involves a compromise. Even a "free" choice costs something - the time you invested in it.',
           },
           {
@@ -7419,19 +7421,6 @@ const economicsData = {
             correctIndex: 1,
             explanation: 'ההפרדה הזו היא המורשת הגדולה של מיל. היא פותחת מרחב לפוליטיקה בלי לשלול את הכלכלה. ניתן לקבל את השוק החופשי ועדיין לדרוש צדק חלוקתי.',
             explanationEn: 'This separation is Mill\'s great legacy. It opens a space for politics without negating economics. One can accept the free market and still demand distributive justice.',
-          },
-          {
-            type: 'reflection',
-            title: 'שאלת ההתבוננות',
-            titleEn: 'Reflection',
-            questions: [
-              'אם היית צריך להחליט - כמה מהחלוקה של העושר בחברה שלך צריכה להיקבע על ידי השוק, וכמה על ידי החלטה חברתית מכוונת?',
-              'אין תשובה נכונה. אבל חשוב שתדע מה אתה מאמין - ולמה.',
-            ],
-            questionsEn: [
-              'If you had to decide - how much of the distribution of wealth in your society should be determined by the market, and how much by a deliberate social decision?',
-              'There is no correct answer. But it is important that you know what you believe - and why.',
-            ],
           },
           {
             type: 'explanation',
@@ -7875,18 +7864,6 @@ const economicsData = {
             explanationEn: 'This is the question that connects the entire week. Smith, Marx, Walras, the marginal economists, Sandel and Walzer - all are trying to answer the same deep question: what is something worth, and who - and what - should decide.',
           },
           {
-            type: 'reflection',
-            title: 'שאלת ההתבוננות', titleEn: 'Reflection',
-            questions: [
-              'השבוע גישרנו בין כלכלה לפילוסופיה - מה מחיר, מה ערך, ומי קובע. באיזה מהרעיונות שלמדת השבוע אתה חולק הכי חזק - ולמה?',
-              'אין תשובה נכונה. אבל שווה לדעת איפה אתה עומד.',
-            ],
-            questionsEn: [
-              'This week we bridged economics and philosophy - what is price, what is value, and who decides. Which idea from this week do you disagree with most strongly - and why?',
-              'There is no correct answer. But it is worth knowing where you stand.',
-            ],
-          },
-          {
             type: 'explanation',
             title: 'סיכום שבוע 2', titleEn: 'Week 2 Summary',
             content: 'השבוע פגשנו ארבע גישות לשאלת הערך: המחיר הטבעי של סמית\', תורת ערך העבודה של מרקס, שיווי המשקל של וולראס, ומה שכסף לא יכול לקנות לפי סנדל.<br><br>כל גישה מביאה כלים שונים לאותה שאלה. הכלים נשארים איתנו - גם כשהתשובות שנויות במחלוקת.',
@@ -8092,7 +8069,7 @@ const THINKERS = [
     emoji: '📊',
     image: './images/samuelson.png',
     subject: 'economics',
-    bio: 'הכלכלן האמריקאי הראשון לזכות בפרס נובל לכלכלה (1970). ספרו "כלכלה" (1948) הגדיר את הדיסציפלינה למאה השנים הבאות.',
+    bio: 'הכלכלן האמריקאי הראשון לזכות בפרס נובל לכלכלה (1970). ספרו "כלכלה" (1948) הגדיר את הדיסציפלינה למשך עשורים.',
     quote: '"כלכלה היא חקר האופן שבו אנשים ואומות בוחרים להעסיק משאבים יצרניים נדירים..."',
   },
   {
@@ -8149,7 +8126,7 @@ const THINKERS_EN = [
   { id:'mill-econ', name:'John Stuart Mill', era:'1806–1873', image:'./images/mill1.png', emoji:'🌻', subject:'economics', bio:'British philosopher and economist. Distinguished between the laws of production (natural) and the laws of distribution (social) - a distinction that changed the history of economic thought.', quote:'"The question for the future is not how to produce more - but how to distribute better."' },
   { id:'smith', name:'Adam Smith', era:'1723–1790', emoji:'🏭', image:'./images/smith.png', subject:'economics', bio:'The Scottish economist who laid the foundations of modern economics. Famous for the "invisible hand" metaphor - a self-coordinating free market without central planning.', quote:'"It is not from the benevolence of the butcher, the brewer, or the baker that we expect our dinner, but from their regard to their own interest."' },
   { id:'locke', name:'John Locke', era:'1632–1704', emoji:'📜', image:'./images/locke.png', subject:'economics', bio:'The English philosopher who formulated the philosophical basis for private property - not as a social agreement but as a natural right derived from a person\'s ownership of themselves.', quote:'"Every man has a property in his own person… the labour of his body, and the work of his hands, we may say, are properly his."' },
-  { id:'samuelson', name:'Paul Samuelson', era:'1915–2009', emoji:'📊', image:'./images/samuelson.png', subject:'economics', bio:'The first American economist to win the Nobel Prize in Economics (1970). His textbook "Economics" (1948) defined the discipline for the next century.', quote:'"Economics is the study of how people and nations choose to employ scarce productive resources - labor, capital, land - to produce commodities and distribute them for consumption."' },
+  { id:'samuelson', name:'Paul Samuelson', era:'1915–2009', emoji:'📊', image:'./images/samuelson.png', subject:'economics', bio:'The first American economist to win the Nobel Prize in Economics (1970). His textbook "Economics" (1948) defined the discipline for decades.', quote:'"Economics is the study of how people and nations choose to employ scarce productive resources - labor, capital, land - to produce commodities and distribute them for consumption."' },
   { id:'marx', name:'Karl Marx', era:'1818–1883', emoji:'⚙️', image:'./images/marx.png', subject:'economics', bio:'The German philosopher and economist who critiqued capitalism from its foundations. In Capital he developed the labor theory of value and analyzed the mechanisms of exploitation built into capitalist production.', quote:'"The history of all hitherto existing society is the history of class struggles."' },
   { id:'walras', name:'Léon Walras', era:'1834–1910', emoji:'🔢', image:'./images/walras.png', subject:'economics', bio:'The Swiss economist who founded neo-classical economics. Developed the theory of general equilibrium - the idea that it is possible to describe mathematically how all markets in the economy reach balance simultaneously.', quote:'"Prices are the solution to a system of simultaneous equations."' },
   { id:'sandel', name:'Michael Sandel', era:'1953–', emoji:'🏛️', image:'./images/sandel.png', subject:'economics', bio:'American political philosopher at Harvard. Known for his critique of capitalism and his argument that there are spheres of life - education, health, democracy - where money should not decide.', quote:'"The market is not a neutral tool - it injects certain values into domains where other values matter more."' },
@@ -10772,26 +10749,28 @@ function showSharePrompt() {
 }
 
 async function doShare() {
-  const url = 'https://omeroth.github.io/corpus-app/';
-  const isEn = state.lang === 'en';
+  const url = 'https://corpusapp.io/#';
+  const shareText = state.lang === 'he'
+    ? 'הרעיונות הגדולים בהיסטוריה ב-5 דקות ביום'
+    : "History's biggest ideas in 5 minutes a day";
   if (navigator.share) {
     try {
-      await navigator.share({ title: 'Corpus', text: 'פילוסופיה ב-10 דקות ביום', url });
+      await navigator.share({ title: 'Corpus', text: shareText, url });
       try { localStorage.setItem(`corpus_share_shown_${state.subject || 'philosophy'}`, '1'); } catch(e) {}
       document.getElementById('modal-share').classList.remove('active');
     } catch(e) { /* user cancelled - don\'t dismiss */ }
   } else {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(`${shareText} ${url}`);
     } catch(e) {
       const ta = document.createElement('textarea');
-      ta.value = url;
+      ta.value = `${shareText} ${url}`;
       ta.style.position = 'fixed'; ta.style.opacity = '0';
       document.body.appendChild(ta); ta.select(); document.execCommand('copy');
       document.body.removeChild(ta);
     }
     const copied = document.getElementById('share-copied');
-    copied.textContent = isEn ? 'Link copied!' : 'הקישור הועתק';
+    copied.textContent = state.lang === 'en' ? 'Link copied!' : 'הקישור הועתק';
     copied.style.display = 'block';
     try { localStorage.setItem(`corpus_share_shown_${state.subject || 'philosophy'}`, '1'); } catch(e) {}
     setTimeout(() => document.getElementById('modal-share').classList.remove('active'), 1800);
