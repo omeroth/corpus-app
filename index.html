@@ -877,11 +877,12 @@
     border: 1px solid #FFD982;
     box-shadow: 0 6px 14px -4px rgba(42,18,102,.18), 0 0 0 1px #FFF8E8;
     border-radius: 18px;
-    padding: 10px 8px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 8px;
     position: absolute;
     inset: 0;
     backface-visibility: hidden;
@@ -896,55 +897,32 @@
     pointer-events: none;
   }
   .pantheon-card-back-star {
-    font-size: 13px;
+    font-size: 24px;
     color: #F5B544;
+    text-shadow: 0 0 8px rgba(245,181,68,0.4);
     position: relative;
     z-index: 1;
+    margin-bottom: 4px;
   }
   .pantheon-card-back-name {
-    font-weight: 800;
-    font-size: 14px;
-    color: #2A1266;
-    letter-spacing: -0.02em;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
     text-align: center;
-    line-height: 1.1;
+    line-height: 1.2;
     position: relative;
     z-index: 1;
+    max-width: 100%;
   }
   .pantheon-card-back-era {
-    font-size: 9px;
-    color: #8D7DAE;
-    font-weight: 700;
-    letter-spacing: 0.04em;
+    font-size: 12px;
+    color: var(--text-2);
+    font-weight: 600;
+    letter-spacing: 0.02em;
     text-align: center;
     position: relative;
     z-index: 1;
-  }
-  .pantheon-card-back-divider {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, #F5B544, transparent);
-    align-self: stretch;
-    margin: 2px 6px;
-    position: relative;
-    z-index: 1;
-  }
-  .pantheon-card-back-quote {
-    font-size: 10px;
-    color: #2A1266;
-    text-align: center;
-    line-height: 1.5;
-    font-weight: 500;
-    padding: 2px 8px;
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    z-index: 1;
-    font-style: italic;
-    overflow: hidden;
-    word-break: break-word;
-    hyphens: auto;
   }
   .pantheon-card.locked .pantheon-card-name {
     color: #6B5A8A;
@@ -11623,7 +11601,6 @@ function renderPantheon() {
     const isUnlocked = validUnlocked.includes(t.id);
     const displayName = t.name;
     if (isUnlocked) {
-      const quote = isEn ? (t.quoteEn || t.quote) : (t.quote || t.quoteEn);
       return `
         <div class="pantheon-card" onclick="flipThinkerCard(this, '${t.id}')">
           <div class="pantheon-card-inner">
@@ -11639,8 +11616,6 @@ function renderPantheon() {
               <div class="pantheon-card-back-star">✦</div>
               <div class="pantheon-card-back-name">${displayName}</div>
               <div class="pantheon-card-back-era">${t.era || ''}</div>
-              <div class="pantheon-card-back-divider"></div>
-              <div class="pantheon-card-back-quote">${quote || ''}</div>
             </div>
           </div>
         </div>`;
@@ -11692,8 +11667,6 @@ function flipThinkerCard(card, thinkerId) {
     if (c !== card) c.classList.remove('flipped');
   });
   card.classList.toggle('flipped');
-  const quote = card.querySelector('.pantheon-card-back-quote');
-  setTimeout(() => fitCardQuote(quote), 300);
 }
 
 function showPantheonScreen() {
