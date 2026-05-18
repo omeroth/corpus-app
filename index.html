@@ -10570,7 +10570,7 @@ function _showDcStats(titleText, subtitleText, xpAmount, streakCount, onContinue
   const next = getNextLessonInfo();
 
   if (next.hasNext && onContinue.fn === closeCompleteModal) {
-    continueBtn.textContent = isEn ? 'Next Lesson' : 'הלומדה הבאה';
+    continueBtn.textContent = isEn ? 'Next Dialogue' : 'הדיאלוג הבא';
     continueBtn.onclick = goToNextLesson;
     backHomeBtn.textContent = isEn ? 'Back to Home' : 'חזרה לבית';
     backHomeBtn.onclick = closeCompleteModal;
@@ -10625,7 +10625,7 @@ function showThinkerCardScreen(thinker, week, day) {
   const nextInfo = getNextLessonInfo();
   const nextBtn = document.getElementById('modal-next-btn');
   if (nextInfo.hasNext) {
-    nextBtn.textContent = isEn ? 'Next Lesson' : 'הלומדה הבאה';
+    nextBtn.textContent = isEn ? 'Next Dialogue' : 'הדיאלוג הבא';
     nextBtn.onclick = goToNextLesson;
     nextBtn.style.display = '';
   } else {
