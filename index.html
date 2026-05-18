@@ -2743,6 +2743,21 @@
     transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.15s;
   }
   .dc-continue-btn:active { transform: scale(0.93); }
+  #dc-stats-back-home {
+    margin-top: 12px;
+    background: transparent;
+    color: var(--accent);
+    border: none;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 50px;
+    opacity: 0;
+    animation: dc-fade-up 0.5s ease-out 2.5s forwards;
+  }
+  #dc-stats-back-home:active { opacity: 0.65; }
   /* Thinker screen */
   .dc-thinker-screen {
     justify-content: flex-start;
@@ -4359,6 +4374,7 @@
       </div>
     </div>
     <button class="dc-continue-btn" id="dc-stats-continue"></button>
+    <button id="dc-stats-back-home" style="display:none"></button>
   </div>
   <!-- MOMENT 2: Thinker Card -->
   <div class="dc-screen dc-thinker-screen" id="dc-thinker-screen" style="display:none">
@@ -6141,229 +6157,257 @@ const corpusData = {
     days: [
       {
         id: 1,
-        title: 'מה זה לדעת?', titleEn: 'What Does It Mean to Know?',
+        title: 'מה זה לדעת?', titleEn: 'What does it mean to know?',
         thinker: 'רוברט אודי', thinkerEn: 'Robert Audi',
         thinkerId: 'audi', xp: 50,
         sections: [
           {
             type: 'idea',
-            title: 'מה זה לדעת?', titleEn: 'What Does It Mean to Know?',
-            content: 'עד עכשיו שאלנו שאלות אונטולוגיות - שאלות על מה קיים: האם אלוהים קיים? מה המוסר? מה טוב ורע? השבוע עוברים לשאלה אחרת לגמרי.\n\nאפיסטמולוגיה - ענף הפילוסופיה העוסק בידע - שואלת: לא מה קיים, אלא מה אנחנו יכולים לדעת. זה ההבדל בין "האם יש עולם חיצוני?" לבין "מה אני יכול לדעת על העולם החיצוני?" - שתי שאלות שנראות דומות אבל ההבדל ביניהן עצום.\n\nולפני הכל - שאלה בסיסית יותר: מה זה בכלל לדעת?',
-            contentEn: 'Until now we asked ontological questions - questions about what exists: Does God exist? What is morality? What is good and evil? This week we turn to a completely different question.\n\nEpistemology - the branch of philosophy concerned with knowledge - asks: not what exists, but what can we know. That is the difference between "Is there an external world?" and "What can I know about the external world?" - two questions that seem similar but the gap between them is enormous.\n\nAnd before all that - a more basic question: what does it even mean to know?',
+            title: 'מה זה לדעת?', titleEn: 'What is it to know?',
+            content: 'עד עכשיו שאלנו שאלות אונטולוגיות - שאלות על מה קיים: האם אלוהים קיים? מהו המוסר? מהם טוב ורע? השבוע אנו עוברים לשאלה אחרת לגמרי.<br><br>אפיסטמולוגיה - ענף הפילוסופיה העוסק בידע - שואלת: לא מה קיים, אלא מה אנחנו יכולים לדעת. זה ההבדל בין השאלה "האם יש עולם חיצוני?" לבין השאלה "מה אני יכול לדעת על העולם החיצוני?" - שתי שאלות שנראות דומות, אך ההבדל ביניהן עצום.<br><br>ולפני הכל - שאלה בסיסית יותר: מה זה בכלל לדעת?',
+            contentEn: 'Until now, we\'ve asked ontological questions - questions about what exists: Does God exist? What is morality? What are good and evil? This week, we move to a completely different kind of question.<br><br>Epistemology - the branch of philosophy dealing with knowledge - asks: not what exists, but what we can know. This is the difference between "Is there an outside world?" and "What can I know about the outside world?" - two similar-looking questions, but the difference between them is vast.<br><br>And above all - a more basic question: What does it mean to know at all?',
           },
           {
             type: 'source',
             title: 'אודי על ידע', titleEn: 'Audi on Knowledge',
-            quote: '״ידע מוגדר בדרך כלל כאמונה מוצדקת ואמיתית. כדי לדעת משהו, לא מספיק להאמין בו, ולא מספיק שהוא יהיה אמיתי - צריך גם שיהיו סיבות טובות, הצדקה, לאמונה.״',
-            quoteEn: '"Knowledge is commonly defined as justified true belief. To know something, it is not enough to believe it, and it is not enough for it to be true - one must also have good reasons, justification, for the belief."',
-            attr: 'רוברט אודי, Epistemology, Routledge (1998)', attrEn: 'Robert Audi, Epistemology, Routledge (1998)',
-            content: '',
-            contentEn: 'Translation: "Knowledge is commonly defined as justified true belief. To know something, it is not enough to believe it, and it is not enough for it to be true - one must also have good reasons, justification, for the belief."',
+            quote: '"ידע מוגדר בדרך כלל כאמונה מוצדקת ואמיתית. כדי לדעת משהו, לא מספיק להאמין בו, ולא מספיק שהוא יהיה אמיתי - צריך גם שיהיו סיבות טובות, הצדקה, לאמונה."',
+            quoteEn: '"Knowledge is usually defined as justified true belief. To know something, it is not enough to believe it, and it is not enough for it to be true - there must also be good reasons, justification, for the belief."',
+            attr: 'רוברט אודי, Epistemology, Routledge, 1998', attrEn: 'Robert Audi, Epistemology, Routledge, 1998',
+            content: '', contentEn: '',
           },
           {
             type: 'explanation',
-            title: 'שלושה תנאים לידע', titleEn: 'Three Conditions for Knowledge',
-            content: 'הפילוסופיה המסורתית הגדירה ידע כ"אמונה מוצדקת ואמיתית." כלומר - כדי לדעת משהו צריך שלושה דברים:\n\nאמונה - אתה חייב להאמין בדבר. אם אתה לא מאמין שהשמש תזרח מחר - לא תוכל לדעת את זה.\n\nאמת - הדבר שאתה מאמין בו חייב להיות נכון. אם אתה מאמין שהארץ שטוחה - זו לא ידיעה, גם אם אתה בטוח בה לחלוטין.\n\nהצדקה - צריכה להיות לך סיבה טובה להאמין. לנחש נכון בהגרלה זה לא ידע - זה מזל.\n\nדוגמה מהחיים: "אני יודע שיירד גשם מחר" - האם זה ידע? אתה מאמין בזה. אם אכן יירד גשם - זה יהיה אמיתי. אבל מה ההצדקה? אם ראית תחזית מזג אוויר - זה קרוב לידע. אם פשוט הרגשת בבטן - זו אמונה, לא ידע.',
-            contentEn: 'Traditional philosophy defined knowledge as "justified true belief." That is - to know something you need three things:\n\nBelief - you must believe it. If you do not believe the sun will rise tomorrow - you cannot know it.\n\nTruth - what you believe must be correct. If you believe the earth is flat - that is not knowledge, even if you are completely certain.\n\nJustification - you need a good reason to believe. Guessing correctly in a lottery is not knowledge - it is luck.\n\nA real-life example: "I know it will rain tomorrow" - is that knowledge? You believe it. If it does rain - it will be true. But what is the justification? If you saw a weather forecast - that is close to knowledge. If you just had a feeling - that is belief, not knowledge.',
+            title: 'שלושת התנאים לידע', titleEn: 'The Three Conditions of Knowledge',
+            content: 'הפילוסופיה המסורתית הגדירה ידע כ"אמונה מוצדקת ואמיתית" (Justified True Belief). כלומר, כדי לדעת משהו דרושים שלושה תנאים:<br><br><b>1. אמונה</b> - אתה חייב להאמין בדבר. אם אינך מאמין שהשמש תזרח מחר - לא תוכל לדעת זאת.<br><br><b>2. אמת</b> - הדבר שאתה מאמין בו חייב להיות נכון. אם אתה מאמין שהארץ שטוחה - זו אינה ידיעה, גם אם אתה בטוח בכך לחלוטין.<br><br><b>3. הצדקה</b> - צריכה להיות לך סיבה טובה להאמין. לנחש נכון בלוטו זה לא ידע - זה מזל.<br><br>דוגמה מהחיים: "אני יודע שיירד גשם מחר" - האם זה ידע? אתה מאמין בכך. אם אכן יירד גשם - זה יהיה אמיתי. אך מה ההצדקה? אם הסתמכת על תחזית מזג האוויר - זה קרוב לידע. אם פשוט הייתה לך "תחושת בטן" - זו אמונה, לא ידע.',
+            contentEn: 'Traditional philosophy defined knowledge as "Justified True Belief" (JTB). To know something, three conditions are required:<br><br><b>1. Belief</b> - You must believe in the thing. If you do not believe it will rain tomorrow - you cannot know it.<br><br><b>2. Truth</b> - The thing you believe in must be true. If you believe the earth is flat - this is not knowledge, even if you are absolutely sure of it.<br><br><b>3. Justification</b> - There must be a good reason for you to believe. Guessing correctly by chance is not knowledge - it is luck.<br><br>Real-life example: "I know it will rain tomorrow" - is this knowledge? You believe it. If it indeed rains - then it is true. But what is the justification? If it\'s based on a weather forecast - that\'s close to knowledge. If it\'s just a "gut feeling" - it\'s a belief, not knowledge.',
           },
           {
             type: 'depth',
-            title: 'למה זה חשוב?', titleEn: 'Why Does This Matter?',
-            content: 'ההבחנה בין אמונה לידע היא אחת החשובות שיש. כל יום אנחנו מקבלים החלטות על בסיס דברים שאנחנו "יודעים" - אבל האם אנחנו באמת יודעים, או רק מאמינים בחוזקה?\n\nברשתות החברתיות, בפוליטיקה, בחיי היומיום - אנשים רבים מבלבלים בין אמונה חזקה לבין ידע. ניטשה אמר אתמול שכדאי לבחון את מקור הערכים שלנו. אודי אומר היום: כדאי גם לבחון את מקור הידע שלנו.\n\nהבעיה עם ההגדרה המסורתית: ב-1963 פילוסוף בשם אדמונד גטייה כתב מאמר קצר של שלושה עמודים שהפך את הפילוסופיה על פיה. הוא הראה שאפשר לקיים את שלושת התנאים - אמונה, אמת, הצדקה - ועדיין לא לדעת. נפגוש אותו ביום 5.',
-            contentEn: 'The distinction between belief and knowledge is one of the most important there is. Every day we make decisions based on things we "know" - but do we really know, or just believe strongly?\n\nIn social media, in politics, in everyday life - many people confuse strong conviction with knowledge. Nietzsche said yesterday that we should examine the source of our values. Audi says today: we should also examine the source of our knowledge.\n\nThe problem with the traditional definition: in 1963, a philosopher named Edmund Gettier wrote a short three-page paper that turned philosophy on its head. He showed that you can satisfy all three conditions - belief, truth, justification - and still not know. We will meet him on Day 5.',
+            title: 'למה זה חשוב?', titleEn: 'Why is this important?',
+            content: 'ההבחנה בין אמונה לידע היא אחת החשובות ביותר. בכל יום אנו מקבלים החלטות על בסיס דברים שאנחנו "יודעים" - אך האם אנחנו באמת יודעים, או רק מאמינים בחוזקה?<br><br>ברשתות החברתיות, בפוליטיקה ובחיי היומיום - אנשים רבים מבלבלים בין אמונה חזקה לבין ידע. ניטשה טען שכדאי לבחון את מקור הערכים שלנו; אודי טוען שכדאי לבחון גם את מקור הידע שלנו.<br><br><b>הבעיה עם ההגדרה המסורתית:</b> בשנת 1963, פילוסוף בשם אדמונד גטייה כתב מאמר קצר של שלושה עמודים שהפך את הפילוסופיה על פיה. הוא הראה שאפשר לקיים את שלושת התנאים - אמונה, אמת והצדקה - ועדיין לא "לדעת". נפגוש אותו ביום 5.',
+            contentEn: 'The distinction between belief and knowledge is one of the most important. Every day we make decisions based on things we "know" - but are we actually knowing, or just strongly believing?<br><br>On social media, in politics, in daily life - many confuse strong belief with knowledge. Nietzsche argued we should examine our source of values; Audi claims we should also examine our source of knowledge.<br><br><b>The problem with the traditional definition:</b> In 1963, a philosopher named Edmund Gettier wrote a short three-page article that turned philosophy on its head. He showed that all three conditions can be met - belief, truth, justification - and still not "know." We\'ll meet him on Day 5.',
           },
           {
             type: 'quiz',
-            question: 'מה שלושת התנאים לידע לפי ההגדרה המסורתית?',
-            questionEn: 'What are the three conditions for knowledge according to the traditional definition?',
-            options: ['תפיסה, זיכרון והסקה', 'אמונה, אמת והצדקה', 'ניסיון, הגיון ואינטואיציה'],
-            optionsEn: ['Perception, memory, and inference', 'Belief, truth, and justification', 'Experience, reason, and intuition'],
+            question: 'דני קנה כרטיס פיס כי הייתה לו "תחושת בטן" חזקה שהוא הולך לזכות. בסוף הערב, דני אכן גילה שהוא זכה בפרס הגדול. דני אומר: "ידעתי שאני אזכה!". לפי ההגדרה של אודי (אמונה מוצדקת ואמיתית), האם דני באמת ידע שהוא יזכה?',
+            questionEn: 'Dani bought a lottery ticket because he had a strong "gut feeling" he would win. At the end of the evening, Dani discovered he indeed won the grand prize. Dani says "I knew I would win!" According to Audi\'s definition (justified true belief), did Dani really know he would win?',
+            options: ['כן. הוא האמין בזה והדבר התממש במציאות.', 'לא. חסרה כאן הצדקה - תחושת בטן אינה סיבה רציונלית מספקת לידע.', 'לא. חסר כאן מרכיב האמת, כי אי אפשר לדעת אירועים עתידיים.'],
+            optionsEn: ['Yes. He believed in it and the event materialized in reality.', 'No. The component of justification is missing - a gut feeling is not a sufficient rational reason for knowledge.', 'No. The component of truth is missing, because it\'s impossible to know about future events.'],
             correctIndex: 1,
-            explanation: 'ההגדרה המסורתית (המיוחסת לאפלטון) אומרת שידע = אמונה אמיתית מוצדקת. צריך את שלושת התנאים יחד - אמונה בלבד לא מספיקה, אמת בלבד לא מספיקה, והצדקה בלבד לא מספיקה.',
-            explanationEn: 'The traditional definition (attributed to Plato) says knowledge = justified true belief. You need all three conditions together - belief alone is not enough, truth alone is not enough, and justification alone is not enough.',
+            explanation: 'למרות שהתנאים של אמונה ואמת התקיימו, לא הייתה לדני הצדקה רציונלית. ניחוש מוצלח אינו נחשב לידע.',
+            explanationEn: 'Although the conditions of belief and truth were met, Dani had no rational justification. A successful guess is not considered knowledge.',
           },
           {
-            type: 'reflection',
-            title: 'שאלות לחשיבה', titleEn: 'Questions for Reflection',
-            questions: [
-              'שאלה פילוסופית: אתה מאמין שחברך נאמן לך. הוא אכן נאמן. ויש לך סיבות טובות להאמין בזה. האם אתה יודע שהוא נאמן - או רק מאמין בחוזקה?',
-              'שאלה מסכמת: חשוב על דבר אחד שאתה "יודע" בוודאות מוחלטת. מה ההצדקה שלך? ואיך תדע אם טעית?',
-            ],
-            questionsEn: [
-              'Philosophical question: You believe your friend is loyal to you. He is indeed loyal. And you have good reasons to believe it. Do you know he is loyal - or do you only believe it strongly?',
-              'Closing question: Think of one thing you "know" with absolute certainty. What is your justification? And how would you know if you were wrong?',
-            ],
+            type: 'quiz',
+            question: 'במשך מאות שנים, אנשים האמינו שהשמש מסתובבת סביב כדור הארץ. הייתה להם הצדקה (תצפית ויזואלית) והם האמינו בכך לחלוטין. מדוע, לפי ההגדרה המסורתית, זו לא נחשבה "ידיעה"?',
+            questionEn: 'For hundreds of years, people believed the sun revolves around the earth. They had justification (visual observation) and they believed it absolutely. Why, by the traditional definition, was this not considered "knowledge"?',
+            options: ['כי חסר כאן תנאי האמת - הטענה אינה תואמת את המציאות כפי שאנחנו מבינים אותה היום.', 'כי האמונה שלהם נבעה מפחד דתי ולא משכנוע פנימי חופשי.', 'זו דווקא כן נחשבה ידיעה, שכן ידע הוא מושג יחסי שמשתנה עם הזמן.'],
+            optionsEn: ['Because the truth condition is missing - the claim does not match reality as we understand it today.', 'Because their belief stemmed from religious fear, not from internal conviction.', 'It actually was considered knowledge, since knowledge is a relative concept that changes over time.'],
+            correctIndex: 0,
+            explanation: 'ידע מחייב התאמה למציאות. מכיוון שהטענה אינה נכונה עובדתית, היא אינה יכולה להיחשב לידע גם אם האמינו בה וסיפקו לה הסברים.',
+            explanationEn: 'Knowledge requires correspondence with reality. Since the claim is not factually correct, it cannot be considered knowledge even if it was believed and explained.',
+          },
+          {
+            type: 'quiz',
+            question: 'ראית בחדשות שחזאי מוסמך אמר שיירד גשם מחר. בעקבות זאת, אתה אומר: "אני יודע שמחר יירד גשם". מהי ה"הצדקה" שלך במקרה הזה?',
+            questionEn: 'You saw on the news a certified meteorologist saying it will rain tomorrow. Following this, you say "I know it will rain tomorrow." What is your "justification" in this case?',
+            options: ['העובדה שאכן ירד גשם בסופו של דבר.', 'עוצמת השכנוע הפנימי שלך והביטחון העצמי שבו נאמרו הדברים.', 'ההסתמכות על מקור מוסמך (חזאי המתבסס על כלים מדעיים).'],
+            optionsEn: ['The fact that it actually rained in the end.', 'The strength of your internal conviction and the certainty with which the words were said.', 'Relying on a qualified source (a meteorologist based on scientific tools).'],
+            correctIndex: 2,
+            explanation: 'הצדקה היא הסיבה הרציונלית לאמונה. הסתמכות על מומחים או ראיות אובייקטיביות היא מה שהופך אמונה לידע פוטנציאלי.',
+            explanationEn: 'Justification is the rational reason for the belief. Relying on experts or objective evidence is what turns a belief into potential knowledge.',
           },
         ],
       },
       {
         id: 2,
-        title: 'האם אפשר לדעת כלל?', titleEn: 'Can We Know Anything at All?',
+        title: 'האם אפשר לדעת כלל?', titleEn: 'Is it possible to know anything at all?',
         thinker: 'רנה דקארט', thinkerEn: 'René Descartes',
         thinkerId: 'descartes', xp: 50,
         sections: [
           {
             type: 'idea',
-            title: 'האם אפשר לדעת כלל?', titleEn: 'Can We Know Anything at All?',
-            content: 'אתמול הגדרנו ידע כאמונה מוצדקת ואמיתית. אבל דקארט שאל שאלה קודמת: האם אפשר בכלל לדעת משהו בוודאות? הוא החליט לפקפק בכל - בחושים, בזיכרון, במתמטיקה - עד שימצא משהו שאי אפשר לפקפק בו. מה שמצא שינה את הפילוסופיה לנצח.',
-            contentEn: 'Yesterday we defined knowledge as justified true belief. But Descartes asked a prior question: can we know anything with certainty at all? He decided to doubt everything - the senses, memory, mathematics - until he found something that could not be doubted. What he found changed philosophy forever.',
+            title: 'האם אפשר לדעת כלל?', titleEn: 'Is it possible to know anything?',
+            content: 'אתמול הגדרנו ידע כאמונה מוצדקת ואמיתית. אך רנה דקארט שאל שאלה מוקדמת יותר: האם אפשר בכלל לדעת משהו בוודאות? הוא החליט לפקפק בהכול - בחושים, בזיכרון ואפילו במתמטיקה - עד שימצא משהו שאי אפשר לפקפק בו. מה שמצא שינה את הפילוסופיה לנצח.',
+            contentEn: 'Yesterday we defined knowledge as a justified and true belief. But René Descartes asked an even more preliminary question: Is it even possible to know anything with certainty? He decided to doubt everything - the senses, memory, and even mathematics - until he could find something that could not be doubted. What he found changed philosophy forever.',
           },
           {
             type: 'source',
             title: 'דקארט על הספק', titleEn: 'Descartes on Doubt',
-            quote: '״אניח שכל מה שאני רואה הוא שקר. אאמין שמעולם לא היה קיים כל מה שזיכרוני הכוזב מייצג לי. אין לי שום חושים כלל. גוף, צורה, מרחב, תנועה ומקום - כולם אשליות... אבל לפחות אני בעצמי ממשי? האם לא הוכחתי לי עצמי שאין כלל גוף לאיש... ולא, לא אוכל לכפור בכך. שכן מהעובדה שאני חושב - אפילו שאני מפקפק - אני מסיק שאני קיים.״',
-            quoteEn: '"I will suppose that everything I see is false. I will believe that my deceptive memory has never represented anything that actually existed. I have no senses at all. Body, shape, extension, motion and place are all illusions... But at least I myself am real? Have I not proved to myself that there is no body at all... But no, I cannot deny this. For from the very fact that I think - even that I doubt - I conclude that I exist."',
-            attr: 'רנה דקארט, הגיונות על הפילוסופיה הראשונה, תרגום יוסף בן-דוד בסוק, הוצאת רסלינג', attrEn: 'René Descartes, Meditations on First Philosophy, trans. Joseph Ben-David Basuk, Resling',
-            content: 'מתוך הגיונות על הפילוסופיה הראשונה - אחד הטקסטים הפילוסופיים המשפיעים ביותר בהיסטוריה.',
-            contentEn: 'From Meditations on First Philosophy - one of the most influential philosophical texts in history.',
+            quote: '"אניח שכל מה שאני רואה הוא שקר. אאמין שמעולם לא היה קיים כל מה שזיכרוני הכוזב מייצג לי. אין לי שום חושים כלל. גוף, צורה, מרחב, תנועה ומקום - כולם אשליות... אבל לפחות אני בעצמי ממשי? האם לא הוכחתי לעצמי שאין כלל גוף לאיש... ולא, לא אוכל לכפור בכך. שכן מהעובדה שאני חושב - אפילו שאני מפקפק - אני מסיק שאני קיים."',
+            quoteEn: '"I will suppose that everything I see is false. I will believe that my memory has never represented anything truly. I have no senses at all. Body, shape, extension, movement, and place - all are illusions... But at least am I myself something? Have I not convinced myself that there are no bodies at all... But no, I cannot doubt this. For from the fact that I am thinking - even that I am doubting - I conclude that I exist."',
+            attr: 'רנה דקארט, הגיונות על הפילוסופיה הראשונה, תרגום: יוסף בן-דוד בסוק, הוצאת רסלינג', attrEn: 'René Descartes, Meditations on First Philosophy, trans. Yosef Ben-David Bsuk, Resling Publishing',
+            content: '', contentEn: '',
           },
           {
             type: 'explanation',
             title: 'הספק המתודי', titleEn: 'Methodological Doubt',
-            content: 'דקארט לא פקפק בכל כי היה פסימי - הוא פקפק בשיטה, כדי למצוא בסיס בטוח לידע. הוא שאל: מה אם יש שד מרושע שמטעה אותי לגבי הכל? מה אם כל חיי הם חלום?\n\nאבל דקארט הרחיק לכת עוד יותר: מה אם השד המתעתע גורם לך לטעות אפילו בלוגיקה? אולי 2+2 לא שווה 4 - אולי השד פשוט גורם לך להיות בטוח שכן. אם זה אפשרי - אפילו המתמטיקה, שנחשבת לאמת המוחלטת ביותר, הופכת מפוקפקת.\n\nאפילו אם הכל שקר - יש דבר אחד שאי אפשר לפקפק בו: העובדה שאני מפקפק. ופיקוק הוא מחשבה. ומחשבה מוכיחה שאני קיים.\n\n"Cogito ergo sum" - אני חושב, משמע אני קיים.\n\nדוגמה מהחיים: דמיין שאתה מתעורר ולא בטוח אם אתה חולם. אתה לא יכול לסמוך על מה שאתה רואה. אבל אתה יכול להיות בטוח בדבר אחד - שיש מישהו שמתעורר ומפקפק. זה אתה.',
-            contentEn: 'Descartes did not doubt everything because he was pessimistic - he doubted methodically, in order to find a secure foundation for knowledge. He asked: what if there is an evil demon deceiving me about everything? What if my whole life is a dream?\n\nBut Descartes went even further: what if the deceiving demon makes you err even in logic? Perhaps 2+2 does not equal 4 - perhaps the demon simply makes you certain that it does. If that is possible - even mathematics, considered the most absolute truth, becomes doubtful.\n\nEven if everything is false - there is one thing that cannot be doubted: the very fact that I am doubting. And doubting is thinking. And thinking proves that I exist.\n\n"Cogito ergo sum" - I think, therefore I am.\n\nA real-life example: imagine you wake up and are not sure whether you are dreaming. You cannot trust what you see. But you can be certain of one thing - that there is someone waking up and doubting. That is you.',
+            content: 'דקארט לא פקפק בהכול כי היה פסימי - הוא פקפק בשיטה (מתודה), כדי למצוא בסיס בטוח לידע. הוא שאל: מה אם יש "שד מרושע" שמטעה אותי לגבי הכול? מה אם כל חיי הם חלום?<br><br>דקארט הרחיק לכת עוד יותר: מה אם השד המתעתע גורם לך לטעות אפילו בלוגיקה? אולי 2+2 אינם שווים 4 - אולי השד פשוט גורם לך להיות בטוח שכן. אם זה אפשרי - אפילו המתמטיקה, שנחשבת לאמת המוחלטת ביותר, הופכת מפוקפקת.<br><br>אך אפילו אם הכול שקר - יש דבר אחד שאי אפשר לפקפק בו: העובדה שאני מפקפק. ופיקפוק הוא מחשבה, ומחשבה מוכיחה שאני קיים.<br><br><b>"Cogito ergo sum" - אני חושב, משמע אני קיים.</b><br><br>דוגמה מהחיים: דמיין שאתה מתעורר ולא בטוח אם אתה חולם. אינך יכול לסמוך על מה שאתה רואה, אך אתה יכול להיות בטוח בדבר אחד - שיש מישהו שמתעורר ומפקפק. זה אתה.',
+            contentEn: 'Descartes didn\'t doubt everything because he was a pessimist - he doubted as a method, to find a secure foundation for knowledge. He asked: what if there\'s an "evil demon" deceiving me about everything? What if all of life is a dream?<br><br>Descartes went even further: what if the deceiving demon makes you err even in logic? Maybe 2+2 doesn\'t equal 4 - maybe the demon just makes you certain that it does. If that\'s possible - even mathematics, considered the most absolute truth, becomes questionable.<br><br>But even if everything is a lie - there\'s one thing that can\'t be doubted: the fact that I am doubting. And doubting is thinking, and thinking proves I exist.<br><br><b>"Cogito ergo sum" - I think, therefore I am.</b><br><br>Real-life example: Imagine waking up unsure whether you\'re dreaming. You can\'t trust what you see, but you can be sure of one thing - someone is waking up and doubting. That\'s you.',
           },
           {
             type: 'depth',
             title: 'הבעיה שדקארט פתח', titleEn: 'The Problem Descartes Opened',
-            content: 'דקארט מצא את הבסיס - "אני חושב, משמע אני קיים." אבל מכאן קשה להמשיך. כיצד אתה יודע שהעולם החיצוני קיים? כיצד אתה יודע שגופך קיים?\n\nדקארט ניסה לפתור זאת על ידי הוכחת קיומו של אלוהים - אלוהים טוב לא יטעה אותנו לגבי העולם. אבל הביקורת הייתה מיידית: איך אתה מוכיח שאלוהים קיים, אם כל הידע שלך עדיין מפוקפק?\n\nזו הבעיה שדקארט פתח - ופילוסופים עדיין מתמודדים איתה עד היום.',
-            contentEn: 'Descartes found the foundation - "I think, therefore I am." But from here it is hard to continue. How do you know the external world exists? How do you know your body exists?\n\nDescartes tried to solve this by proving God\'s existence - a good God would not deceive us about the world. But the criticism was immediate: how do you prove God exists, if all your knowledge is still in doubt?\n\nThis is the problem Descartes opened - and philosophers are still wrestling with it today.',
+            content: 'דקארט מצא את הבסיס - "אני חושב, משמע אני קיים". אך מכאן קשה להמשיך: כיצד ניתן לדעת שהעולם החיצוני קיים? כיצד ניתן לדעת שגופך קיים?<br><br>דקארט ניסה לפתור זאת על ידי הוכחת קיומו של אלוהים - בטענה שאלוהים טוב לא יטעה אותנו לגבי העולם. אך הביקורת הייתה מיידית: איך אתה מוכיח שאלוהים קיים, אם כל הידע שלך עדיין מפוקפק?<br><br>זו הבעיה שדקארט פתח - ופילוסופים מתמודדים איתה עד היום.',
+            contentEn: 'Descartes found the foundation - "I think, therefore I am." But from here it\'s hard to continue: how can we know the outside world exists? How can we know your body exists?<br><br>Descartes tried to solve this by proving God\'s existence - claiming a good God wouldn\'t deceive us about the world. But the criticism was immediate: how do you prove God exists, if all your knowledge is still in doubt?<br><br>This is the problem Descartes opened - and philosophers have been grappling with it ever since.',
           },
           {
             type: 'quiz',
-            question: 'מה הטענה המרכזית של דקארט לאחר תהליך הספק?',
-            questionEn: 'What is Descartes\' central claim after the process of doubt?',
-            options: ['שום דבר אינו ניתן לידיעה בוודאות', 'העובדה שאני חושב מוכיחה שאני קיים', 'החושים הם המקור האמין היחיד לידע'],
-            optionsEn: ['Nothing can be known with certainty', 'The fact that I think proves that I exist', 'The senses are the only reliable source of knowledge'],
+            question: 'דקארט בחר להטיל ספק בכל ידיעותיו הקודמות, כולל בחושים ובמתמטיקה. מה הייתה מטרתו המרכזית בשימוש בשיטת הספק?',
+            questionEn: 'Descartes chose to cast doubt on all his prior knowledge, including the senses and mathematics. What was his main goal in using the method of doubt?',
+            options: ['להוכיח שכל המציאות היא חלום ושאין טעם לחפש אמת.', 'למצוא בסיס יציב וודאי שאינו ניתן לפיקפוק כדי לבנות עליו את הידע.', 'להראות שהאמונה באלוהים היא הדבר היחיד שאי אפשר לפקפק בו.'],
+            optionsEn: ['To prove that all of reality is a dream and there\'s no point seeking truth.', 'To find a stable and certain foundation, not subject to doubt, on which to build knowledge.', 'To show that belief in God is the only thing that cannot be doubted.'],
             correctIndex: 1,
-            explanation: '"Cogito ergo sum" - אני חושב, משמע אני קיים. זו המסקנה שדקארט מגיע אליה: גם אם הכל ספק, עצם המחשבה מוכיחה קיום. זה הבסיס הבטוח היחיד שמצא.',
-            explanationEn: '"Cogito ergo sum" - I think, therefore I am. This is the conclusion Descartes reaches: even if everything is in doubt, the very act of thinking proves existence. This is the only secure foundation he found.',
+            explanation: 'דקארט השתמש בספק ככלי לניקוי דעות קדומות. מטרתו הייתה להגיע לאמת הכרחית שתשמש כיסוד איתן למדע ולפילוסופיה.',
+            explanationEn: 'Descartes used doubt as a tool to clear away prejudices. His goal was to reach a necessary truth that would serve as a solid foundation for science and philosophy.',
           },
           {
-            type: 'reflection',
-            title: 'שאלות לחשיבה', titleEn: 'Questions for Reflection',
-            questions: [
-              'שאלה פילוסופית: דקארט אומר שהדבר היחיד הבטוח הוא שאני חושב. אבל מי "אני"? האם "אני" הוא המוח, הנפש, או משהו אחר?',
-              'שאלה מסכמת: אם היית צריך לפקפק בכל - מה הדבר האחרון שהיית מוכן לוותר עליו כאמת בטוחה?',
-            ],
-            questionsEn: [
-              'Philosophical question: Descartes says the only certain thing is that I think. But who is "I"? Is "I" the brain, the soul, or something else?',
-              'Closing question: If you had to doubt everything - what would be the last thing you would be willing to give up as a certain truth?',
-            ],
+            type: 'quiz',
+            question: 'גם במצב של ספק קיצוני, שבו שד מרושע מטעה את כל מחשבותינו, דקארט מוצא נקודת אור אחת. מדוע "עצם הפיקפוק" מוכיח לדקארט שהוא קיים?',
+            questionEn: 'Even in extreme doubt, where an evil demon deceives all our thoughts, Descartes finds one point of light. Why does "the very act of doubting" prove to Descartes that he exists?',
+            options: ['כי פיקפוק הוא פעולת מחשבה, ופעולת מחשבה מחייבת קיום של סובייקט שחושב אותה.', 'כי השד המרושע לא יכול לשלוט במחשבות של בני אדם, רק בחושים שלהם.', 'כי מי שמפקפק מוכיח שיש לו גוף פיזי שמרגיש את חוסר הביטחון.'],
+            optionsEn: ['Because doubting is an act of thought, and an act of thought requires the existence of a subject who thinks it.', 'Because the evil demon cannot control the thoughts of human beings, only their senses.', 'Because whoever doubts proves he has a physical body that feels the uncertainty.'],
+            correctIndex: 0,
+            explanation: 'גם אם כל תוכן המחשבה הוא שקרי, אי אפשר להכחיש את קיום פעולת המחשבה עצמה. לכן, ה"אני" המבצע את הפעולה חייב להיות קיים.',
+            explanationEn: 'Even if all the content of thought is false, the existence of the act of thinking itself cannot be denied. Therefore, the "I" performing the act must exist.',
+          },
+          {
+            type: 'quiz',
+            question: 'דקארט מצא את הוודאות בקיום העצמי ("אני חושב, משמע אני קיים"), אך עצר שם. מהו הקושי העיקרי שנותר לאחר המסקנה הזו?',
+            questionEn: 'Descartes found certainty in self-existence ("I think, therefore I am"), but stopped there. What is the main difficulty that remained after this conclusion?',
+            options: ['להבין מדוע אנחנו חולמים בלילה אם אנחנו קיימים.', 'להסביר איך המוח הופך מחשבות לפעולות פיזיות בגוף.', 'לגשר על הפער שבין הידיעה הפנימית על קיום התודעה לבין הוכחת קיומו של עולם חיצוני.'],
+            optionsEn: ['To understand why we dream at night if we exist.', 'To explain how the brain turns thoughts into physical actions in the body.', 'To bridge the gap between the inner knowledge of consciousness\'s existence and the proof of an external world\'s existence.'],
+            correctIndex: 2,
+            explanation: 'ברגע שהוודאות מוגבלת לתודעה הפרטית, הוכחת קיומם של חומר, גוף ועולם שמחוץ ל"אני" הופכת לאתגר פילוסופי מורכב.',
+            explanationEn: 'Once certainty is limited to private consciousness, proving the existence of matter, body, and a world outside the "I" becomes a complex philosophical challenge.',
           },
         ],
       },
       {
         id: 3,
-        title: 'האם החושים אמינים?', titleEn: 'Are the Senses Reliable?',
+        title: 'האם החושים אמינים?', titleEn: 'Are the senses reliable?',
         thinker: 'דיוויד יום', thinkerEn: 'David Hume',
         thinkerId: 'hume', xp: 50,
         sections: [
           {
             type: 'idea',
-            title: 'האם החושים אמינים?', titleEn: 'Are the Senses Reliable?',
-            content: 'דקארט פקפק בחושים - אבל בסוף הניח שאלוהים טוב מבטיח שהם בגדול אמינים. יום לא קיבל את זה. הוא שאל: מה אנחנו באמת יודעים מהניסיון החושי שלנו - ומה אנחנו מוסיפים מהדמיון שלנו?\n\nהתשובה שלו הייתה מטרידה: הרבה יותר ממה שאנחנו חושבים.',
-            contentEn: 'Descartes doubted the senses - but in the end assumed that a good God guarantees they are broadly reliable. Hume did not accept this. He asked: what do we really know from our sensory experience - and how much do we add from our imagination?\n\nHis answer was troubling: far more than we think.',
+            title: 'האם החושים אמינים?', titleEn: 'Are the senses reliable?',
+            content: 'דקארט ניסה לבנות את הידע על בסיס השכל ("אני חושב"). אך דייוויד יום, פילוסוף סקוטי מהמאה ה-18, טען את ההפך הגמור: כל מה שאנחנו יודעים מגיע אך ורק מהניסיון החושי. אך כאן הוא מצא בעיה מטרידה: החושים שלנו לא באמת מראים לנו את העולם כפי שאנחנו חושבים.',
+            contentEn: 'Descartes tried to build knowledge on the basis of reason ("I think"). But David Hume, an 18th-century Scottish philosopher, claimed the exact opposite: everything we know comes only from sensory experience. But here he found a disturbing problem: our senses don\'t really show us the world as we think they do.',
           },
           {
             type: 'source',
-            title: 'יום על סיבתיות', titleEn: 'Hume on Causation',
-            quote: '״כשאנחנו מסתכלים סביבנו על עצמים חיצוניים ובוחנים את פעולת הסיבות, אנחנו לעולם אינם מסוגלים, במקרה בודד כלשהו, לגלות כוח או קשר הכרחי כלשהו - שום תכונה שקושרת את התוצאה לסיבה ועושה את האחת לתוצאה בלתי נמנעת של הראשונה.״',
-            quoteEn: '"When we look about us towards external objects, and consider the operation of causes, we are never able, in a single instance, to discover any power or necessary connexion; any quality, which binds the effect to the cause, and renders the one an infallible consequence of the other."',
-            attr: 'דיוויד יום, חקירה על ההבנה האנושית (1748)', attrEn: 'David Hume, An Enquiry Concerning Human Understanding (1748)',
-            content: '',
-            contentEn: 'Translation: "When we look about us towards external objects, and consider the operation of causes, we are never able, in a single instance, to discover any power or necessary connexion; any quality, which binds the effect to the cause, and renders the one an infallible consequence of the other."',
+            title: 'יום על הסיבתיות', titleEn: 'Hume on Causality',
+            quote: '"כאשר אנו מתבוננים בעצמים שמסביבנו... איננו יכולים לגלות שום כוח או קשר הכרחי, שום תכונה הקושרת את התוצאה לסיבה והופכת את האחת למסקנה בלתי נמנעת של השנייה. אנו מוצאים רק שהאחת אכן באה בעקבות השנייה."',
+            quoteEn: '"When we look at objects around us... we are never able to discover any power or necessary connection; any quality which binds the effect to the cause and renders the one an infallible consequence of the other. We only find that the one does actually, in fact, follow the other."',
+            attr: 'דייוויד יום, חקירה בדבר בינת האדם, תרגום: גיא אלגת, הוצאת רסלינג', attrEn: 'David Hume, An Enquiry Concerning Human Understanding, trans. Gai Elgat, Resling Publishing',
+            content: '', contentEn: '',
           },
           {
             type: 'explanation',
-            title: 'בעיית הסיבתיות', titleEn: 'The Problem of Causation',
-            content: 'יום שאל שאלה פשוטה: כשאתה רואה ביליארד מכה בכדור אחר - מה בדיוק ראית?\n\nראית כדור נע. ראית כדור שני שנע אחריו. אבל את ה"גרימה" עצמה - את הקשר ההכרחי בין השניים - לא ראית. אתה הוספת אותו מהרגל.\n\nלפי יום, כל מה שאנחנו יודעים מהניסיון הוא: A קדם ל-B, ותמיד ראינו A לפני B. אבל מכאן אנחנו קופצים למסקנה שA גורם ל-B - וזו קפיצה שהניסיון לא מצדיק.\n\nדוגמה מהחיים: השמש זרחה כל יום עד היום. האם אתה יודע שתזרח מחר? לפי יום - לא. אתה מאמין בזה מכוח הרגל, לא מכוח ידע אמיתי.',
-            contentEn: 'Hume asked a simple question: when you see a billiard ball strike another - what exactly did you see?\n\nYou saw a ball moving. You saw a second ball moving after it. But the "causing" itself - the necessary connection between the two - you did not see. You added it from habit.\n\nAccording to Hume, all we know from experience is: A preceded B, and we always saw A before B. But from this we jump to the conclusion that A causes B - and that is a leap experience does not justify.\n\nA real-life example: the sun has risen every day until now. Do you know it will rise tomorrow? According to Hume - no. You believe it by force of habit, not by force of genuine knowledge.',
+            title: 'האשליה של "סיבה ותוצאה"', titleEn: 'The Illusion of "Cause and Effect"',
+            content: 'יום הציג אתגר מדהים: דמיינו כדור ביליארד פוגע בכדור אחר. אנחנו אומרים שהכדור הראשון גרם לשני לזוז. אך יום טוען שאנחנו לא באמת רואים "גרימה". אנחנו רואים כדור אחד נע, ואז אנחנו רואים כדור שני נע. המוח שלנו הוא זה שמחבר ביניהם ויוצר את המושג "סיבה".<br><br>לפי יום, הידע שלנו מבוסס על אינדוקציה - ההנחה שהעתיד יהיה דומה לעבר. מכיוון שראינו אלף פעמים שהשמש זורחת בבוקר, אנחנו "יודעים" שהיא תזרח גם מחר. אך יום טוען שזו אינה ידיעה לוגית, אלא רק התניה פסיכולוגית. אין שום הוכחה שהטבע ימשיך להתנהג כפי שהתנהג עד כה.<br><br>דוגמה מהחיים: תרנגול שרואה את החקלאי מגיע בכל בוקר עם אוכל, מסיק באינדוקציה שהחקלאי הוא "סיבה" לאוכל. יום אחד החקלאי מגיע - ושוחט את התרנגול. האינדוקציה עבדה מצוין, עד שהיא הפסיקה לעבוד.',
+            contentEn: 'Hume presented a stunning challenge: imagine one billiard ball hitting another. We say the first ball "caused" the second to move. But Hume claims we don\'t actually see "causation." We see one ball moving, and then we see a second ball moving. Our mind is what connects them and creates the concept of "cause."<br><br>According to Hume, our knowledge is based on induction - the assumption that the future will resemble the past. Because we\'ve seen the sun rise a thousand times in the morning, we "know" it will rise tomorrow too. But Hume argues this isn\'t logical knowledge, only psychological conditioning. There\'s no proof that nature will continue to behave as it has so far.<br><br>Real-life example: A chicken sees the farmer arrive each morning with food, and inductively concludes that the farmer is the "cause" of food. One day the farmer arrives - and slaughters the chicken. Induction worked great, until it stopped working.',
           },
           {
             type: 'depth',
-            title: 'בעיית האינדוקציה', titleEn: 'The Problem of Induction',
-            content: 'יום חשף את אחת הבעיות הגדולות בפילוסופיה של המדע: בעיית האינדוקציה. אינדוקציה היא המעבר מ"זה קרה פעמים רבות" ל"זה תמיד יקרה." אבל כמה פעמים צריך לראות משהו כדי לדעת שזה חוק?\n\nאלף ברבורים לבנים לא מוכיחים שכל הברבורים לבנים - ברבור שחור אחד מפריך הכל. כך גם בפיזיקה, בכלכלה, ובכל מדע אמפירי.\n\nקאנט הודה שיום "העיר אותו משנת הדוגמה." ביום 4 נראה כיצד קאנט ניסה לפתור את הבעיה.',
-            contentEn: 'Hume exposed one of the great problems in the philosophy of science: the problem of induction. Induction is the move from "this has happened many times" to "this will always happen." But how many times must you see something to know it is a law?\n\nA thousand white swans do not prove all swans are white - one black swan refutes everything. The same applies in physics, economics, and every empirical science.\n\nKant admitted that Hume "woke him from his dogmatic slumber." On Day 4 we will see how Kant tried to solve the problem.',
+            title: 'המסקנה של יום', titleEn: 'Hume\'s Conclusion',
+            content: 'הידע שלנו על העולם אינו מבוסס על אמת לוגית מוחלטת, אלא על הרגל. אנחנו יצורים של הרגלים, לא של היגיון טהור.<br><br>המדע, לפי יום, הוא כלי שימושי להפליא לניבוי העתיד, אך הוא לעולם לא יוכל לספק לנו "אמת" ודאית כפי שדקארט קיווה. הוא יכול רק לתאר את העולם כפי שצפינו בו עד כה - לא לחזות אותו בוודאות מוחלטת.<br><br>זו תובנה מטלטלת: גם המדע, הכלי שבו אנו סומכים יותר מכל לידיעת העולם, מבוסס בסופו של דבר על אמונה - אמונה שהטבע יתנהג מחר כפי שהתנהג היום.',
+            contentEn: 'Our knowledge of the world is not based on absolute logical truth, but on habit. We are creatures of habits, not of pure reason.<br><br>Science, according to Hume, is a wonderfully useful tool for predicting the future, but it can never provide us with certain "truth" as Descartes hoped. It can only describe the world as we\'ve observed it so far - not predict it with absolute certainty.<br><br>This is a shattering insight: even science, the tool we rely on more than any other to know the world, is ultimately based on a kind of faith - faith that nature will behave tomorrow as it did today.',
           },
           {
             type: 'quiz',
-            question: 'מה בעיית הסיבתיות של יום?',
-            questionEn: 'What is Hume\'s problem of causation?',
-            options: ['אנחנו לא יכולים לראות עצמים קטנים מספיק כדי להבין סיבתיות', 'אנחנו לא רואים את הקשר הסיבתי עצמו - רק רצף של אירועים שאנחנו מפרשים כסיבה ותוצאה', 'החושים שלנו איטיים מדי לתפוס סיבתיות בזמן אמת'],
-            optionsEn: ['We cannot see objects small enough to understand causation', 'We do not see the causal connection itself - only a sequence of events we interpret as cause and effect', 'Our senses are too slow to catch causation in real time'],
+            question: 'יום משתמש בדוגמת כדורי הביליארד כדי להסביר מה אנחנו קולטים בחושים ומה אנחנו משלימים בראש. לפי יום, מה מתוך "שרשרת האירועים" אנחנו באמת חווים דרך החושים?',
+            questionEn: 'Hume uses the example of billiard balls to explain what we perceive with our senses and what we complete in our heads. According to Hume, what from a "chain of events" do we actually experience through the senses?',
+            options: ['אנחנו רואים את הכוח הפיזי שעובר מכדור א\' לכדור ב\'.', 'אנחנו רואים רק רצף של אירועים - כדור אחד נע, ואז כדור שני נע.', 'אנחנו חווים את הקשר ההכרחי שגורם לכדור השני לזוז.'],
+            optionsEn: ['We see the physical force passing from ball A to ball B.', 'We see only a sequence of events - one ball moves, and then a second ball moves.', 'We experience the necessary connection that causes the second ball to move.'],
             correctIndex: 1,
-            explanation: 'יום טוען שאנחנו לא רואים סיבתיות - רק רצף. הכדור זזה, הכדור השני זזה. הקשר ה"הכרחי" ביניהם הוא הוספה של המוח, לא דבר שנצפה.',
-            explanationEn: 'Hume argues we do not see causation - only sequence. The ball moves, the second ball moves. The "necessary" connection between them is an addition of the mind, not something observed.',
+            explanation: 'יום טוען שהחושים מספקים לנו רק רצף זמני (A קרה ואז B קרה). את הקשר הסיבתי ("A גרם ל-B") אנחנו מוסיפים באופן אוטומטי, אך הוא לא קיים בתצפית עצמה.',
+            explanationEn: 'Hume claims that the senses provide us only with a temporal sequence (A happened and then B happened). We automatically add the connection ("A caused B"), but it does not exist in the observation itself.',
           },
           {
-            type: 'reflection',
-            title: 'שאלות לחשיבה', titleEn: 'Questions for Reflection',
-            questions: [
-              'שאלה פילוסופית: יום אומר שאנחנו לא יכולים להוכיח שהשמש תזרח מחר. האם זה מערער את המדע - או שהמדע יכול לעבוד גם בלי ודאות מוחלטת?',
-              'שאלה מסכמת: חשוב על הרגל חשיבה שיש לך - משהו שאתה "יודע" רק כי זה תמיד היה כך. האם יום היה אומר שזה ידע אמיתי?',
-            ],
-            questionsEn: [
-              'Philosophical question: Hume says we cannot prove the sun will rise tomorrow. Does this undermine science - or can science work without absolute certainty?',
-              'Closing question: Think of a thinking habit you have - something you "know" only because it has always been that way. Would Hume say that is genuine knowledge?',
-            ],
+            type: 'quiz',
+            question: 'המדע והחיים מבוססים על ההנחה שמה שקרה בעבר ימשיך לקרות בעתיד (למשל, שהשמש תזרח מחר). מדוע לפי יום אי אפשר "לדעת" בוודאות שהשמש תזרח מחר?',
+            questionEn: 'Science and life are based on the assumption that what happened in the past will continue to happen in the future (for example, that the sun will rise tomorrow). According to Hume, why is it impossible to "know" with certainty that the sun will rise tomorrow?',
+            options: ['כי ייתכן שחוקי הטבע ישתנו מחר באופן פתאומי.', 'כי אין לנו הוכחה לוגית לכך שהעתיד חייב לדמות לעבר; זו רק ציפייה המבוססת על הרגל.', 'כי החושים שלנו מטעים אותנו לגבי המרחק של השמש מכדור הארץ.'],
+            optionsEn: ['Because the laws of nature might suddenly change tomorrow.', 'Because we have no logical proof that the future must resemble the past; it\'s only an expectation based on habit.', 'Because our senses deceive us about the distance of the sun from the earth.'],
+            correctIndex: 1,
+            explanation: 'אינדוקציה היא כלי שימושי, אך יום מראה שהיא חסרה בסיס לוגי מוצק. העובדה שמשהו חזר על עצמו אלף פעמים לא מבטיחה בוודאות שהוא יחזור בפעם ה-1001.',
+            explanationEn: 'Induction is a useful tool, but Hume shows it lacks a solid logical foundation. The fact that something has repeated a thousand times doesn\'t guarantee it will repeat the 1001st time.',
+          },
+          {
+            type: 'quiz',
+            question: 'יום טוען שהרבה מה"ידע" שלנו על העולם הוא למעשה תוצר של הרגל פסיכולוגי. מהי המסקנה של יום לגבי האופן שבו אנחנו מתנהלים בעולם?',
+            questionEn: 'Hume claims that much of our "knowledge" of the world is actually a product of psychological habit. What is Hume\'s conclusion about how we operate in the world?',
+            options: ['כדאי להפסיק לסמוך על המדע כי הוא מבוסס על ניחושים בלבד.', 'אנחנו פועלים לפי אינסטינקט והרגל כי זה יעיל, לא כי הגענו לאמת מוחלטת.', 'עלינו לחזור לשיטת דקארט ולחפש הוכחות לוגיות לקיום העולם.'],
+            optionsEn: ['We should stop relying on science because it\'s based on guesses only.', 'We operate by instinct and habit because it\'s effective, not because we\'ve reached absolute truth.', 'We must return to Descartes\' method and seek logical proofs for the existence of the world.'],
+            correctIndex: 1,
+            explanation: 'יום לא מציע להפסיק להשתמש בסיבתיות (הרי אי אפשר לחיות בלעדיה), אלא להכיר בכך שהיא מנהג של המחשבה ולא תכונה שאנחנו מוצאים בתוך המציאות עצמה.',
+            explanationEn: 'Hume doesn\'t suggest we stop using causation (we can\'t live without it), but rather that we recognize it\'s a habit of thought, not a feature we find in reality itself.',
           },
         ],
       },
       {
         id: 4,
-        title: 'מה השכל מביא לידע?', titleEn: 'What Does the Mind Bring to Knowledge?',
+        title: 'מה השכל מביא לידע?', titleEn: 'What does the mind bring to knowledge?',
         thinker: 'עמנואל קאנט', thinkerEn: 'Immanuel Kant',
         thinkerId: 'kant', xp: 50,
         sections: [
           {
             type: 'idea',
-            title: 'מה השכל מביא לידע?', titleEn: 'What Does the Mind Bring to Knowledge?',
-            content: 'יום הראה שהחושים לבדם לא מספיקים - אנחנו מוסיפים פרשנות לכל מה שאנחנו רואים. קאנט לקח את זה צעד קדימה: לא רק שאנחנו מוסיפים פרשנות - אנחנו מוסיפים את המסגרת כולה. זמן, מרחב, סיבתיות - אלה לא תכונות של העולם. אלה משקפיים שאנחנו לובשים לפני שאנחנו מסתכלים על העולם.',
-            contentEn: 'Hume showed that the senses alone are not enough - we add interpretation to everything we see. Kant took this a step further: not only do we add interpretation - we add the entire framework. Time, space, causation - these are not properties of the world. They are glasses we put on before we look at the world.',
+            title: 'מה השכל מביא לידע?', titleEn: 'What does the mind bring to knowledge?',
+            content: 'יום הראה שהחושים לבדם לא מספיקים - אנחנו מוסיפים פרשנות לכל מה שאנחנו רואים. עמנואל קאנט לקח את זה צעד קדימה: לא רק שאנחנו מוסיפים פרשנות - אנחנו מוסיפים את המסגרת כולה. זמן, מרחב וסיבתיות אינם תכונות של העולם כפי שהוא לעצמו, אלא ה"משקפיים" שאנחנו לובשים לפני שאנחנו מסתכלים על העולם.',
+            contentEn: 'Hume showed that the senses alone are not enough - we add interpretation to everything we see. Immanuel Kant took this a step further: not only do we add interpretation - we add the entire framework. Time, space, and causality are not features of the world as it is in itself, but the "glasses" we put on before we look at the world.',
           },
           {
             type: 'source',
             title: 'קאנט על הידע', titleEn: 'Kant on Knowledge',
-            quote: '״עד כה הניחו שכל ידיעתנו חייבת להתאים לעצמים... אך מדוע לא לנסות פעם אם לא נצליח יותר במטלות המטפיזיקה בהניחנו שהעצמים חייבים להתאים לידיעתנו.״',
-            quoteEn: '"Hitherto it has been assumed that all our knowledge must conform to objects... But what if we were to try whether we might not have better success in our metaphysical tasks if we assumed that objects must conform to our knowledge."',
-            attr: 'עמנואל קאנט, ביקורת התבונה הטהורה, תרגום יוסף אור, הוצאת מאגנס', attrEn: 'Immanuel Kant, Critique of Pure Reason, trans. Joseph Or, Magnes Press',
-            content: 'מתוך ביקורת התבונה הטהורה - אחד הספרים הפילוסופיים המורכבים והמשפיעים שנכתבו אי פעם.',
-            contentEn: 'From the Critique of Pure Reason - one of the most complex and influential philosophical books ever written.',
+            quote: '"עד כה הניחו שכל ידיעתנו חייבת להתאים לעצמים... אך מדוע לא לנסות פעם אם לא נצליח יותר במטלות המטאפיזיקה בהניחנו שהעצמים חייבים להתאים לידיעתנו."',
+            quoteEn: '"Hitherto it has been assumed that all our knowledge must conform to objects... But why not try whether we might not make greater progress in the tasks of metaphysics by supposing that objects must conform to our knowledge."',
+            attr: 'עמנואל קאנט, ביקורת התבונה הטהורה, תרגום: יוסף אור, הוצאת מאגנס', attrEn: 'Immanuel Kant, Critique of Pure Reason, trans. Yosef Or, Magnes Press',
+            content: '', contentEn: '',
           },
           {
             type: 'explanation',
             title: 'המהפכה הקופרניקאית של קאנט', titleEn: 'Kant\'s Copernican Revolution',
-            content: 'קופרניקוס הפך את הפיזיקה על פיה - במקום שהשמש תסתובב סביב הארץ, הארץ מסתובבת סביב השמש. קאנט עשה את אותו הדבר לפילוסופיה: במקום שהידע שלנו יתאים לעולם - העולם שאנחנו תופסים מתאים לתבנות השכל שלנו.\n\nכלומר: זמן ומרחב אינם תכונות של העולם עצמו - הם האופן שבו התודעה שלנו מארגנת את הניסיון. אנחנו לא רואים את העולם כפי שהוא - אנחנו רואים אותו כפי שאנחנו מסוגלים לראות.\n\nדוגמה מהחיים: תחשוב על משקפי ראייה עם עדשות צבועות. כל מה שאתה רואה יהיה צבוע - אבל לעולם לא תדע מה הצבע האמיתי של הדברים. לפי קאנט, השכל האנושי הוא כאלה משקפיים - רק שאי אפשר להסירם.',
-            contentEn: 'Copernicus turned physics on its head - instead of the sun revolving around the earth, the earth revolves around the sun. Kant did the same thing to philosophy: instead of our knowledge conforming to the world - the world we perceive conforms to the structures of our mind.\n\nThat is: time and space are not properties of the world itself - they are the way our consciousness organises experience. We do not see the world as it is - we see it as we are capable of seeing it.\n\nA real-life example: think of glasses with tinted lenses. Everything you see will be tinted - but you will never know the real colour of things. According to Kant, the human mind is like those glasses - except they cannot be removed.',
+            content: 'קופרניקוס הפך את הפיזיקה על פיה - במקום שהשמש תסתובב סביב כדור הארץ, כדור הארץ מסתובב סביב השמש. קאנט עשה דבר דומה לפילוסופיה: במקום שהידע שלנו יתאים לעולם - העולם שאנחנו תופסים מתאים לתבניות השכל שלנו.<br><br>זמן ומרחב אינם תכונות של העולם עצמו - הם האופן שבו התודעה שלנו מארגנת את הניסיון. אנחנו לא רואים את העולם כפי שהוא - אנחנו רואים אותו כפי שאנחנו מסוגלים לראות.<br><br>דמיין משקפי ראייה עם עדשות צבועות; כל מה שתראה יהיה צבוע, אך לעולם לא תדע מהו הצבע האמיתי של הדברים. לפי קאנט, השכל האנושי הוא כזה - רק שאי אפשר להסיר את המשקפיים הללו.',
+            contentEn: 'Copernicus turned physics on its head - instead of the sun revolving around the earth, the earth revolves around the sun. Kant did something similar for philosophy: instead of our knowledge conforming to the world - the world we perceive conforms to the patterns of our mind.<br><br>Time and space are not features of the world itself - they are the way our consciousness organizes experience. We don\'t see the world as it is - we see it as we are able to see it.<br><br>Imagine glasses with tinted lenses; everything you see would be tinted, but you\'d never know the true color of things. According to Kant, the human mind is like this - except that we can never take these glasses off.',
           },
           {
             type: 'depth',
             title: 'הדבר כשלעצמו', titleEn: 'The Thing-in-Itself',
-            content: 'קאנט הבחין בין שני דברים: העולם כפי שהוא נראה לנו - "הפנומן" - והעולם כפי שהוא באמת - "הנומן" או "הדבר כשלעצמו."\n\nאנחנו יכולים לדעת רק את הפנומן - את העולם כפי שהתודעה שלנו תופסת אותו. הנומן - העולם האמיתי מאחורי התפיסה - נשאר לנצח מחוץ להישג ידנו.\n\nזו תשובה מפוכחת לשאלת יום: כן, יש ידע אמיתי - אבל הוא תמיד ידע על העולם כפי שאנחנו תופסים אותו, לא על העולם כפי שהוא באמת.',
-            contentEn: 'Kant distinguished between two things: the world as it appears to us - the "phenomenon" - and the world as it really is - the "noumenon" or the "thing-in-itself."\n\nWe can only know the phenomenon - the world as our consciousness perceives it. The noumenon - the real world behind perception - remains forever beyond our reach.\n\nThis is a sober answer to Hume\'s question: yes, there is genuine knowledge - but it is always knowledge of the world as we perceive it, not of the world as it really is.',
+            content: 'קאנט הבחין בין שני מושגים: העולם כפי שהוא נראה לנו - "הפנומן" - והעולם כפי שהוא באמת - "הנומן" (או "הדבר כשלעצמו"). אנחנו יכולים לדעת רק את הפנומן, את העולם כפי שהתודעה שלנו תופסת אותו. הנומן - העולם האמיתי מאחורי התפיסה - נשאר לנצח מחוץ להישג ידנו.<br><br>זוהי תשובה מפוכחת לאתגר של יום: כן, יש ידע אמיתי - אך הוא תמיד ידע על העולם כפי שאנחנו תופסים אותו, ולא על העולם כפי שהוא באמת.',
+            contentEn: 'Kant distinguished between two concepts: the world as it appears to us - the "Phenomenon" - and the world as it truly is - the "Noumenon" (or "Thing-in-Itself"). We can only know the phenomenon, the world as our consciousness perceives it. The noumenon - the true world behind perception - remains forever beyond our reach.<br><br>This is a sober answer to Hume\'s challenge: yes, there is real knowledge - but it is always knowledge of the world as we perceive it, not of the world as it truly is.',
           },
           {
             type: 'quiz',
-            question: 'מה "המהפכה הקופרניקאית" של קאנט בפילוסופיה?',
-            questionEn: 'What is Kant\'s "Copernican Revolution" in philosophy?',
-            options: ['הוא הוכיח שהארץ מסתובבת סביב השמש', 'במקום שהידע יתאים לעולם - העולם שאנחנו תופסים מתאים לתבנות השכל שלנו', 'הוא הראה שהמדע מדויק יותר מהפילוסופיה'],
-            optionsEn: ['He proved the earth revolves around the sun', 'Instead of knowledge conforming to the world - the world we perceive conforms to the structures of our mind', 'He showed that science is more precise than philosophy'],
+            question: 'קאנט הציע שינוי כיוון דרמטי ביחס שבין התודעה לבין העולם. מהי המשמעות של "המהפכה" של קאנט בתחום הידע?',
+            questionEn: 'Kant proposed a dramatic change of direction in the relationship between consciousness and the world. What is the meaning of Kant\'s "revolution" in the field of knowledge?',
+            options: ['שהשכל שלנו הוא לוח חלק שסופג את המציאות בדיוק כפי שהיא.', 'שהעולם שאנו חווים חייב להתאים למבנה ולתבניות של השכל שלנו, ולא להיפך.', 'שהמדע צריך להתמקד רק בגרמי השמיים ולא בנפש האדם.'],
+            optionsEn: ['That our mind is a blank slate that absorbs reality exactly as it is.', 'That the world we experience must conform to the structure and patterns of our mind, not the other way around.', 'That science should focus only on celestial bodies and not on the human soul.'],
             correctIndex: 1,
-            explanation: 'קאנט טען שהמוח לא פשוט "קולט" את המציאות - הוא מארגן אותה. זמן, מרחב וסיבתיות הן קטגוריות שהתודעה מטילה על הניסיון, לא תכונות שנמצאות בעולם עצמו.',
-            explanationEn: 'Kant argued that the mind does not simply "receive" reality - it organises it. Time, space, and causation are categories that consciousness imposes on experience, not properties found in the world itself.',
+            explanation: 'קאנט טען שהשכל אינו פסיבי. הוא "מארגן" את הנתונים הגולמיים מהחושים לתוך תבניות (כמו זמן ומרחב), ולכן העולם שאנו מכירים הוא תוצר של הארגון הזה.',
+            explanationEn: 'Kant argued that the mind is not passive. It "organizes" the raw data from the senses into patterns (like time and space), and therefore the world we know is a product of this organization.',
           },
           {
-            type: 'reflection',
-            title: 'שאלות לחשיבה', titleEn: 'Questions for Reflection',
-            questions: [
-              'שאלה פילוסופית: קאנט אומר שאנחנו לעולם לא יכולים לדעת את העולם כפי שהוא באמת - רק כפי שאנחנו תופסים אותו. האם זה מדכא - או שזה משחרר?',
-              'שאלה מסכמת: אם זמן ומרחב הם רק אופן שבו התודעה שלנו מארגנת ניסיון - מה זה אומר על זיכרונות, על עתיד, ועל תחושת "עכשיו"?',
-            ],
-            questionsEn: [
-              'Philosophical question: Kant says we can never know the world as it really is - only as we perceive it. Is that depressing - or liberating?',
-              'Closing question: If time and space are only the way our consciousness organises experience - what does that say about memories, about the future, and about the feeling of "now"?',
-            ],
+            type: 'quiz',
+            question: 'קאנט טוען שזמן ומרחב הם "צורות הסתכלות" של השכל. לפי קאנט, מהם הזמן והמרחב?',
+            questionEn: 'Kant claims that time and space are "forms of intuition" of the mind. According to Kant, what are time and space?',
+            options: ['תכונות פיזיקליות שקיימות בעולם החיצוני באופן עצמאי, ללא קשר לצופה האנושי.', 'אשליות שקריות שנוצרו כדי להגן עלינו מפני המורכבות של היקום האמיתי.', 'תנאים מוקדמים ומבניים בתוך השכל שלנו, שבלעדיהם איננו יכולים לתפוס שום ניסיון חושי.'],
+            optionsEn: ['Physical features that exist in the external world independently, regardless of the human observer.', 'False illusions created to protect us from the complexity of the real universe.', 'Prior structural conditions within our mind, without which we cannot perceive any sensory experience.'],
+            correctIndex: 2,
+            explanation: 'עבור קאנט, זמן ומרחב הם לא דברים שאנחנו "מגלים" בחוץ, אלא התשתית המובנית בשכל שלנו. בלעדיהם, המציאות הייתה נשארת עבורנו בליל של נתונים חסרי צורה.',
+            explanationEn: 'For Kant, time and space are not things we "discover" outside, but the built-in infrastructure of our mind. Without them, reality would remain for us a chaotic mass of formless data.',
+          },
+          {
+            type: 'quiz',
+            question: 'קאנט מבחין בין העולם כפי שהוא נראה לנו לבין "הדבר כשלעצמו". מה אנחנו יכולים לדעת על "הדבר כשלעצמו" (הנומן)?',
+            questionEn: 'Kant distinguishes between the world as it appears to us and the "thing-in-itself." What can we know about the "thing-in-itself" (the noumenon)?',
+            options: ['אנחנו יכולים לדעת אותו רק באמצעות מחקר מדעי מעמיק ושימוש בטכנולוגיה מתקדמת.', 'אנחנו לא יכולים לדעת עליו דבר, כי השכל שלנו תמיד מתווך את המציאות דרך הקטגוריות שלו.', 'אנחנו יודעים שהוא זהה לחלוטין לעולם כפי שהוא נתפס בחושים שלנו ביום-יום.'],
+            optionsEn: ['We can know it only through deep scientific research and advanced technology.', 'We cannot know anything about it, because our mind always mediates reality through its categories.', 'We know it is completely identical to the world as perceived by our senses in everyday life.'],
+            correctIndex: 1,
+            explanation: 'קאנט מציב גבול לידע האנושי. אנחנו מוגבלים ל"פנומן" - המציאות כפי שהיא מופיעה בפנינו לאחר שעברה דרך ה"פילטרים" של השכל. ה"נומן" נשאר נסתר מאיתנו באופן עקרוני.',
+            explanationEn: 'Kant sets a limit to human knowledge. We are confined to the "phenomenon" - reality as it appears to us after passing through the "filters" of the mind. The "noumenon" remains hidden from us in principle.',
           },
         ],
       },
@@ -6376,108 +6420,122 @@ const corpusData = {
           {
             type: 'idea',
             title: 'שלושה עמודים ששינו הכל', titleEn: 'Three Pages That Changed Everything',
-            content: 'ב-1963 פילוסוף צעיר בשם אדמונד גטייה פרסם מאמר של שלושה עמודים. זה היה אחד המאמרים הקצרים ביותר בהיסטוריה של הפילוסופיה - ואחד המשפיעים ביותר. הוא הראה שההגדרה המסורתית של ידע - אמונה מוצדקת ואמיתית - שגויה. אפשר לקיים את שלושת התנאים ועדיין לא לדעת.',
-            contentEn: 'In 1963 a young philosopher named Edmund Gettier published a three-page paper. It was one of the shortest papers in the history of philosophy - and one of the most influential. He showed that the traditional definition of knowledge - justified true belief - is wrong. You can satisfy all three conditions and still not know.',
+            content: 'במשך מאות שנים, פילוסופים היו די מרוצים מההגדרה של ידע כ"אמונה מוצדקת ואמיתית". ואז, בשנת 1963, אדמונד גטייה פרסם מאמר קצרצר בן שלושה עמודים בלבד, שפשוט פירק את ההגדרה הזו לגורמים. הוא הראה שאפשר למלא את כל התנאים - ועדיין לא באמת "לדעת".',
+            contentEn: 'For hundreds of years, philosophers were quite satisfied with the definition of knowledge as "justified true belief." Then, in 1963, Edmund Gettier published a very short article of only three pages, which simply dismantled this definition. He showed that all the conditions can be met - and still, one might not truly "know."',
           },
           {
             type: 'source',
-            title: 'גטייה על ידע', titleEn: 'Gettier on Knowledge',
-            quote: '״אטען שהתנאים המפורטים שם אינם מהווים תנאי מספיק לאמיתות הטענה שS יודע ש-P.״',
-            quoteEn: '"I shall argue that the conditions stated therein do not constitute a sufficient condition for the truth of the proposition that S knows that P."',
-            attr: 'אדמונד גטייה, Analysis (1963)', attrEn: 'Edmund Gettier, Analysis (1963)',
-            content: '',
-            contentEn: 'Translation: "I shall argue that the conditions stated therein do not constitute a sufficient condition for the truth of the proposition that S knows that P."',
+            title: 'אדמונד גטייה על הידע', titleEn: 'Edmund Gettier on Knowledge',
+            quote: '"אפתח בהצגת שני מקרים שבהם התנאים שהוצגו... אינם מספיקים כדי להוות ידע על הטענה הנדונה... ייתכן שאדם יצדק באמונתו רק בגלל צירוף מקרים, ובמקרה כזה לא נאמר שהוא מחזיק בידע."',
+            quoteEn: '"I shall begin by presenting two cases in which the conditions stated... are not sufficient to constitute knowledge of the proposition in question... It is possible for a person to be justified in his belief merely by coincidence, and in such a case we would not say that he holds knowledge."',
+            attr: 'אדמונד גטייה, Is Justified True Belief Knowledge?, 1963', attrEn: 'Edmund Gettier, Is Justified True Belief Knowledge?, 1963',
+            content: '', contentEn: '',
           },
           {
             type: 'explanation',
-            title: 'תרחיש גטייה הקלאסי', titleEn: 'The Classic Gettier Case',
-            content: 'גטייה הציג תרחיש פשוט: אתה מסתכל על שעון תלוי על הקיר. השעון מראה 3:00. אתה מאמין שהשעה היא 3:00. וההשעה אכן היא 3:00. ויש לך הצדקה - תמיד סמכת על השעון הזה.\n\nאבל - השעון עצר לפני בדיוק 12 שעות. הוא לא עובד. במקרה הסתכלת עליו בדיוק כשהשעה הנכונה תואמת למה שהוא מראה.\n\nיש לך אמונה. היא אמיתית. היא מוצדקת. אבל האם אתה יודע שהשעה היא 3:00?\n\nכמעט כולם אומרים: לא. ולכן ההגדרה המסורתית שגויה.\n\nדוגמה מהחיים: אתה מאמין שחברך נמצא בעבודה כי ראית את מכוניתו בחניה. הוא אכן נמצא בעבודה - אבל הגיע ברכבת, ומכוניתו הוחנתה שם על ידי מישהו אחר. האמונה שלך נכונה ומוצדקת - אבל לא ידעת.',
-            contentEn: 'Gettier presented a simple scenario: you look at a clock on the wall. The clock shows 3:00. You believe it is 3:00. And it is indeed 3:00. And you have justification - you have always trusted that clock.\n\nBut - the clock stopped exactly 12 hours ago. It is not working. By chance you looked at it exactly when the correct time matches what it shows.\n\nYou have belief. It is true. It is justified. But do you know it is 3:00?\n\nAlmost everyone says: no. And therefore the traditional definition is wrong.\n\nA real-life example: you believe your friend is at work because you saw his car in the car park. He is indeed at work - but he arrived by train, and his car was parked there by someone else. Your belief is correct and justified - but you did not know.',
+            title: 'בעיית גטייה - השעון שעצר', titleEn: 'The Gettier Problem - The Clock that Stopped',
+            content: 'דמיינו שאתם נכנסים לחדר ומסתכלים על השעון שעל הקיר. השעון מראה שהשעה היא 3:00. אתם מאמינים שהשעה 3:00, ויש לכם הצדקה מצוינת (הסתכלתם על שעון שבדרך כלל עובד). ובנוסף, השעה באמת 3:00.<br><br>האם אתם "יודעים" שהשעה 3:00?<br><br>לפי ההגדרה המסורתית - כן. יש כאן אמונה, אמת והצדקה.<br><br>אבל אז מתברר שהשעון בכלל מקולקל והוא עצר על השעה 3:00 בדיוק לפני יומיים. העובדה שצדקתם היא מזל טהור.<br><br>גטייה טען שבמקרה כזה לא מדובר בידע. ידע לא יכול להיות מבוסס על מזל, גם אם כל התנאים הלוגיים מתקיימים.<br><br>דוגמה מהחיים: אתם בטוחים שחבר שלכם נמצא בבית כי ראיתם את המכונית שלו בחניה. אתם מאמינים שהוא בבית, ויש לכם הצדקה. הוא אכן בבית. אבל מתברר שהוא בכלל השאיר את המכונית בבית ונסע במונית, ובדיוק חזר ברגל לפני רגע מבלי שראיתם. האם "ידעתם" שהוא בבית כשהסתכלתם על המכונית?',
+            contentEn: 'Imagine you enter a room and look at the clock on the wall. The clock shows the time is 3:00. You believe it\'s 3:00, and you have excellent justification (you looked at a clock that usually works). And in addition, the time really is 3:00.<br><br>Do you "know" that the time is 3:00?<br><br>According to the traditional definition - yes. There is belief, truth, and justification.<br><br>But then it turns out that the clock is actually broken and stopped at exactly 3:00 two days ago. The fact that you were right is pure luck.<br><br>Gettier argued that in such a case, this is not knowledge. Knowledge cannot be based on luck, even if all the logical conditions are met.<br><br>Real-life example: You are sure your friend is at home because you saw his car in the parking lot. You believe he\'s at home, and you have justification. He is indeed at home. But it turns out he left the car at home and took a taxi, and just walked back a moment ago without you seeing. Did you "know" he was at home when you looked at the car?',
           },
           {
             type: 'depth',
-            title: 'מה בא אחרי גטייה?', titleEn: 'What Came After Gettier?',
-            content: 'מאז 1963 פילוסופים ניסו לתקן את ההגדרה - להוסיף תנאי רביעי שיסנן מקרי גטייה. עד היום לא נמצאה הגדרה מוסכמת.\n\nחלק אומרים: ידע הוא אמונה שלא תלויה במזל. חלק אומרים: צריך קשר סיבתי ישיר בין האמונה לעובדה. חלק אומרים: אולי ידע הוא מושג בסיסי שלא ניתן להגדיר.\n\nפופר - שנפגוש מחר - היה אומר שזו הדוגמה המושלמת לכך שכל תיאוריה ניתנת להפרכה, ושהפרכה היא הלב של החשיבה הטובה.',
-            contentEn: 'Since 1963 philosophers have tried to fix the definition - to add a fourth condition that filters out Gettier cases. To this day no agreed definition has been found.\n\nSome say: knowledge is belief that does not depend on luck. Some say: there needs to be a direct causal connection between the belief and the fact. Some say: perhaps knowledge is a basic concept that cannot be defined.\n\nPopper - whom we will meet tomorrow - would say this is the perfect example of how every theory can be refuted, and that refutation is the heart of good thinking.',
+            title: 'המרדף אחרי התנאי הרביעי', titleEn: 'The Chase for the Fourth Condition',
+            content: 'מאז גטייה, עולם הפילוסופיה נמצא במצוד. פילוסופים מנסים להוסיף תנאי רביעי להגדרה כדי להציל אותה: אולי ידע הוא אמונה מוצדקת ואמיתית שאינה תלויה במזל? או אולי כזו שמתבססת על תהליך אמין?<br><br>הדיון הזה עדיין נמשך, והוא מזכיר לנו שגם המושגים הכי בסיסיים שלנו - כמו "ידיעה" - הם הרבה יותר חמקמקים ממה שנדמה לנו.',
+            contentEn: 'Since Gettier, the world of philosophy has been on a hunt. Philosophers are trying to add a fourth condition to the definition to save it: maybe knowledge is a justified true belief that doesn\'t depend on luck? Or maybe one that\'s based on a reliable process?<br><br>This discussion is still ongoing, and it reminds us that even our most basic concepts - like "knowing" - are far more elusive than they seem.',
           },
           {
             type: 'quiz',
-            question: 'מה בעיית גטייה מראה לגבי ההגדרה המסורתית של ידע?',
-            questionEn: 'What does the Gettier problem show about the traditional definition of knowledge?',
-            options: ['שאמונה לבדה מספיקה לידע ללא הצדקה', 'שאפשר לקיים את כל שלושת התנאים - אמונה, אמת והצדקה - ועדיין לא לדעת', 'שידע אמיתי אפשרי רק במתמטיקה ולא בחיי היומיום'],
-            optionsEn: ['That belief alone is sufficient for knowledge without justification', 'That you can satisfy all three conditions - belief, truth, and justification - and still not know', 'That genuine knowledge is only possible in mathematics and not in everyday life'],
+            question: 'במשך אלפי שנים פילוסופים הגדירו ידע כ"אמונה מוצדקת ואמיתית" (JTB). גטייה טען שההגדרה הזו אינה מספיקה. מהי הטענה המרכזית של גטייה לגבי הגדרת הידע?',
+            questionEn: 'For thousands of years, philosophers defined knowledge as "Justified True Belief" (JTB). Gettier claimed this definition is not sufficient. What is Gettier\'s central claim about the definition of knowledge?',
+            options: ['שלא ניתן להאמין בשום דבר שקשור לעולם החיצוני.', 'שאפשר שיהיו לנו אמונה, אמת והצדקה - ועדיין לא נחזיק בידע אמיתי.', 'שהצדקה היא המרכיב היחיד שחשוב, ואין צורך שהאמונה תהיה אמיתית.'],
+            optionsEn: ['That it\'s impossible to believe anything related to the outside world.', 'That we can have belief, truth, and justification - and still not hold genuine knowledge.', 'That justification is the only important component, and there\'s no need for the belief to be true.'],
             correctIndex: 1,
-            explanation: 'גטייה הראה שגם אם אתה מאמין, הדבר נכון, ויש לך הצדקה - ייתכן שלא ידעת. הסיבה: ההצדקה שלך הייתה מקרית. ידע דורש משהו נוסף - קשר לא-מקרי בין ההצדקה לאמת.',
-            explanationEn: 'Gettier showed that even if you believe, the thing is true, and you have justification - you might still not know. The reason: your justification was coincidental. Knowledge requires something more - a non-accidental connection between the justification and the truth.',
+            explanation: 'גטייה הראה ששלושת התנאים המסורתיים יכולים להתקיים בו-זמנית, אך בגלל אלמנט של מקריות או מזל, המצב שנוצר אינו ראוי להיקרא "ידע".',
+            explanationEn: 'Gettier showed that the three traditional conditions can be simultaneously met, but because of an element of randomness or luck, the resulting situation doesn\'t deserve to be called "knowledge."',
           },
           {
-            type: 'reflection',
-            title: 'שאלות לחשיבה', titleEn: 'Questions for Reflection',
-            questions: [
-              'שאלה פילוסופית: אם ידע הוא לא רק אמונה מוצדקת ואמיתית - מה הוא כן? האם לדעתך אפשר להגדיר ידע בצורה מדויקת?',
-              'שאלה מסכמת: חשוב על משהו שהיית בטוח שידעת - ואחר כך התברר שטעית. האם לפי גטייה זה אומר שלא ידעת מלכתחילה?',
-            ],
-            questionsEn: [
-              'Philosophical question: If knowledge is not just justified true belief - what is it? Do you think it is possible to define knowledge precisely?',
-              'Closing question: Think of something you were certain you knew - and it later turned out you were wrong. Does Gettier\'s view mean you did not know it in the first place?',
-            ],
+            type: 'quiz',
+            question: 'בתרחיש השעון שעצר, המשתמש צודק לגבי השעה (3:00) והוא מסתמך על שעון שבדרך כלל עובד. מדוע המקרה הזה נחשב ל"מקרה גטייה" שמפריך את הגדרת הידע?',
+            questionEn: 'In the scenario of the stopped clock, the user is correct about the time (3:00) and relies on a clock that usually works. Why is this considered a "Gettier case" that refutes the definition of knowledge?',
+            options: ['כי השעון מקולקל, ולכן אין למשתמש שום אמונה.', 'כי האמונה נכונה רק במקרה; הקשר בין ההצדקה (השעון) לבין האמת (השעה) הוא מקרי לחלוטין.', 'כי השעה היא מושג יחסי שתלוי במיקום הגיאוגרפי של המשתמש.'],
+            optionsEn: ['Because the clock is broken, and therefore the user has no belief.', 'Because the belief is correct only by coincidence; the connection between the justification (the clock) and the truth (the time) is entirely accidental.', 'Because time is a relative concept that depends on the user\'s geographic location.'],
+            correctIndex: 1,
+            explanation: 'למרות שהאמונה מוצדקת ואמיתית, היא תלויה בצירוף מקרים (ההגעה בדיוק ברגע שהשעון העצור תואם למציאות). ידע אמיתי אמור להיות חסין למקריות כזו.',
+            explanationEn: 'Although the belief is justified and true, it depends on coincidence (arriving exactly at the moment the stopped clock matches reality). Genuine knowledge should be immune to such randomness.',
+          },
+          {
+            type: 'quiz',
+            question: 'מאז המאמר של גטייה, הפילוסופיה מנסה למצוא "תנאי רביעי" שישלים את הגדרת הידע. מהי אחת ההצעות המרכזיות לתיקון ההגדרה בעקבות גטייה?',
+            questionEn: 'Since Gettier\'s article, philosophy has been trying to find a "fourth condition" that completes the definition of knowledge. What is one of the main proposals for fixing the definition after Gettier?',
+            options: ['ידע הוא אמונה שלא ניתן להוכיח שהיא שקרית.', 'ידע חייב להיות אמונה שאינה תלויה במזל אפיסטמי (מקריות).', 'ידע הוא פשוט אמונה חזקה מאוד שלא דורשת הצדקה חיצונית.'],
+            optionsEn: ['Knowledge is a belief that cannot be proven false.', 'Knowledge must be a belief that doesn\'t depend on epistemic luck (randomness).', 'Knowledge is simply a very strong belief that doesn\'t require external justification.'],
+            correctIndex: 1,
+            explanation: 'ניסיונות רבים לפתרון מתמקדים בביטול גורם המזל. ידע צריך לנבוע מתהליך אמין שקושר את המאמין לאמת בצורה הכרחית ולא מקרית.',
+            explanationEn: 'Many attempted solutions focus on eliminating the luck factor. Knowledge should arise from a reliable process that connects the believer to the truth in a necessary, not accidental, way.',
           },
         ],
       },
       {
         id: 6,
-        title: 'איך המדע מתקדם?', titleEn: 'How Does Science Progress?',
+        title: 'איך המדע מתקדם?', titleEn: 'How does science progress?',
         thinker: 'קרל פופר', thinkerEn: 'Karl Popper',
         thinkerId: 'popper', xp: 50,
         sections: [
           {
             type: 'idea',
-            title: 'איך המדע מתקדם?', titleEn: 'How Does Science Progress?',
-            content: 'עד עכשיו שאלנו מה זה ידע ואיך אנחנו מגיעים אליו. פופר שאל שאלה אחרת: מה מבדיל ידע מדעי מאמונה? התשובה שלו הפתיעה את כולם - לא ההוכחה, אלא האפשרות להפרכה. תיאוריה מדעית טובה היא לא כזו שאפשר להוכיח - אלא כזו שאפשר לנסות להפריך.',
-            contentEn: 'Until now we asked what knowledge is and how we arrive at it. Popper asked a different question: what distinguishes scientific knowledge from belief? His answer surprised everyone - not proof, but the possibility of refutation. A good scientific theory is not one that can be proven - but one that can be tested by attempts to refute it.',
+            title: 'איך המדע מתקדם?', titleEn: 'How does science progress?',
+            content: 'עד עכשיו שאלנו מהו ידע ואיך אנחנו מגיעים אליו. קרל פופר, אחד מפילוסופי המדע החשובים ביותר, שאל שאלה אחרת: מה מבדיל ידע מדעי מאמונה או מ"פסאודו-מדע"? התשובה שלו הפתיעה את כולם - לא ההוכחה היא שקובעת, אלא האפשרות להפרכה. תיאוריה מדעית טובה היא לא כזו שאפשר להוכיח שהיא צודקת, אלא כזו שאפשר לנסות ולהוכיח שהיא טועה.',
+            contentEn: 'Until now we asked what knowledge is and how we reach it. Karl Popper, one of the most important philosophers of science, asked a different question: what distinguishes scientific knowledge from belief or "pseudo-science"? His answer surprised everyone - it is not proof that decides, but the possibility of refutation. A good scientific theory is not one that can be proven correct, but one that can be tried and proven wrong.',
           },
           {
             type: 'source',
-            title: 'פופר על הפרכה', titleEn: 'Popper on Falsifiability',
-            quote: '״הקריטריון של מעמד המדע של תיאוריה הוא יכולת הזמה שלה, או ניתנותה להפרכה, או ניתנותה לבדיקה.״',
+            title: 'פופר על ההפרכה', titleEn: 'Popper on Refutation',
+            quote: '"הקריטריון למעמדה המדעי של תיאוריה הוא היכולת להפריכה, או להזימה, או לבדוק אותה."',
             quoteEn: '"The criterion of the scientific status of a theory is its falsifiability, or refutability, or testability."',
-            attr: 'קרל פופר, היגיון התגלית המדעית, תרגום יוסף אגסי, הוצאת עלו-עט', attrEn: 'Karl Popper, The Logic of Scientific Discovery, trans. Joseph Agassi',
-            content: 'מתוך היגיון התגלית המדעית - הספר שהגדיר מחדש את פילוסופיית המדע במאה העשרים.',
-            contentEn: 'From The Logic of Scientific Discovery - the book that redefined the philosophy of science in the twentieth century.',
+            attr: 'קרל פופר, היגיון התגלית המדעית, תרגום: יוסף אגסי', attrEn: 'Karl Popper, The Logic of Scientific Discovery, trans. Joseph Agassi',
+            content: '', contentEn: '',
           },
           {
             type: 'explanation',
-            title: 'עקרון ההפרכה', titleEn: 'The Principle of Falsifiability',
-            content: 'פופר שאל: מה ההבדל בין אסטרולוגיה לאסטרונומיה? בין פסיכואנליזה למדע? תשובתו: תיאוריה מדעית אמיתית חייבת לאפשר בדיקה שיכולה להפריך אותה.\n\nתיאוריית הכבידה של ניוטון היא מדעית - כי אפשר לתאר ניסוי שיפריך אותה. אם גוף לא יפול כצפוי - התיאוריה שגויה. לעומת זאת, "כוחות אסטרולוגיים משפיעים על אופיך" - אין ניסוי שיכול להפריך את זה.\n\nדוגמה מהחיים: "כל הגברים הם אנוכיים" - זו טענה שלא ניתנת להפרכה. כל גבר שמתנהג בנדיבות יוסבר כ"אנוכיות מוסווית." כשטענה יכולה להסביר הכל - היא לא אומרת כלום.',
-            contentEn: 'Popper asked: what is the difference between astrology and astronomy? Between psychoanalysis and science? His answer: a genuine scientific theory must allow for a test that could refute it.\n\nNewton\'s theory of gravity is scientific - because you can describe an experiment that would refute it. If a body did not fall as expected - the theory is wrong. By contrast, "astrological forces influence your character" - there is no experiment that can refute this.\n\nA real-life example: "All men are selfish" - this is a claim that cannot be refuted. Any man who behaves generously will be explained as "disguised selfishness." When a claim can explain everything - it says nothing.',
+            title: 'עקרון ההפרכה', titleEn: 'The Principle of Falsification',
+            content: 'פופר שאל: מה ההבדל בין אסטרולוגיה לאסטרונומיה? או בין פסיכואנליזה לפיזיקה? תשובתו הייתה שתיאוריה מדעית אמיתית חייבת לאפשר בדיקה שיכולה להפריך אותה.<br><br>תיאוריית הכבידה של ניוטון היא מדעית כי ניתן לתאר ניסוי שיפריך אותה: אם גוף לא ייפול כצפוי - התיאוריה שגויה. לעומת זאת, הטענה ש"כוחות אסטרולוגיים משפיעים על אופייך" היא בעייתית, כי אין ניסוי שיכול להפריך אותה. אם התחזית לא התגשמה, האסטרולוג תמיד יוכל לומר ש"השפעה אחרת התערבה". כשטענה יכולה להסביר הכול - היא לא אומרת כלום.',
+            contentEn: 'Popper asked: what\'s the difference between astrology and astronomy? Or between psychoanalysis and physics? His answer was that a true scientific theory must allow for a test that could refute it.<br><br>Newton\'s theory of gravity is scientific because we can describe an experiment that would refute it: if an object doesn\'t fall as expected - the theory is wrong. By contrast, the claim that "astrological forces influence your character" is problematic, because no experiment can refute it. If the prediction didn\'t come true, the astrologer can always say "another influence intervened." When a claim can explain everything - it says nothing.',
           },
           {
             type: 'depth',
-            title: 'מדע הוא לא אמת - הוא ניסיון להפריך', titleEn: 'Science Is Not Truth - It Is the Attempt to Refute',
-            content: 'פופר טען שהמדע לא מתקדם על ידי הוכחת תיאוריות - אלא על ידי הפרכתן. כל תיאוריה מדעית היא השערה זמנית שעדיין לא הופרכה. יום אחד - אולי - תופרך גם היא.\n\nזה נשמע מדכא, אבל פופר ראה בזה יתרון: מדע שמוכן להודות בטעות מתקדם. דוגמה: תיאוריית הכבידה של ניוטון שלטה 200 שנה - עד שאיינשטיין הראה שהיא שגויה בתנאים קיצוניים. ניוטון לא בוטל - הוא הוחלף בתיאוריה טובה יותר.\n\nהקשר לגטייה: גטייה הפריך את ההגדרה המסורתית של ידע - ובכך, לפי פופר, עשה בדיוק את הדבר הנכון. כך מתקדמת הפילוסופיה.',
-            contentEn: 'Popper argued that science does not progress by proving theories - but by refuting them. Every scientific theory is a provisional conjecture that has not yet been refuted. One day - perhaps - it too will be refuted.\n\nThis sounds discouraging, but Popper saw it as a strength: science that is willing to admit error makes progress. Example: Newton\'s theory of gravity ruled for 200 years - until Einstein showed it was wrong under extreme conditions. Newton was not cancelled - he was replaced by a better theory.\n\nThe connection to Gettier: Gettier refuted the traditional definition of knowledge - and in doing so, according to Popper, did exactly the right thing. This is how philosophy makes progress.',
+            title: 'מדע אינו אמת מוחלטת - הוא ניסיון להפרכה', titleEn: 'Science Is Not Absolute Truth - It Is an Attempt at Refutation',
+            content: 'פופר טען שהמדע אינו מתקדם על ידי הוכחת תיאוריות, אלא על ידי הפרכתן. כל תיאוריה מדעית היא למעשה השערה זמנית שעדיין לא הופרכה.<br><br>זה אולי נשמע מדכא, אך פופר ראה בזה יתרון עצום: מדע שמוכן להודות בטעות הוא מדע שמתקדם. תיאוריית הכבידה של ניוטון שלטה במשך 200 שנה, עד שאיינשטיין הראה שהיא אינה מדויקת בתנאים קיצוניים. ניוטון לא "בוטל", אלא הוחלף בתיאוריה טובה ומקיפה יותר.',
+            contentEn: 'Popper argued that science progresses not by proving theories, but by refuting them. Every scientific theory is in fact a temporary hypothesis that has not yet been refuted.<br><br>This may sound depressing, but Popper saw in it an enormous advantage: a science willing to admit error is a science that progresses. Newton\'s theory of gravity reigned for 200 years, until Einstein showed it was inaccurate in extreme conditions. Newton was not "canceled," but replaced by a better and more comprehensive theory.',
           },
           {
             type: 'quiz',
-            question: 'מה עקרון ההפרכה של פופר?',
-            questionEn: 'What is Popper\'s principle of falsifiability?',
-            options: ['תיאוריה מדעית טובה היא כזו שהוכחה נכונה בניסויים רבים', 'תיאוריה מדעית טובה היא כזו שניתן לתאר ניסוי שיכול להפריך אותה', 'תיאוריה מדעית טובה היא כזו שמוסכמת על כלל הקהילה המדעית'],
-            optionsEn: ['A good scientific theory is one that has been proven correct in many experiments', 'A good scientific theory is one for which you can describe an experiment that could refute it', 'A good scientific theory is one accepted by the entire scientific community'],
+            question: 'פופר חיפש קריטריון שיבדיל בין מדע לבין פסאודו-מדע (תחומים הנחזים למדע אך אינם כאלה). לפי פופר, מה הופך תיאוריה ל"מדעית" באמת?',
+            questionEn: 'Popper sought a criterion that would distinguish science from pseudo-science (fields that appear scientific but are not). According to Popper, what makes a theory truly "scientific"?',
+            options: ['העובדה שיש כמות גדולה מאוד של תצפיות התומכות בה ומאששות אותה.', 'האפשרות להגדיר תצפית או ניסוי שיוכלו להפריך את התיאוריה ולהראות שהיא שגויה.', 'היכולת של התיאוריה להסביר כל מקרה ומקרה שקורה במציאות ללא יוצא מן הכלל.'],
+            optionsEn: ['The fact that there is a very large amount of observations supporting and confirming it.', 'The possibility to define an observation or experiment that could refute the theory and show it to be wrong.', 'The theory\'s ability to explain every single case that happens in reality without exception.'],
             correctIndex: 1,
-            explanation: 'לפי פופר, ההבדל בין מדע לאי-מדע הוא לא הוכחה אלא יכולת הפרכה. תיאוריה שלא ניתן להפריך - כמו אסטרולוגיה - אינה מדעית, לא משנה כמה תומכים יש לה.',
-            explanationEn: 'According to Popper, the difference between science and non-science is not proof but falsifiability. A theory that cannot be refuted - like astrology - is not scientific, no matter how many supporters it has.',
+            explanation: 'עבור פופר, כוחה של תיאוריה מדעית הוא בסיכון שהיא לוקחת. אם אי אפשר לדמיין מצב שבו היא תופרך, היא אינה מדעית אלא דוגמטית.',
+            explanationEn: 'For Popper, the strength of a scientific theory lies in the risk it takes. If no situation can be imagined where it would be refuted, it is not scientific but dogmatic.',
           },
           {
-            type: 'reflection',
-            title: 'שאלות לחשיבה', titleEn: 'Questions for Reflection',
-            questions: [
-              'שאלה פילוסופית: פופר אומר שתיאוריה שלא ניתן להפריך אינה מדעית. האם זה אומר שדת, אמנות ומוסר אינם ידע אמיתי - או שיש סוגי ידע שאינם מדעיים?',
-              'שאלה מסכמת: חשוב על אמונה חזקה שיש לך. האם היא ניתנת להפרכה? מה יכול לשכנע אותך שאתה טועה?',
-            ],
-            questionsEn: [
-              'Philosophical question: Popper says a theory that cannot be refuted is not scientific. Does that mean religion, art, and morality are not genuine knowledge - or are there types of knowledge that are not scientific?',
-              'Closing question: Think of a strong belief you hold. Can it be refuted? What could convince you that you are wrong?',
-            ],
+            type: 'quiz',
+            question: 'פופר טען שתיאוריות מסוימות (כמו אסטרולוגיה) נראות מדעיות כי הן מציעות "הסבר לכל דבר", אך בפועל הן חסינות לביקורת. מדוע תחזית אסטרולוגית מעורפלת נחשבת לפסאודו-מדע לפי פופר?',
+            questionEn: 'Popper claimed that certain theories (like astrology) appear scientific because they offer "an explanation for everything," but in fact are immune to criticism. Why is a vague astrological prediction considered pseudo-science according to Popper?',
+            options: ['כי היא תמיד מנוסחת בצורה כל כך רחבה וגמישה, ששום אירוע במציאות לא יכול להיתפס כהפרכה שלה.', 'כי הכוכבים רחוקים מדי מכדי שתהיה להם השפעה פיזיקלית מדידה על בני אדם.', 'כי לא נעשו מספיק ניסויים מבוקרים במעבדה כדי לאמת את נכונות התחזיות.'],
+            optionsEn: ['Because it is always phrased so broadly and flexibly that no event in reality can be perceived as its refutation.', 'Because the stars are too far away for them to have a measurable physical effect on humans.', 'Because not enough controlled experiments have been done in the lab to verify the accuracy of predictions.'],
+            correctIndex: 0,
+            explanation: 'זהו לב העניין: פסאודו-מדע לא לוקח סיכון. הוא מסביר כל תוצאה (גם תוצאות סותרות) בצורה שמשאירה את התיאוריה "צודקת" תמיד. מדע אמיתי חייב להגדיר מראש מה ייחשב ככישלון שלו.',
+            explanationEn: 'This is the heart of the matter: pseudo-science takes no risk. It explains every outcome (even contradictory ones) in a way that leaves the theory always "right." Real science must define in advance what would count as its failure.',
+          },
+          {
+            type: 'quiz',
+            question: 'פופר טוען שהמדע אינו אוסף של "אמיתות סופיות", אלא תהליך מתמיד של השתפרות. כיצד המדע מתקדם לפי תפיסתו של פופר?',
+            questionEn: 'Popper argues that science is not a collection of "final truths," but an ongoing process of improvement. How does science progress according to Popper\'s view?',
+            options: ['על ידי צבירת הוכחות חיוביות רבות ככל האפשר המאששות את מה שכבר ידענו קודם.', 'על ידי השלמה עם העובדה שהאמת היא סובייקטיבית וכל תיאוריה היא טובה באותה מידה.', 'על ידי הפרכה של תיאוריות קיימות והחלפתן בתיאוריות טובות יותר שעומדות במבחנים קשים יותר.'],
+            optionsEn: ['By accumulating as many positive proofs as possible that confirm what we already knew before.', 'By coming to terms with the fact that truth is subjective and every theory is equally good.', 'By refuting existing theories and replacing them with better theories that withstand harder tests.'],
+            correctIndex: 2,
+            explanation: 'המדע מתקדם דרך "ניסוי וטעייה". כל הפרכה של תיאוריה ישנה מקדמת אותנו לעבר הבנה מדויקת ועמוקה יותר של המציאות, גם אם היא זמנית.',
+            explanationEn: 'Science progresses through "trial and error." Every refutation of an old theory moves us toward a more accurate and deeper understanding of reality, even if it is temporary.',
           },
         ],
       },
@@ -6489,52 +6547,59 @@ const corpusData = {
         sections: [
           {
             type: 'idea',
-            title: 'ספק וידע - סיכום השבוע', titleEn: 'Doubt and Knowledge - Weekly Summary',
-            content: 'שבוע שלם, חמישה הוגים, שאלה אחת: מה אנחנו יכולים לדעת?\n\nלא הגענו לתשובה אחת. אבל גילינו שהשאלה עצמה עמוקה הרבה יותר ממה שחשבנו.',
-            contentEn: 'A full week, five thinkers, one question: what can we know?\n\nWe did not arrive at a single answer. But we discovered that the question itself is far deeper than we thought.',
+            title: 'סיכום שבוע 3 - מה אנחנו יכולים לדעת?', titleEn: 'Week 3 Summary - What Can We Know?',
+            content: 'שבוע שלם, שישה הוגים, שאלה אחת: מה אנחנו יכולים לדעת? לא הגענו לתשובה אחת מוחלטת, אך גילינו שהשאלה עצמה עמוקה ומורכבת הרבה יותר ממה שחשבנו בתחילה.',
+            contentEn: 'A whole week, six thinkers, one question: What can we know? We haven\'t reached one absolute answer, but we discovered that the question itself is much deeper and more complex than we thought at the beginning.',
           },
           {
             type: 'source',
-            title: 'חמשת ההוגים של השבוע', titleEn: 'The Week\'s Five Thinkers',
-            quote: 'אודי - ידע הוא אמונה מוצדקת ואמיתית. אבל מה זה בדיוק אומר?\nדקארט - הדבר היחיד הבטוח הוא שאני חושב. משמע אני קיים.\nיום - אנחנו לא רואים סיבתיות - רק רצף אירועים שאנחנו מפרשים.\nקאנט - אנחנו לעולם לא רואים את העולם כפי שהוא - רק כפי שאנחנו מסוגלים לראות.\nגטייה - אמונה מוצדקת ואמיתית עדיין לא מספיקה לידע.\nפופר - ידע מדעי מתקדם על ידי הפרכה, לא הוכחה.',
-            quoteEn: 'Audi - knowledge is justified true belief. But what exactly does that mean?\nDescartes - the only certain thing is that I think. Therefore I exist.\nHume - we do not see causation - only a sequence of events we interpret.\nKant - we never see the world as it is - only as we are capable of seeing it.\nGettier - justified true belief is still not enough for knowledge.\nPopper - scientific knowledge advances through refutation, not proof.',
-            attr: 'סיכום שבוע 3', attrEn: 'Week 3 Summary',
-            content: 'שישה הוגים שחקרו שאלה אחת מזוויות שונות.',
-            contentEn: 'Six thinkers who explored one question from different angles.',
+            title: 'ששת ההוגים של השבוע', titleEn: 'The Six Thinkers of the Week',
+            quote: '', quoteEn: '',
+            attr: '', attrEn: '',
+            content: '<b>אודי:</b> הגדיר ידע כאמונה מוצדקת ואמיתית.<br><br><b>דקארט:</b> מצא שהדבר היחיד שבטוח הוא שאני חושב, ולכן אני קיים.<br><br><b>יום:</b> הראה שאנחנו לא רואים סיבתיות, אלא רק רצף אירועים שאנחנו מפרשים ככאלה מכוח ההרגל.<br><br><b>קאנט:</b> הסביר שאנחנו לעולם לא רואים את העולם כפי שהוא באמת, אלא רק דרך "משקפי" התודעה שלנו.<br><br><b>גטייה:</b> הוכיח שאמונה מוצדקת ואמיתית עדיין אינה מספיקה כדי להוות ידע ודאי.<br><br><b>פופר:</b> טען שידע מדעי מתקדם על ידי ניסיונות הפרכה, ולא על ידי הוכחה סופית.',
+            contentEn: '<b>Audi:</b> Defined knowledge as justified and true belief.<br><br><b>Descartes:</b> Found that the only thing certain is that I think, and therefore I am.<br><br><b>Hume:</b> Showed that we don\'t see causality, but only a sequence of events we interpret as such by force of habit.<br><br><b>Kant:</b> Explained that we never see the world as it truly is, but only through the "glasses" of our consciousness.<br><br><b>Gettier:</b> Proved that justified true belief is still not enough to constitute certain knowledge.<br><br><b>Popper:</b> Argued that scientific knowledge progresses through attempts at refutation, not through final proof.',
           },
           {
             type: 'explanation',
             title: 'מה משותף לכולם?', titleEn: 'What Do They All Share?',
-            content: 'שישת ההוגים שפגשנו השבוע שונים מאוד - אבל כולם מסכימים על דבר אחד: הידע שלנו מוגבל יותר ממה שאנחנו נוטים לחשוב.\n\nדקארט לא יכול לדעת שהעולם קיים. יום לא יכול לדעת שהשמש תזרח מחר. קאנט לא יכול לדעת מה העולם הוא מעבר לתפיסה. גטייה מראה שאפילו כשאנחנו חושבים שאנחנו יודעים - אולי איננו.\n\nזה לא פסימיזם - זה ענווה אפיסטמית. ההכרה שהידע שלנו תמיד זמני, תמיד חלקי, תמיד פתוח לתיקון.',
-            contentEn: 'The six thinkers we met this week are very different - but they all agree on one thing: our knowledge is more limited than we tend to think.\n\nDescartes cannot know that the world exists. Hume cannot know the sun will rise tomorrow. Kant cannot know what the world is beyond perception. Gettier shows that even when we think we know - perhaps we do not.\n\nThis is not pessimism - it is epistemic humility. The recognition that our knowledge is always provisional, always partial, always open to revision.',
+            content: 'למרות ההבדלים העצומים ביניהם, כולם מסכימים על דבר אחד: הידע שלנו מוגבל בהרבה ממה שאנחנו נוטים לחשוב. דקארט לא יכול לדעת בוודאות שהעולם קיים; יום לא יכול לדעת שהשמש תזרח מחר; וקאנט לא יכול לדעת מהו העולם מעבר לתפיסה שלנו.<br><br>זו אינה פסימיות - זו <b>ענווה אפיסטמית</b>. ההכרה שהידע שלנו הוא תמיד זמני, תמיד חלקי ותמיד פתוח לתיקון.',
+            contentEn: 'Despite the vast differences between them, they all agree on one thing: our knowledge is much more limited than we tend to think. Descartes cannot know with certainty that the world exists; Hume cannot know that the sun will rise tomorrow; and Kant cannot know what the world is beyond our perception.<br><br>This is not pessimism - it is <b>epistemic humility</b>. The recognition that our knowledge is always temporary, always partial, and always open to correction.',
           },
           {
             type: 'depth',
-            title: 'הקשר לשבועות הקודמים', titleEn: 'Connection to Previous Weeks',
-            content: 'שבוע 1 שאל מהי פילוסופיה - וסוקרטס ענה: הכרת גבולות הידע שלנו. השבוע ראינו בדיוק את זה - שישה הוגים שחקרו את הגבולות האלה לעומק.\n\nשבוע 2 שאל מה נכון מוסרית. השבוע שאלנו מה אנחנו יכולים לדעת. השבוע הבא נשאל את השאלה הבאה: מה בכלל קיים? ממה עשויה המציאות?',
-            contentEn: 'Week 1 asked what philosophy is - and Socrates answered: knowing the limits of our knowledge. This week we saw exactly that - six thinkers who explored those limits in depth.\n\nWeek 2 asked what is morally right. This week we asked what we can know. Next week we will ask the next question: what exists at all? What is reality made of?',
+            title: 'הקשר לשבועות הקודמים וקפיצה לשבוע הבא', titleEn: 'The Connection to Previous Weeks and Jumping to the Next',
+            content: 'שבוע 1 שאל מהי פילוסופיה, וסוקרטס ענה: הכרת גבולות הידע שלנו. השבוע ראינו בדיוק את זה - שישה הוגים שחקרו את הגבולות האלה לעומק.<br><br>אחרי ששאלנו מה נכון מוסרית (שבוע 2) ומה אנחנו יכולים לדעת (שבוע 3), בשבוע הבא נשאל את השאלה הבאה: מה בכלל קיים? ממה עשויה המציאות?',
+            contentEn: 'Week 1 asked what philosophy is, and Socrates answered: knowing the limits of our knowledge. This week we saw exactly that - six thinkers who explored these limits in depth.<br><br>After we asked what is morally right (Week 2) and what we can know (Week 3), next week we will ask the next question: What actually exists? What is reality made of?',
           },
           {
             type: 'quiz',
-            question: 'מה "ענווה אפיסטמית"?',
-            questionEn: 'What is "epistemic humility"?',
-            options: ['האמונה שאי אפשר לדעת שום דבר בוודאות', 'ההכרה שהידע שלנו תמיד זמני, חלקי ופתוח לתיקון', 'הגישה שמדע הוא המקור היחיד לידע אמיתי'],
-            optionsEn: ['The belief that nothing can be known with certainty', 'The recognition that our knowledge is always provisional, partial, and open to revision', 'The view that science is the only source of genuine knowledge'],
+            question: 'עברנו דרך שישה הוגים שונים שחקרו את גבולות הידע. מהי הנקודה המשותפת לכל ההוגים שפגשנו השבוע, למרות המחלוקות ביניהם?',
+            questionEn: 'We went through six different thinkers who explored the limits of knowledge. What is the common point among all the thinkers we met this week, despite the disputes between them?',
+            options: ['כולם מסכימים שידע אנושי הוא מוחלט ובלתי ניתן לערעור ברגע שמצאנו הוכחה מדעית.', 'כולם מכירים בכך שהידע האנושי מוגבל ושתמיד קיים פער בין המציאות כפי שהיא לבין התפיסה שלנו.', 'כולם טוענים שאין טעם לחפש ידע כיוון שהחושים שלנו תמיד מטעים אותנו.'],
+            optionsEn: ['They all agree that human knowledge is absolute and irrefutable once we find scientific proof.', 'They all recognize that human knowledge is limited and that there\'s always a gap between reality as it is and our perception of it.', 'They all claim there\'s no point in seeking knowledge because our senses always deceive us.'],
             correctIndex: 1,
-            explanation: 'ענווה אפיסטמית אינה פסימיזם - היא עמדה מפוכחת: הידע שלנו אמיתי, אבל תמיד חלקי ופתוח לתיקון. זו העמדה המשותפת לכל ההוגים שפגשנו השבוע.',
-            explanationEn: 'Epistemic humility is not pessimism - it is a sober position: our knowledge is real, but always partial and open to revision. This is the shared position of all the thinkers we met this week.',
+            explanation: 'המכנה המשותף לשבוע האפיסטמולוגי הוא ה"ענווה האפיסטמית" - ההבנה שהידע שלנו הוא זמני, חלקי ותלוי במגבלות התודעה, החושים או הכלים המדעיים שלנו.',
+            explanationEn: 'The common denominator of the epistemological week is "epistemic humility" - the understanding that our knowledge is temporary, partial, and dependent on the limitations of consciousness, senses, or our scientific tools.',
           },
           {
-            type: 'reflection',
-            title: 'שאלות לחשיבה', titleEn: 'Questions for Reflection',
-            questions: [
-              'שאלה פילוסופית: מכל ההוגים שפגשנו השבוע - מי לדעתך הציב את האתגר הקשה ביותר לאפשרות הידע?',
-              'שאלה מסכמת: אחרי שבוע שלם על גבולות הידע - האם אתה מרגיש שאתה יודע פחות עכשיו מאשר בתחילת השבוע? ואם כן - האם זה דבר טוב?',
-            ],
-            questionsEn: [
-              'Philosophical question: Of all the thinkers we met this week - who do you think posed the hardest challenge to the possibility of knowledge?',
-              'Closing question: After a full week on the limits of knowledge - do you feel you know less now than at the start of the week? And if so - is that a good thing?',
-            ],
+            type: 'quiz',
+            question: 'בכל יום השבוע הוצבה "משוכה" חדשה בפני הידיעה שלנו. איזו מהקביעות הבאות מסכמת נכון את המהלך של אחד ההוגים מהשבוע?',
+            questionEn: 'Every day this week, a new "hurdle" was placed before our knowing. Which of the following statements correctly summarizes the move of one of the thinkers from this week?',
+            options: ['יום טען שאנחנו יכולים לדעת בוודאות שהשמש תזרח מחר בגלל חוקי הפיזיקה.', 'דקארט הוכיח שהדבר היחיד שאי אפשר לפקפק בו הוא קיום העולם החיצוני.', 'קאנט טען שאנחנו רואים את העולם דרך \'משקפיים\' מובנים של השכל (כמו זמן ומרחב), ולכן לעולם לא נדע את \'הדבר כשלעצמו\'.'],
+            optionsEn: ['Hume claimed we can know with certainty that the sun will rise tomorrow because of the laws of physics.', 'Descartes proved that the only thing that cannot be doubted is the existence of the external world.', 'Kant argued that we see the world through built-in \'glasses\' of the mind (like time and space), and therefore can never know \'the thing-in-itself.\'.'],
+            correctIndex: 2,
+            explanation: 'זהו ליבת המהלך של קאנט - ההפרדה בין העולם כפי שהוא מופיע בפנינו (פנומן) לבין המציאות העצמאית שמעבר לתפיסתנו (נומן).',
+            explanationEn: 'This is the core of Kant\'s move - the separation between the world as it appears to us (phenomenon) and the independent reality beyond our perception (noumenon).',
+          },
+          {
+            type: 'quiz',
+            question: 'פופר חתם את השבוע בהצעה שהמדע מתקדם דרך הפרכות. כיצד סיכום השבוע הזה מכין אותנו לשבוע הבא (מטאפיזיקה - מה קיים)?',
+            questionEn: 'Popper closed the week with the proposal that science progresses through refutations. How does this week\'s summary prepare us for next week (metaphysics - what exists)?',
+            options: ['אם הבנו איך אנחנו יודעים (אפיסטמולוגיה), נוכל כעת לשאול מהי המציאות שאותה אנחנו מנסים לדעת.', 'השבוע הבא יוכיח שכל מה שלמדנו השבוע על ספק אינו רלוונטי לחיים האמיתיים.', 'אחרי שלמדנו מהי ידיעה, נוכל להפסיק להטיל ספק ולהתחיל להאמין לכל מה שהחושים אומרים לנו.'],
+            optionsEn: ['If we understood how we know (epistemology), we can now ask what the reality is that we are trying to know.', 'Next week will prove that everything we learned this week about doubt is irrelevant to real life.', 'After learning what knowing is, we can stop doubting and start believing everything our senses tell us.'],
+            correctIndex: 0,
+            explanation: 'אפיסטמולוגיה (תורת הידע) ומטאפיזיקה (תורת היש) הן אחיות. אחרי שחקרנו את כלי הידיעה שלנו, אנחנו בשלים לחקור את שאלת קיום המציאות עצמה.',
+            explanationEn: 'Epistemology (the theory of knowledge) and metaphysics (the theory of being) are sisters. After we explored the tools of our knowing, we are ready to explore the question of the existence of reality itself.',
           },
         ],
       },
@@ -10469,19 +10534,24 @@ function closeQuizFeedbackModal() {
   }
 }
 
-function setupNextBtn(week, day) {
-  const btn = document.getElementById('modal-next-btn');
-  if (!btn) return;
-  const isEn = state.lang === 'en';
-  const currentDayIndex = week.days.findIndex(d => d.id === day.id);
-  const nextDay = week.days[currentDayIndex + 1];
-  if (nextDay) {
-    btn.textContent = isEn ? 'Next Insight →' : 'התובנה הבאה ←';
-    btn.onclick = () => goToNextDay();
-    btn.style.display = '';
-  } else {
-    btn.style.display = 'none';
+function getNextLessonInfo() {
+  const weeks = getW();
+  const currentWeek = weeks.find(w => w.id === state.currentWeek);
+  if (!currentWeek) return { hasNext: false };
+  const currentDayIndex = currentWeek.days.findIndex(d => d.id === state.currentDay);
+  const nextDay = currentWeek.days[currentDayIndex + 1];
+  if (nextDay) return { hasNext: true, weekId: state.currentWeek, dayId: nextDay.id };
+  const nextWeek = weeks.find(w => w.id === state.currentWeek + 1);
+  if (nextWeek && nextWeek.days.length > 0) {
+    return { hasNext: true, weekId: nextWeek.id, dayId: nextWeek.days[0].id };
   }
+  return { hasNext: false };
+}
+
+function goToNextLesson() {
+  const next = getNextLessonInfo();
+  closeCompleteModal();
+  if (next.hasNext) openReader(next.weekId, next.dayId);
 }
 
 function _showDcStats(titleText, subtitleText, xpAmount, streakCount, onContinue) {
@@ -10496,8 +10566,20 @@ function _showDcStats(titleText, subtitleText, xpAmount, streakCount, onContinue
   xpEl.textContent = '+0';
 
   const continueBtn = document.getElementById('dc-stats-continue');
-  continueBtn.textContent = onContinue.label;
-  continueBtn.onclick = onContinue.fn;
+  const backHomeBtn = document.getElementById('dc-stats-back-home');
+  const next = getNextLessonInfo();
+
+  if (next.hasNext && onContinue.fn === closeCompleteModal) {
+    continueBtn.textContent = isEn ? 'Next Lesson' : 'הלומדה הבאה';
+    continueBtn.onclick = goToNextLesson;
+    backHomeBtn.textContent = isEn ? 'Back to Home' : 'חזרה לבית';
+    backHomeBtn.onclick = closeCompleteModal;
+    backHomeBtn.style.display = '';
+  } else {
+    continueBtn.textContent = onContinue.label;
+    continueBtn.onclick = onContinue.fn;
+    backHomeBtn.style.display = 'none';
+  }
 
   // Reset stats screen animations
   const statsScreen = document.getElementById('dc-stats-screen');
@@ -10540,7 +10622,15 @@ function showThinkerCardScreen(thinker, week, day) {
     isEn ? 'A new thinker joins the pantheon' : 'הוגה חדש מצטרף לפנתאון';
 
   // Setup action buttons
-  setupNextBtn(week, day);
+  const nextInfo = getNextLessonInfo();
+  const nextBtn = document.getElementById('modal-next-btn');
+  if (nextInfo.hasNext) {
+    nextBtn.textContent = isEn ? 'Next Lesson' : 'הלומדה הבאה';
+    nextBtn.onclick = goToNextLesson;
+    nextBtn.style.display = '';
+  } else {
+    nextBtn.style.display = 'none';
+  }
   document.getElementById('modal-continue-btn').textContent = isEn ? 'Back to Home' : 'חזרה לבית';
 
   // Switch screens
@@ -10564,23 +10654,6 @@ function showThinkerCardScreen(thinker, week, day) {
   }, 1500);
 }
 
-function goToNextDay() {
-  closeCompleteModal();
-  const weeks = getW();
-  const currentWeek = weeks.find(w => w.id === state.currentWeek);
-  if (!currentWeek) return goHome();
-  const currentDayIndex = currentWeek.days.findIndex(d => d.id === state.currentDay);
-  const nextDay = currentWeek.days[currentDayIndex + 1];
-  if (nextDay) {
-    openReader(state.currentWeek, nextDay.id);
-  } else {
-    goHome();
-  }
-}
-
-function goToNextWeek() {
-  closeCompleteModal();
-}
 
 function finishDay() {
   const week = getW().find(w => w.id === state.currentWeek);
@@ -10909,13 +10982,6 @@ const ONBOARDING_STEPS = [
     tailDirection: 'left'
   },
   {
-    expr: 'owl-action',
-    text: 'Three worlds to explore. Tap one to begin.',
-    spotlight: '.subj-card[data-subject="philosophy"]',
-    tailDirection: 'right',
-    isSubjectSelect: true
-  },
-  {
     expr: 'owl-neutral',
     isLangSelect: true,
     spotlight: null,
@@ -11010,17 +11076,6 @@ function startOnboarding() {
 function renderOnboardingStep() {
   const step = ONBOARDING_STEPS[onboardingStep];
 
-  // For the subject-select step, open the drawer (slide-down animation) then re-run
-  if (step.isSubjectSelect && !_drawerOpen) {
-    if (state.currentScreen !== 'home') {
-      showScreen('home');
-      renderHome();
-    }
-    openDrawer();
-    setTimeout(() => renderOnboardingStep(), 500);
-    return;
-  }
-
   // For the lang-select step, make sure we're on home (in case coming from subject screen)
   if (step.isLangSelect && state.currentScreen !== 'home') {
     document.body.classList.remove('on-subject-screen');
@@ -11033,7 +11088,7 @@ function renderOnboardingStep() {
   // Allow clicks through the spotlight canvas on subject-select step
   const spotlightCanvas = document.getElementById('onboarding-spotlight');
   if (spotlightCanvas) {
-    spotlightCanvas.style.pointerEvents = step.isSubjectSelect ? 'none' : 'all';
+    spotlightCanvas.style.pointerEvents = 'all';
   }
 
   const owl = document.querySelector('.onboarding-owl-float svg');
@@ -11122,10 +11177,6 @@ function renderOnboardingStep() {
     document.getElementById('onboarding-bubble').textContent = 'Which language would you like to continue in?';
     nextBtn.style.display = 'none';
     langButtons.style.display = 'flex';
-  } else if (step.isSubjectSelect) {
-    document.getElementById('onboarding-bubble').textContent = step.text;
-    nextBtn.style.display = 'none';
-    langButtons.style.display = 'none';
   } else {
     document.getElementById('onboarding-bubble').textContent = step.text;
     nextBtn.textContent = step.btn;
@@ -11410,13 +11461,6 @@ function subjConfirm() {
     if (_drawerOpen) {
       // Drawer mode: slide drawer back up, home stays put underneath
       closeDrawer(() => { renderHome(); });
-    } else if (!localStorage.getItem('corpus_onboarding_done') &&
-               ONBOARDING_STEPS[onboardingStep] && ONBOARDING_STEPS[onboardingStep].isSubjectSelect) {
-      // Onboarding mode: close drawer then advance to the language step
-      closeDrawer(() => {
-        renderHome();
-        nextOnboardingStep();
-      });
     } else {
       // First-time / standalone subject-select mode
       document.body.classList.remove('on-subject-screen');
