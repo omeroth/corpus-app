@@ -1,12 +1,34 @@
 {
   "name": "Corpus",
   "short_name": "Corpus",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#F8F5FF",
   "theme_color": "#7B4FD4",
-  "start_url": "/corpus-app/",
+  "lang": "he",
+  "dir": "rtl",
+  "description": "הרעיונות הגדולים בהיסטוריה ב-5 דקות ביום",
   "icons": [
-    { "src": "images/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "images/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
