@@ -4671,7 +4671,7 @@
 <div id="screen-auth" class="auth-screen">
   <div class="auth-logo-wrap">
     <div class="auth-logo-text">Corpus</div>
-    <div class="auth-tagline">Daily Notion.</div>
+    <div class="auth-tagline">Five minutes with history's greatest minds.</div>
   </div>
   <div class="auth-card">
     <div class="auth-mode-toggle">
@@ -5175,9 +5175,24 @@ function showIntro() {
   if (overlay) overlay.style.display = 'block';
 }
 
+function showAuthFlow() {
+  // Logged-out entry point. Show intro once, then the auth form.
+  if (!localStorage.getItem('corpus_intro_done')) {
+    const overlay = document.getElementById('intro-overlay');
+    if (overlay) { overlay.style.display = 'block'; return; }
+  }
+  showAuthScreen();
+}
+
 function closeIntro() {
   localStorage.setItem('corpus_intro_done', '1');
   document.getElementById('intro-overlay').style.display = 'none';
+  if (!currentUser) {
+    // Pre-auth path: carousel finished, now ask them to sign in.
+    showAuthScreen();
+    return;
+  }
+  // Post-auth path (unchanged behavior):
   if (!localStorage.getItem('corpus_subject')) {
     showSubjectSelect();
   } else {
@@ -14132,7 +14147,7 @@ function initUI() {
         } else if (event === 'INITIAL_SESSION' && !session) {
           initialEventReceived = true;
           console.log('[Auth] No session - showing auth screen');
-          showAuthScreen();
+          showAuthFlow();
         } else if (event === 'SIGNED_OUT') {
           appStarted = false;
         }
@@ -14142,7 +14157,7 @@ function initUI() {
       setTimeout(() => {
         if (!initialEventReceived) {
           console.log('[Auth] onAuthStateChange timeout - showing auth screen');
-          showAuthScreen();
+          showAuthFlow();
         }
       }, 3000);
     } catch(e) {
