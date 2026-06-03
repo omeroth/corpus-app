@@ -22,6 +22,8 @@
 </script>
 <style>
   :root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
     --bottom-nav-height: 54px;
     --bg: #F8F5FF;
     --surface: #FFFFFF;
@@ -240,6 +242,8 @@
     font-weight: 700;
     color: #2A1266;
     position: fixed;
+    /* fallback so the bar appears below the 54px topbar (+ iOS safe-area) even if JS hasn't measured yet */
+    top: calc(54px + var(--safe-top));
     left: 50%;
     transform: translateX(-50%);
     width: 100%;
@@ -331,6 +335,190 @@
   #screen-home .scroll-content { padding-top: 110px; } /* topbar + stats-subheader */
   #screen-pantheon .scroll-content,
   #screen-profile .scroll-content { padding-top: 0; } /* topbar is sticky/in-flow, no compensation needed */
+  /* Profile content doesn't have a .scroll-content wrapper; bottom padding directly on the screen
+     so the logout button can be scrolled into view above the practice-card + bottom-nav */
+  #screen-profile {
+    padding-bottom: 150px;
+    overflow-y: auto;
+  }
+
+  /* ── Level Journey screen ── */
+  .screen#screen-level-journey {
+    background: var(--bg, #FAF8F5);
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+  }
+  .journey-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    /* Push the back-button + title row below the iOS status bar / Dynamic Island */
+    height: calc(54px + var(--safe-top));
+    padding-top: var(--safe-top);
+    background: var(--bg, #FAF8F5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 16px;
+    padding-right: 16px;
+    z-index: 10;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    direction: ltr;  /* match reader-topbar: back button stays on the left in both languages */
+    box-sizing: border-box;
+  }
+  .journey-back-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: var(--accent, #7B4FD4);
+  }
+  .journey-back-btn:active { background: rgba(123, 79, 212, 0.1); }
+  .journey-title {
+    flex: 1;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink, #3D1F7A);
+    font-family: 'DM Sans', sans-serif;
+    /* offset the title by the back-btn width so it's visually centered */
+    padding-right: 36px;
+  }
+  .journey-scroll {
+    height: 100%;
+    overflow-y: scroll;
+    /* match the new journey-header height (54px + safe-top) */
+    padding-top: calc(54px + var(--safe-top));
+    padding-bottom: var(--safe-bottom);
+    scroll-snap-type: y proximity;
+  }
+  .journey-level {
+    height: 50vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 32px;
+    scroll-snap-align: center;
+    position: relative;
+  }
+  .journey-badge-wrapper {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    cursor: pointer;
+    perspective: 1000px;
+  }
+  .journey-badge {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.6s ease;
+    transform-style: preserve-3d;
+  }
+  .journey-level.earned .journey-badge {
+    animation: journeyFloat 3s ease-in-out infinite;
+  }
+  @keyframes journeyFloat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-12px); }
+  }
+  .journey-level.earned.rotating .journey-badge,
+  .journey-level.current.rotating .journey-badge {
+    animation: journeyRotate 0.8s ease-out;
+  }
+  @keyframes journeyRotate {
+    0%   { transform: rotateY(0); }
+    100% { transform: rotateY(360deg); }
+  }
+  .journey-level.current .journey-badge-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: -20px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.4) 0%, transparent 70%);
+    z-index: -1;
+    animation: journeyGlow 2s ease-in-out infinite;
+  }
+  @keyframes journeyGlow {
+    0%, 100% { transform: scale(1);    opacity: 0.6; }
+    50%      { transform: scale(1.15); opacity: 1; }
+  }
+  .journey-level.current .journey-badge {
+    filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.5));
+  }
+  .journey-level.locked .journey-badge {
+    filter: grayscale(1);
+    opacity: 0.35;
+  }
+  .journey-level.locked .journey-badge-wrapper { cursor: pointer; }
+  .journey-level.locked .journey-name,
+  .journey-level.locked .journey-xp {
+    color: rgba(0, 0, 0, 0.35);
+  }
+  .journey-level.locked.shaking .journey-badge {
+    animation: journeyShake 0.4s;
+  }
+  @keyframes journeyShake {
+    0%, 100% { transform: translateX(0); }
+    25%      { transform: translateX(-8px); }
+    75%      { transform: translateX(8px); }
+  }
+  .journey-name {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ink, #3D1F7A);
+    margin-bottom: 8px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .journey-xp {
+    font-size: 14px;
+    color: var(--ink-muted, #6B5B95);
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.5px;
+  }
+  .journey-current-marker {
+    position: relative;
+    align-self: center;
+    background: var(--accent, #7B4FD4);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .journey-toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    z-index: 600;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .journey-toast.show { opacity: 1; }
 
   /* ── Home: Quote card ── */
   /* ── Stats row ── */
@@ -586,6 +774,17 @@
     justify-content: center;
     align-items: center;
     margin: 20px 0 16px;
+    cursor: pointer;
+    animation: badgeInvite 2.5s ease-in-out infinite;
+    transition: transform 0.2s;
+  }
+  @keyframes badgeInvite {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50%      { transform: translateY(-4px) scale(1.03); }
+  }
+  .pf-current-badge:active {
+    animation: none;
+    transform: scale(0.95);
   }
   .pf-current-badge img {
     width: 140px;
@@ -593,65 +792,7 @@
     object-fit: contain;
     filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
   }
-  .pf-badges-section {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
-  }
-  .pf-badges-title {
-    font-size: 13px;
-    font-weight: 700;
-    font-family: Nunito, sans-serif;
-    color: #555;
-    margin-bottom: 12px;
-    text-align: center;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-  .pf-badges-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 4px;
-    flex-wrap: nowrap;
-  }
-  .pf-badge-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: 1;
-    min-width: 0;
-    text-align: center;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-  }
-  .pf-badge-item:hover {
-    transform: scale(1.08);
-  }
-  .pf-badge-item img {
-    width: 36px;
-    height: 36px;
-    object-fit: contain;
-    filter: grayscale(100%) opacity(0.35);
-    transition: filter 0.3s ease;
-  }
-  .pf-badge-item.earned img {
-    filter: none;
-  }
-  .pf-badge-name {
-    font-size: 9px;
-    font-weight: 700;
-    font-family: Nunito, sans-serif;
-    color: #999;
-    margin-top: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-  }
-  .pf-badge-item.earned .pf-badge-name {
-    color: #444;
-  }
+  /* .pf-badges-section / .pf-badges-row / .pf-badge-item / .pf-badge-name removed — badges row was deleted */
   .pf-lang-section {
     margin: 12px 16px 0;
   }
@@ -1079,7 +1220,7 @@
   .thinker-era { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
   .thinker-card-lock { font-size: 14px; margin-top: 4px; }
 
-  /* ── Week list ── */
+  /* ── Chapter list ── */
   .week-item {
     background: #fff;
     border: none;
@@ -1224,8 +1365,6 @@
   .thinker-carousel-wrap {
     overflow: hidden;
     padding: 16px 0;
-    mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
     position: relative;
   }
   .thinker-carousel {
@@ -1261,6 +1400,55 @@
   .thinker-carousel-card.unlocked img {
     border-color: var(--accent);
     box-shadow: 0 4px 20px var(--accent-glow);
+  }
+  /* Bonus chapter card (philosophy carousel) */
+  .bonus-carousel-item { cursor: pointer; }
+  .bonus-carousel-item.locked { cursor: default; }
+  .bonus-circle-wrapper {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .bonus-progress-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 64px;
+    height: 64px;
+    transition: stroke-dashoffset 0.6s ease;
+  }
+  .bonus-circle {
+    position: relative;
+    z-index: 1;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+    border: 2px solid #D4AF37;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 30px rgba(123, 79, 212, 0.7);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+  .bonus-carousel-item.locked .bonus-circle { opacity: 0.5; animation: none; }
+  .bonus-carousel-item.locked .thinker-carousel-name { opacity: 0.6; }
+  .bonus-carousel-item.unlocked .bonus-circle { animation: bonusHalo 2.4s ease-in-out infinite; }
+  .bonus-carousel-item.unlocked:active .bonus-circle { transform: scale(0.95); }
+  @keyframes bonusHalo {
+    0%, 100% {
+      box-shadow:
+        0 0 0 0 rgba(123, 79, 212, 0.8),
+        0 0 30px rgba(123, 79, 212, 0.6);
+    }
+    50% {
+      box-shadow:
+        0 0 0 16px rgba(123, 79, 212, 0),
+        0 0 50px rgba(123, 79, 212, 0.9);
+    }
   }
   .thinker-carousel-card.locked img {
     filter: grayscale(100%) brightness(0.6);
@@ -1348,7 +1536,7 @@
     margin: 4px 16px 10px;
   }
 
-  /* ── Home: week floating cards ── */
+  /* ── Home: chapter floating cards ── */
   .week-item.current-week {
     border-right: 3px solid var(--accent);
   }
@@ -1486,7 +1674,7 @@
     text-align: center;
   }
 
-  /* ── Week screen ── */
+  /* ── Chapter screen ── */
   .day-item {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -2200,6 +2388,39 @@
     padding: 20px;
   }
   .modal-overlay.active { display: flex; }
+
+  /* Chapter-complete overlay — reuses .dc-screen/.dc-stats-screen styling; only positioning here */
+  #chapter-complete-overlay.dc-stats-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    background: var(--bg, #FAF8F5);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  #chapter-complete-overlay.dc-stats-screen[style*="display: flex"],
+  #chapter-complete-overlay.dc-stats-screen[style*="display:flex"],
+  #chapter-complete-overlay.dc-stats-screen.active {
+    display: flex !important;
+  }
+  /* Equal vertical spacing between XP, lessons, thinkers — single gap on the stats-zone */
+  #chapter-complete-overlay .dc-stats-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  #chapter-complete-overlay .dc-stats-zone .dc-xp { margin: 0; }
+  #chapter-complete-overlay .metrics-row {
+    flex-direction: column;
+    gap: 16px;
+    margin: 0;
+  }
+  /* Theme-aware metric icon color (resolves to purple in philosophy, blue in economics, amber in psychology).
+     Works for #ic-pantheon (uses currentColor); decorative icons with hardcoded fills are unaffected. */
+  #chapter-complete-overlay .metric-item .metric-icon { color: var(--accent); }
+  #chapter-complete-overlay .metric-item .metric-icon svg { color: var(--accent); }
   .modal-box {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -2964,6 +3185,50 @@
     transform: translateY(20px);
     animation: dc-fade-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1.4s forwards;
   }
+  /* Day streak metric on the completion overlay */
+  .metrics-row {
+    display: flex;
+    justify-content: center;
+    margin: 24px 0;
+    opacity: 0;
+    transform: scale(0.5);
+    animation: dc-pop-in 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 1.4s forwards;
+  }
+  .metric-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .metric-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #F59E0B;
+    margin-bottom: 4px;
+  }
+  .metric-icon svg {
+    width: 56px;
+    height: 56px;
+    fill: currentColor;
+  }
+  .metric-number {
+    font-size: 72px;
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: -0.03em;
+  }
+  .metric-label {
+    font-size: 13px;
+    color: var(--accent-muted);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    margin-top: 4px;
+  }
   .dc-sparkle {
     font-size: 56px;
     line-height: 1;
@@ -3010,7 +3275,8 @@
     transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.15s;
   }
   .dc-continue-btn:active { transform: scale(0.93); }
-  #dc-stats-back-home {
+  #dc-stats-back-home,
+  #chapter-back-home-btn {
     margin-top: 12px;
     background: transparent;
     color: var(--accent);
@@ -3024,7 +3290,8 @@
     opacity: 0;
     animation: dc-fade-up 0.5s ease-out 2.5s forwards;
   }
-  #dc-stats-back-home:active { opacity: 0.65; }
+  #dc-stats-back-home:active,
+  #chapter-back-home-btn:active { opacity: 0.65; }
   /* Thinker screen */
   .dc-thinker-screen {
     justify-content: flex-start;
@@ -3529,13 +3796,14 @@
   /* More bottom padding so content doesn't hide behind practice card */
   #screen-home .scroll-content { padding-bottom: 180px; }
 
-  /* Level (week) header card */
+  /* Level (chapter) header card */
   .level-card {
     background: var(--surface);
     border: 1.5px solid var(--border);
     border-radius: 18px;
     margin-bottom: 10px;
     overflow: hidden;
+    position: relative;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     transition: border-color 300ms ease, box-shadow 300ms ease;
@@ -3545,6 +3813,49 @@
     box-shadow: 0 0 0 1px var(--accent-glow), var(--shadow);
   }
   .level-card.locked-week { opacity: 0.5; cursor: default; }
+  /* Completed-chapter diagonal ribbon (top-right LTR; mirrored to top-left for RTL) */
+  .level-card.completed .level-num {
+    background: var(--accent);
+    color: #fff;
+  }
+  .level-card.completed::before {
+    content: 'COMPLETED';
+    position: absolute;
+    top: 18px;
+    right: -38px;
+    width: 140px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-align: center;
+    padding: 3px 0;
+    transform: rotate(45deg);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 1;
+    font-family: 'Inter', -apple-system, sans-serif;
+    pointer-events: none;
+  }
+  .level-card.completed::after {
+    content: '';
+    position: absolute;
+    top: 18px;
+    right: -38px;
+    width: 140px;
+    height: 18px;
+    border-top: 1px solid rgba(255,255,255,0.3);
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+    transform: rotate(45deg);
+    pointer-events: none;
+    z-index: 2;
+  }
+  [dir="rtl"] .level-card.completed::before,
+  [dir="rtl"] .level-card.completed::after {
+    right: auto;
+    left: -38px;
+    transform: rotate(-45deg);
+  }
 
   .level-card-header { padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
 
@@ -3694,7 +4005,7 @@
   #screen-subject { background: var(--bg); direction: ltr; flex-direction: column; overflow: hidden; }
   #screen-subject.active { display: flex; }
   .subj-screen { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-  .subj-header { padding: 52px 24px 20px; text-align: center; }
+  .subj-header { padding: calc(52px + var(--safe-top)) 24px 20px; text-align: center; }
   .subj-logo { font-family: 'Nunito', sans-serif; font-size: 22px; font-weight: 900; letter-spacing: -0.5px; color: var(--accent); margin-bottom: 20px; }
   .subj-title { font-size: 24px; font-weight: 700; color: var(--ink); margin-bottom: 8px; letter-spacing: -0.02em; }
   .subj-subtitle { font-size: 14px; font-weight: 400; color: var(--accent); opacity: 0.65; line-height: 1.5; }
@@ -3741,6 +4052,8 @@
   body.on-subject-screen .stats-subheader { visibility: hidden; pointer-events: none; }
   body.drawer-open .bottom-nav,
   body.on-subject-screen .bottom-nav { visibility: hidden; pointer-events: none; }
+  body.drawer-open #practice-card,
+  body.on-subject-screen #practice-card { visibility: hidden; pointer-events: none; }
   /* Drawer toggle stays visible - it is #drawer-toggle-btn, not .topbar */
   #screen-subject { transition: transform 450ms cubic-bezier(0.4, 0, 0.2, 1), background-color 300ms ease; }
   .subj-logo, .subj-title, .subj-subtitle, .subj-card-tagline,
@@ -4431,27 +4744,8 @@
        HOME SCREEN
   ═══════════════════════════════ -->
   <div id="screen-home" class="screen active">
-    <div class="topbar" id="topbar">
-      <div style="width:44px"></div>
-      <div class="topbar-logo-wrap">
-        <div class="topbar-logo">Corpus</div>
-      </div>
-      <div style="width:44px"></div>
-    </div>
-    <div class="stats-subheader">
-      <span class="topbar-stat" title="Streak">
-        <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-streak"/></svg>
-        <span id="stat-streak">0</span>
-      </span>
-      <span class="topbar-stat" title="XP">
-        <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-xp"/></svg>
-        <span id="stat-xp">0</span>
-      </span>
-      <span class="topbar-stat" title="Level">
-        <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-level"/></svg>
-        <span id="stat-level">1</span>
-      </span>
-    </div>
+    <!-- topbar moved out of #screen-home — now a global sibling further below -->
+    <!-- stats-subheader moved out of #screen-home — now a global sibling further below -->
     <div class="scroll-content">
       <!-- Thinker carousel (kept for library modal; hidden from scroll view) -->
       <div class="thinker-carousel-wrap" id="thinker-carousel-wrap" style="display:none">
@@ -4461,15 +4755,41 @@
       <!-- Legacy hero card (kept for compat; never rendered) -->
       <div id="hero-continue-card-wrap" style="display:none"></div>
 
-      <!-- Legacy weeks list (kept for compat; hidden) -->
+      <!-- Legacy chapters list (kept for compat; hidden) -->
       <div id="weeks-list" style="display:none"></div>
       <div class="home-section-title" id="home-weeks-title" style="display:none"></div>
 
       <!-- Level + lesson circles layout -->
       <div id="home-levels"></div>
     </div>
-    <!-- Fixed bottom practice card -->
-    <div id="practice-card"></div>
+  </div>
+
+  <!-- Global topbar — sibling of screens so scrolling/transforms don't drag it; visible on home/profile/pantheon -->
+  <div class="topbar" id="topbar">
+    <div style="width:44px"></div>
+    <div class="topbar-logo-wrap">
+      <div class="topbar-logo">Corpus</div>
+    </div>
+    <div style="width:44px"></div>
+  </div>
+
+  <!-- Fixed bottom practice card — sibling of screens so ancestor transforms don't drag it -->
+  <div id="practice-card"></div>
+
+  <!-- Global stats subheader — sibling of screens, visible on home/profile/pantheon -->
+  <div class="stats-subheader">
+    <span class="topbar-stat" title="Streak">
+      <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-streak"/></svg>
+      <span id="stat-streak">0</span>
+    </span>
+    <span class="topbar-stat" title="XP">
+      <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-xp"/></svg>
+      <span id="stat-xp">0</span>
+    </span>
+    <span class="topbar-stat" title="Level">
+      <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-level"/></svg>
+      <span id="stat-level">1</span>
+    </span>
   </div>
 
   <!-- Library modal -->
@@ -4485,29 +4805,7 @@
        PANTHEON SCREEN
   ═══════════════════════════════ -->
   <div id="screen-pantheon" class="screen">
-    <div class="pantheon-header-unit">
-      <div class="topbar">
-        <div style="width:36px"></div>
-        <div class="topbar-logo-wrap">
-          <div class="topbar-logo">Corpus</div>
-        </div>
-        <div style="width:36px"></div>
-      </div>
-      <div class="stats-subheader">
-        <span class="topbar-stat" title="Streak">
-          <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-streak"/></svg>
-          <span id="pantheon-streak">0</span>
-        </span>
-        <span class="topbar-stat" title="XP">
-          <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-xp"/></svg>
-          <span id="pantheon-xp">0</span>
-        </span>
-        <span class="topbar-stat" title="Level">
-          <svg viewBox="0 0 64 64" width="22" height="22"><use href="#icon-level"/></svg>
-          <span id="pantheon-level">1</span>
-        </span>
-      </div>
-    </div>
+    <!-- (pantheon-header-unit removed — topbar and stats are now global #app-level elements) -->
     <div class="scroll-content" style="padding-bottom:80px">
       <div class="pantheon-stats" id="pantheon-stats"></div>
       <div class="pantheon-container" id="pantheon-container"></div>
@@ -4518,13 +4816,7 @@
        PROFILE SCREEN
   ═══════════════════════════════ -->
   <div id="screen-profile" class="screen">
-    <div class="topbar">
-      <div style="width:36px"></div>
-      <div class="topbar-logo-wrap">
-        <div class="topbar-logo">Corpus</div>
-      </div>
-      <div style="width:36px"></div>
-    </div>
+    <!-- (profile topbar removed — replaced by the global topbar at #app level) -->
   <div class="scroll-content" style="padding-bottom:80px">
 
     <!-- Profile Card -->
@@ -4553,10 +4845,6 @@
         <div class="pf-xp-fill" id="pf-xp-fill"></div>
       </div>
       <div class="pf-xp-next" id="pf-xp-next"></div>
-      <div class="pf-badges-section">
-        <div class="pf-badges-title">Your Journey</div>
-        <div class="pf-badges-row" id="pf-badges-row"></div>
-      </div>
     </div>
 
     <!-- Streak Card -->
@@ -4595,6 +4883,21 @@
 
   </div>
 </div>
+
+  <!-- ═══════════════════════════════
+       LEVEL JOURNEY SCREEN
+  ═══════════════════════════════ -->
+  <div class="screen" id="screen-level-journey" style="display:none">
+    <div class="journey-header">
+      <button class="journey-back-btn" id="journey-back-btn" aria-label="Back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: scaleX(-1);">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+      <div class="journey-title">Your Journey</div>
+    </div>
+    <div class="journey-scroll" id="journey-scroll"></div>
+  </div>
 
   <!-- ═══════════════════════════════
        READER SCREEN
@@ -4642,10 +4945,14 @@
         <div class="dc-xp-value" id="complete-xp">+0</div>
         <div class="dc-xp-label" id="modal-xp-earned-label">XP earned</div>
       </div>
-      <div class="dc-streak" id="dc-streak-block">
-        <svg class="dc-flame" viewBox="0 0 64 64"><use href="#icon-streak"/></svg>
-        <div class="dc-streak-value" id="complete-streak">0</div>
-        <div class="dc-streak-label" id="modal-streak-label">Answer streak</div>
+      <div class="metrics-row" id="dc-metrics-row">
+        <div class="metric-item" id="metric-streak-item">
+          <div class="metric-icon">
+            <svg width="56" height="56" viewBox="0 0 64 64"><use href="#icon-streak"/></svg>
+          </div>
+          <div class="metric-number" id="metric-streak-days">0</div>
+          <div class="metric-label" id="metric-streak-days-label">ימים רצופים</div>
+        </div>
       </div>
     </div>
     <button class="dc-continue-btn" id="dc-stats-continue"></button>
@@ -4953,7 +5260,7 @@ async function authLogout() {
     lang, currentScreen: 'home', currentWeek: null, currentDay: null,
     currentSection: 0, readerXP: 0, quizAnswered: {}, quizCorrect: false,
     userEmail: '', userMeta: {}, activeDays: {}, todayCompleted: 0,
-    activeDates: [], lastActiveDate: '', streakHistory: {}
+    activeDates: [], lastActiveDate: '', lastStreakShownDate: '', streakHistory: {}, chapterCompleteShown: {}
   };
   try { localStorage.removeItem('corpus_state'); } catch(e) {}
   try { localStorage.removeItem('corpus_onboarding_done'); } catch(e) {}
@@ -4978,7 +5285,7 @@ const LEVELS = [
 ];
 const LEVELS_EN = LEVELS;
 
-// ─── corpusData: bilingual content (migrating week by week) ───────────────────
+// ─── corpusData: bilingual content (migrating chapter by chapter) ───────────────────
 const corpusData = {
   weeks: [
     {
@@ -5358,8 +5665,8 @@ const corpusData = {
             {
               type: 'idea',
               title: 'הרעיון של היום', titleEn: 'Today\'s Idea',
-              content: 'שאלנו השבוע שאלות גדולות - מהי מציאות, מהי ידיעה, מהי אמת. אבל יש שאלה מעשית יותר: האם כל זה עוזר בכלל לחיות טוב יותר?</p><p>מרקוס אורליוס - קיסר רומא, אחד האנשים החזקים שחיו על פני כדור הארץ - השיב על השאלה הזו לא בהרצאה, אלא בחייו עצמו.',
-              contentEn: 'This week, we asked big questions - what is reality? What is knowledge? What is truth? But there is an even more practical question: Does all of this actually help us live better?</p><p>Marcus Aurelius - Emperor of Rome and one of the most powerful people to ever live - answered this question not with a lecture, but with his own life.',
+              content: 'שאלנו הפרק שאלות גדולות - מהי מציאות, מהי ידיעה, מהי אמת. אבל יש שאלה מעשית יותר: האם כל זה עוזר בכלל לחיות טוב יותר?</p><p>מרקוס אורליוס - קיסר רומא, אחד האנשים החזקים שחיו על פני כדור הארץ - השיב על השאלה הזו לא בהרצאה, אלא בחייו עצמו.',
+              contentEn: 'This chapter, we asked big questions - what is reality? What is knowledge? What is truth? But there is an even more practical question: Does all of this actually help us live better?</p><p>Marcus Aurelius - Emperor of Rome and one of the most powerful people to ever live - answered this question not with a lecture, but with his own life.',
             },
             {
               type: 'source',
@@ -5418,23 +5725,23 @@ const corpusData = {
         },
         {
           id: 7,
-          title: 'מהי פילוסופיה? - סיכום השבוע', titleEn: 'What is Philosophy? - Weekly Summary',
+          title: 'מהי פילוסופיה? - סיכום הפרק', titleEn: 'What is Philosophy? - Chapter Summary',
           thinker: 'סיכום', thinkerEn: 'Summary',
           thinkerId: null, xp: 80,
           sections: [
             {
               type: 'idea',
-              title: 'מהי פילוסופיה? - סיכום השבוע', titleEn: 'What is Philosophy? - Weekly Summary',
-              content: 'שבוע שלם, שישה הוגים, שאלה אחת: מהי פילוסופיה?</p><p>לא הגענו לתשובה אחת. אבל גילינו משהו חשוב יותר - שהשאלה עצמה היא הנקודה.',
-              contentEn: 'A full week, six thinkers, one question: What is philosophy?</p><p>We haven\'t reached a single answer. But we\'ve discovered something more important - that the question itself is the point.',
+              title: 'מהי פילוסופיה? - סיכום הפרק', titleEn: 'What is Philosophy? - Chapter Summary',
+              content: 'פרק שלם, שישה הוגים, שאלה אחת: מהי פילוסופיה?</p><p>לא הגענו לתשובה אחת. אבל גילינו משהו חשוב יותר - שהשאלה עצמה היא הנקודה.',
+              contentEn: 'A full chapter, six thinkers, one question: What is philosophy?</p><p>We haven\'t reached a single answer. But we\'ve discovered something more important - that the question itself is the point.',
             },
             {
               type: 'source',
-              title: 'ששת ההוגים של השבוע', titleEn: 'The Six Thinkers of the Week',
+              title: 'ששת ההוגים של הפרק', titleEn: 'The Six Thinkers in This Chapter',
               quote: 'סוקרטס - פילוסופיה היא הכרת גבולות הידע שלנו.\nאפלטון - פילוסופיה היא המסע מהצללים אל האור.\nראסל - פילוסופיה היא השחרור מכלא הוודאויות.\nויטגנשטיין - פילוסופיה היא ריפוי הבלבול הלשוני.\nמרקוס אורליוס - פילוסופיה היא דרך חיים יומיומית.',
               quoteEn: 'Socrates - Philosophy is recognizing the limits of our knowledge.\nPlato - Philosophy is the journey from shadows to light.\nRussell - Philosophy is liberation from the prison of certainties.\nWittgenstein - Philosophy is a remedy for linguistic confusion.\nMarcus Aurelius - Philosophy is a daily way of life.',
-              attr: '- סיכום שבוע 1',
-              attrEn: '- Week 1 Summary',
+              attr: '- סיכום פרק 1',
+              attrEn: '- Chapter 1 Summary',
               content: '',
               contentEn: '',
             },
@@ -5446,14 +5753,14 @@ const corpusData = {
             },
             {
               type: 'depth',
-              title: 'מה לקחת מהשבוע הזה?', titleEn: 'What to Take from This Week?',
-              content: 'פילוסופיה היא לא מקצוע - היא גישה. היא לא שייכת לאנשים עם תארים - היא שייכת לכל מי שמוכן לשאול שאלה ולשבת עם חוסר הנוחות של אי-הידיעה.</p><p>השבוע הבא נצלול לנושא אחד מהעמוקים ביותר בפילוסופיה: מוסר ואתיקה. מה ההבדל בין טוב לרע? מה מצדיק פעולה מוסרית? ומי מחליט?',
-              contentEn: 'Philosophy is not a profession - it is an approach. It doesn\'t belong to people with degrees - it belongs to anyone willing to ask a question and sit with the discomfort of "not-knowing."</p><p>Next week, we will dive into one of the deepest topics in philosophy: Morality and Ethics. What is the difference between good and evil? What justifies a moral action? And who decides?',
+              title: 'מה לקחת מהפרק הזה?', titleEn: 'What to Take from This Chapter?',
+              content: 'פילוסופיה היא לא מקצוע - היא גישה. היא לא שייכת לאנשים עם תארים - היא שייכת לכל מי שמוכן לשאול שאלה ולשבת עם חוסר הנוחות של אי-הידיעה.</p><p>הפרק הבא נצלול לנושא אחד מהעמוקים ביותר בפילוסופיה: מוסר ואתיקה. מה ההבדל בין טוב לרע? מה מצדיק פעולה מוסרית? ומי מחליט?',
+              contentEn: 'Philosophy is not a profession - it is an approach. It doesn\'t belong to people with degrees - it belongs to anyone willing to ask a question and sit with the discomfort of "not-knowing."</p><p>Next chapter, we will dive into one of the deepest topics in philosophy: Morality and Ethics. What is the difference between good and evil? What justifies a moral action? And who decides?',
             },
             {
               type: 'quiz',
-              intro: 'נניח שאתה מתלבט לגבי החלטה מקצועית גדולה ומרגיש \'תקוע\'. אתה מנסה ליישם את מה שלמדת השבוע מהפילוסופים השונים כדי להבין מאיפה להתחיל.',
-              introEn: 'Suppose you are debating a major professional decision and feel \'stuck.\' You are trying to apply what you learned this week from the various philosophers to understand where to begin.',
+              intro: 'נניח שאתה מתלבט לגבי החלטה מקצועית גדולה ומרגיש \'תקוע\'. אתה מנסה ליישם את מה שלמדת הפרק מהפילוסופים השונים כדי להבין מאיפה להתחיל.',
+              introEn: 'Suppose you are debating a major professional decision and feel \'stuck.\' You are trying to apply what you learned this chapter from the various philosophers to understand where to begin.',
               question: 'מי מההוגים הבאים היה אומר לך שהצעד הראשון לפתרון הוא להודות בכך שכרגע אינך יודע את כל התשובות, וכי זוהי תחילתה של החוכמה?',
               questionEn: 'Which of the following thinkers would tell you that the first step toward a solution is to admit that you currently do not know all the answers, and that this is the beginning of wisdom?',
               options: ['סוקרטס', 'אפלטון', 'ויטגנשטיין'],
@@ -5478,8 +5785,8 @@ const corpusData = {
               type: 'quiz',
               intro: 'אתה מוצא את עצמך בוויכוח סוער עם חבר על השאלה \'מהי הצלחה?\'. הוויכוח נמשך זמן רב, ושניכם בטוחים בעמדתכם אך לא מצליחים להשתכנע.',
               introEn: 'You find yourself in a heated argument with a friend over the question \'What is success?\'. The argument has been going on for a long time, and both of you are certain of your positions but fail to convince each other.',
-              question: 'איזו תובנה מהשבוע הזה תעזור לך לעצור ולבחון אם הוויכוח בכלל מקדם אתכם לעבר הבנה אמיתית?',
-              questionEn: 'Which insight from this week would help you stop and examine if the argument is even moving you toward true understanding?',
+              question: 'איזו תובנה מהפרק הזה תעזור לך לעצור ולבחון אם הוויכוח בכלל מקדם אתכם לעבר הבנה אמיתית?',
+              questionEn: 'Which insight from this chapter would help you stop and examine if the argument is even moving you toward true understanding?',
               options: ['אפלטון: "נסה להבין אם אתה רואה את המציאות עצמה או רק צללים שלה"', 'ויטגנשטיין: "בדוק אם אתם לא פשוט משתמשים באותה מילה עם משמעויות שונות לגמרי ויוצרים בלבול לשוני"', 'מרקוס אורליוס: "זכור שהוויכוח הוא אירוע חיצוני שאינו בשליטתך"'],
               optionsEn: ['Plato: "Try to understand if you are seeing reality itself or just its shadows."', 'Wittgenstein: "Check if you are simply using the same word with completely different meanings and creating linguistic confusion."', 'Marcus Aurelius: "Remember that the argument is an external event that is not within your control."'],
               correctIndex: 1,
@@ -5505,8 +5812,8 @@ const corpusData = {
           {
             type: 'idea',
             title: 'הרעיון של היום', titleEn: 'Today\'s Idea',
-            content: 'בשבוע שעבר שאלנו: מה אנחנו יודעים? השבוע נעסוק בשאלה אחרת - ואולי קשה אף יותר: מה צריך לעשות?\n\nזה נשמע פשוט. כולם יודעים שלא צריך לגנוב, שצריך לעזור לחלשים ושכדאי לומר אמת. אבל ברגע שמתחילים לשאול "למה?" - הכול מסתבך.',
-            contentEn: 'Last week, we asked: What do we know?</p><p>This week, we ask a different-and perhaps more difficult-question: What should we do?</p><p>It sounds simple. Everyone knows you shouldn\'t steal, that you should help the weak, and that it\'s best to tell the truth. But the moment you start asking why-everything gets complicated.',
+            content: 'בפרק שעבר שאלנו: מה אנחנו יודעים? הפרק נעסוק בשאלה אחרת - ואולי קשה אף יותר: מה צריך לעשות?\n\nזה נשמע פשוט. כולם יודעים שלא צריך לגנוב, שצריך לעזור לחלשים ושכדאי לומר אמת. אבל ברגע שמתחילים לשאול "למה?" - הכול מסתבך.',
+            contentEn: 'Last chapter, we asked: What do we know?</p><p>This chapter, we ask a different-and perhaps more difficult-question: What should we do?</p><p>It sounds simple. Everyone knows you shouldn\'t steal, that you should help the weak, and that it\'s best to tell the truth. But the moment you start asking why-everything gets complicated.',
           },
           {
             type: 'source',
@@ -5521,14 +5828,14 @@ const corpusData = {
           {
             type: 'explanation',
             title: 'מהי בעיה מוסרית?', titleEn: 'What Is a Moral Problem?',
-            content: 'לא כל החלטה היא בעיה מוסרית. לבחור מה לאכול לארוחת בוקר - זו אינה בעיה מוסרית. אבל לבחור אם לומר אמת שתפגע באדם שאתה אוהב - זו כבר שאלה אחרת לגמרי.\n\nהריס מצביע על הרגע שבו הבעיה המוסרית נולדת: כשהמפות שקיבלנו מהסביבה מפסיקות לעבוד; כשהשכל הישר אומר דבר אחד, הלב אומר אחר, והחברה מצפה ממך למשהו שלישי.\n\nשלוש שאלות שמגדירות את האתיקה:\n1. מה טוב? - לאילו ערכים שווה לשאוף בחיים.\n2. מה נכון? - אילו פעולות עלינו לבצע בפועל.\n3. מי אני צריך להיות? - איזה סוג אדם כדאי שאהיה (שאלת האופי).\n\nשלוש הגישות שנפגוש השבוע - אריסטו, קאנט ומיל - מעניקות כל אחת עדיפות לשאלה אחרת מתוך השלוש.\n\nדוגמה מהחיים:\nחבר טוב מבקש ממך עצה על קשר זוגי שלדעתך הוא טעות גדולה. הוא לא שואל אם הקשר \"טוב\" - הוא שואל אם כדאי לעשות צעד גדול קדימה.\nמה תעשה? אם תאמר את האמת - הוא עלול להיפגע. אם תשתוק - אולי בגדת בחברות. אם תגיד לו את מה שהוא רוצה לשמוע - אולי לא עזרת לאיש. זוהי בעיה מוסרית: אין לה תשובה נכונה ברורה, ושלושת הפילוסופים שנפגוש השבוע יציעו לה פתרונות שונים לחלוטין.',
-            contentEn: 'Not every decision is a moral problem. Choosing what to eat for breakfast is not a moral problem. But choosing whether to tell a truth that will hurt someone you love-that is a different question entirely.</p><p>Harries points to the moment a moral problem is born: when the "maps" we received from our environment stop working. When common sense says one thing, your heart says another, and society expects a third.</p><p>Three questions that define Ethics:</p><p>1. What is good? - What is worth striving for in life?</p><p>2. What is right? - Which actions should be taken?</p><p>3. Who should I be? - What kind of person should I become?</p><p>The three approaches we will meet this week-Aristotle, Kant, and Mill-each prioritize a different one of these three questions.</p><p>A Real-Life Example:</p><p>A close friend asks for your advice on a relationship that you believe is a huge mistake. They aren\'t asking if the relationship is "good"-they are asking if they should take a major step forward.</p><p>What do you do? If you tell the truth, they might get hurt. If you stay silent, perhaps you\'ve betrayed the friendship. If you tell them what they want to hear, you might not be helping anyone.</p><p>This is a moral problem. There is no clear "right" answer. The three philosophers we will meet this week would give it completely different answers.',
+            content: 'לא כל החלטה היא בעיה מוסרית. לבחור מה לאכול לארוחת בוקר - זו אינה בעיה מוסרית. אבל לבחור אם לומר אמת שתפגע באדם שאתה אוהב - זו כבר שאלה אחרת לגמרי.\n\nהריס מצביע על הרגע שבו הבעיה המוסרית נולדת: כשהמפות שקיבלנו מהסביבה מפסיקות לעבוד; כשהשכל הישר אומר דבר אחד, הלב אומר אחר, והחברה מצפה ממך למשהו שלישי.\n\nשלוש שאלות שמגדירות את האתיקה:\n1. מה טוב? - לאילו ערכים שווה לשאוף בחיים.\n2. מה נכון? - אילו פעולות עלינו לבצע בפועל.\n3. מי אני צריך להיות? - איזה סוג אדם כדאי שאהיה (שאלת האופי).\n\nשלוש הגישות שנפגוש הפרק - אריסטו, קאנט ומיל - מעניקות כל אחת עדיפות לשאלה אחרת מתוך השלוש.\n\nדוגמה מהחיים:\nחבר טוב מבקש ממך עצה על קשר זוגי שלדעתך הוא טעות גדולה. הוא לא שואל אם הקשר \"טוב\" - הוא שואל אם כדאי לעשות צעד גדול קדימה.\nמה תעשה? אם תאמר את האמת - הוא עלול להיפגע. אם תשתוק - אולי בגדת בחברות. אם תגיד לו את מה שהוא רוצה לשמוע - אולי לא עזרת לאיש. זוהי בעיה מוסרית: אין לה תשובה נכונה ברורה, ושלושת הפילוסופים שנפגוש הפרק יציעו לה פתרונות שונים לחלוטין.',
+            contentEn: 'Not every decision is a moral problem. Choosing what to eat for breakfast is not a moral problem. But choosing whether to tell a truth that will hurt someone you love-that is a different question entirely.</p><p>Harries points to the moment a moral problem is born: when the "maps" we received from our environment stop working. When common sense says one thing, your heart says another, and society expects a third.</p><p>Three questions that define Ethics:</p><p>1. What is good? - What is worth striving for in life?</p><p>2. What is right? - Which actions should be taken?</p><p>3. Who should I be? - What kind of person should I become?</p><p>The three approaches we will meet this week-Aristotle, Kant, and Mill-each prioritize a different one of these three questions.</p><p>A Real-Life Example:</p><p>A close friend asks for your advice on a relationship that you believe is a huge mistake. They aren\'t asking if the relationship is "good"-they are asking if they should take a major step forward.</p><p>What do you do? If you tell the truth, they might get hurt. If you stay silent, perhaps you\'ve betrayed the friendship. If you tell them what they want to hear, you might not be helping anyone.</p><p>This is a moral problem. There is no clear "right" answer. The three philosophers we will meet this chapter would give it completely different answers.',
           },
           {
             type: 'depth',
             title: 'מוסר אובייקטיבי, סובייקטיבי, יחסי', titleEn: 'Objective, Subjective, Relative Morality',
             content: 'הריס מציין שאלה שרוב האנשים נוטים לדלג עליה: האם בכלל קיימות תשובות אובייקטיביות לשאלות מוסריות?\n\nישנן שלוש עמדות עיקריות בסוגיה:\n\nמוסר אובייקטיבי: קיימות אמיתות מוסריות שמחייבות את כולם, בדיוק כמו אמיתות מתמטיות (קאנט הוא הנציג המובהק של גישה זו).\n\nמוסר סובייקטיבי: אין אמת מוסרית אחת. כל אדם קובע לעצמו מה נכון. זו עמדה נפוצה בתרבות הפופולרית, אך קשה לחיות לפיה - שכן אז לא ניתן לומר באופן גורף ש\"רצח הוא רע\".\n\nמוסר יחסי (רלטיביזם): ערכים מוסריים משתנים בין תרבויות ותקופות. מה שנכון ביפן אינו בהכרח נכון בישראל.',
-            contentEn: 'Harries notes a question most people don\'t ask: Are there even objective answers to moral questions?</p><p>There are three main positions:</p><p>Objective Morality: There are moral truths that bind everyone, just as there are mathematical truths. Kant will be the great champion of this position.</p><p>Subjective Morality: According to this approach, there is no single moral truth that binds everyone. Each individual decides for themselves what is right and what is wrong. This position is very common in popular culture, but difficult to live by-because then one cannot say that murder is inherently "wrong."</p><p>Relative Morality: Moral values differ between cultures and times. What is right in Japan is not necessarily right in Israel.</p><p>None of these positions wins easily. In fact, every philosopher we meet this week makes a different assumption regarding this very question.',
+            contentEn: 'Harries notes a question most people don\'t ask: Are there even objective answers to moral questions?</p><p>There are three main positions:</p><p>Objective Morality: There are moral truths that bind everyone, just as there are mathematical truths. Kant will be the great champion of this position.</p><p>Subjective Morality: According to this approach, there is no single moral truth that binds everyone. Each individual decides for themselves what is right and what is wrong. This position is very common in popular culture, but difficult to live by-because then one cannot say that murder is inherently "wrong."</p><p>Relative Morality: Moral values differ between cultures and times. What is right in Japan is not necessarily right in Israel.</p><p>None of these positions wins easily. In fact, every philosopher we meet this chapter makes a different assumption regarding this very question.',
           },
           {
             type: 'quiz',
@@ -5551,8 +5858,8 @@ const corpusData = {
             options: ['מוסר אובייקטיבי', 'מוסר יחסי', 'מוסר סובייקטיבי'],
             optionsEn: ['Objective Morality', 'Relative Morality (Relativism)', 'Subjective Morality'],
             correctIndex: 1,
-            explanation: 'הדובר טוען שערכים משתנים לפי תרבות וזמן. כפי שנראה השבוע, פילוסופים כמו קאנט יתנגדו לכך נחרצות ויטענו שיש אמיתות מוסריות שמחייבות כל יצור תבוני, בכל מקום ובכל זמן.',
-            explanationEn: 'Exactly. The speaker argues that values change according to culture and time. As we will see this week, philosophers like Kant would strongly disagree, arguing that there are moral truths that bind every rational being, everywhere, and at all times.',
+            explanation: 'הדובר טוען שערכים משתנים לפי תרבות וזמן. כפי שנראה הפרק, פילוסופים כמו קאנט יתנגדו לכך נחרצות ויטענו שיש אמיתות מוסריות שמחייבות כל יצור תבוני, בכל מקום ובכל זמן.',
+            explanationEn: 'Exactly. The speaker argues that values change according to culture and time. As we will see this chapter, philosophers like Kant would strongly disagree, arguing that there are moral truths that bind every rational being, everywhere, and at all times.',
           },
           { type: 'quiz_summary' },
         ],
@@ -5922,21 +6229,21 @@ const corpusData = {
       },
       {
         id: 7,
-        title: 'מוסר ואתיקה – סיכום השבוע', titleEn: 'Morality and Ethics – Week in Review',
+        title: 'מוסר ואתיקה – סיכום הפרק', titleEn: 'Morality and Ethics – Chapter Recap',
         thinker: 'סיכום', thinkerEn: 'Summary',
         thinkerId: null, xp: 80,
         sections: [
           {
             type: 'idea',
-            title: 'מוסר ואתיקה – סיכום השבוע', titleEn: 'Morality and Ethics – Week in Review',
-            content: 'שבוע שלם, חמישה הוגים, שאלה אחת: מה נכון מוסרית?\n\nלא הגענו לתשובה אחת מוחלטת. אבל גילינו שלוש גישות שונות לגמרי - ושלושתן תופסות משהו אמיתי מאוד במציאות שלנו.',
-            contentEn: 'A full week, five thinkers, one question: what is morally right?\n\nWe didn\'t arrive at one absolute answer. But we discovered three completely different approaches - and all three capture something very real about our reality.',
+            title: 'מוסר ואתיקה – סיכום הפרק', titleEn: 'Morality and Ethics – Chapter Recap',
+            content: 'פרק שלם, חמישה הוגים, שאלה אחת: מה נכון מוסרית?\n\nלא הגענו לתשובה אחת מוחלטת. אבל גילינו שלוש גישות שונות לגמרי - ושלושתן תופסות משהו אמיתי מאוד במציאות שלנו.',
+            contentEn: 'A full chapter, five thinkers, one question: what is morally right?\n\nWe didn\'t arrive at one absolute answer. But we discovered three completely different approaches - and all three capture something very real about our reality.',
           },
           {
             type: 'source',
-            title: 'שלוש הגישות של השבוע', titleEn: 'The Approaches of the Week',
-            quote: 'שלוש הגישות של השבוע (והמבקרים שלהן):\n\nאריסטו: המוסר הוא פיתוח מידות טובות. שאל: “מי אני רוצה להיות?”.\nקאנט: המוסר הוא ציות לחוק אוניברסלי. שאל: “מה חובתי?”.\nמיל: המוסר הוא מקסום האושר והפחתת סבל. שאל: “מה התוצאה?”.\nניטשה: המוסר הוא המצאה אנושית. שאל: “מי המציא את הערכים ולמה?”.\nתומסון: המוסר הוא מורכב ומלא סתירות. שאלה: “מה האינטואיציה שלנו אומרת?”.',
-            quoteEn: 'The approaches of the week (and their critics):\n\nAristotle: Morality is developing virtues. He asked: “Who do I want to be?”.\nKant: Morality is obedience to a universal law. He asked: “What is my duty?”.\nMill: Morality is maximising happiness and reducing suffering. He asked: “What are the consequences?”.\nNietzsche: Morality is a human invention. He asked: “Who invented the values and why?”.\nThomson: Morality is complex and full of contradictions. She asked: “What do our intuitions say?”.',
+            title: 'שלוש הגישות של הפרק', titleEn: 'The Approaches in This Chapter',
+            quote: 'שלוש הגישות של הפרק (והמבקרים שלהן):\n\nאריסטו: המוסר הוא פיתוח מידות טובות. שאל: “מי אני רוצה להיות?”.\nקאנט: המוסר הוא ציות לחוק אוניברסלי. שאל: “מה חובתי?”.\nמיל: המוסר הוא מקסום האושר והפחתת סבל. שאל: “מה התוצאה?”.\nניטשה: המוסר הוא המצאה אנושית. שאל: “מי המציא את הערכים ולמה?”.\nתומסון: המוסר הוא מורכב ומלא סתירות. שאלה: “מה האינטואיציה שלנו אומרת?”.',
+            quoteEn: 'The approaches of the chapter (and their critics):\n\nAristotle: Morality is developing virtues. He asked: “Who do I want to be?”.\nKant: Morality is obedience to a universal law. He asked: “What is my duty?”.\nMill: Morality is maximising happiness and reducing suffering. He asked: “What are the consequences?”.\nNietzsche: Morality is a human invention. He asked: “Who invented the values and why?”.\nThomson: Morality is complex and full of contradictions. She asked: “What do our intuitions say?”.',
             attr: '',
             attrEn: '',
             content: '',
@@ -5951,8 +6258,8 @@ const corpusData = {
           {
             type: 'depth',
             title: 'הסינתזה', titleEn: 'The Synthesis',
-            content: 'אולי האמת היא שאנחנו זקוקים לשלוש הגישות גם יחד:\n\nכשאנחנו מגבשים את האופי האישי שלנו - אנחנו אריסטוטליים.\nכשאנחנו חושבים על עקרונות יסוד שלא ניתן לפגוע בהם - אנחנו קאנטיאנים.\nכשאנחנו מקבלים החלטות ציבוריות שמשפיעות על רבים - אנחנו תועלתנים (כמו מיל).\n\nוניטשה? הוא מזכיר לנו תמיד לשאול: מי נהנה מהמוסר הזה? ומי משלם את המחיר?\n\nמה הלאה?\nבשבוע הבא נצלול לשאלה אחרת לגמרי: מה אנחנו יכולים לדעת? ואיך אנחנו יודעים שאנחנו באמת יודעים?',
-            contentEn: 'Perhaps the truth is that we need all three approaches together:\n\nWhen we are forming our personal character - we are Aristotelian.\nWhen we think about foundational principles that cannot be violated - we are Kantian.\nWhen we make public decisions that affect many - we are utilitarian (like Mill).\n\nAnd Nietzsche? He always reminds us to ask: who benefits from this morality? And who pays the price?\n\nWhat\'s next?\nNext week we dive into a completely different question: what can we know? And how do we know that we really know?',
+            content: 'אולי האמת היא שאנחנו זקוקים לשלוש הגישות גם יחד:\n\nכשאנחנו מגבשים את האופי האישי שלנו - אנחנו אריסטוטליים.\nכשאנחנו חושבים על עקרונות יסוד שלא ניתן לפגוע בהם - אנחנו קאנטיאנים.\nכשאנחנו מקבלים החלטות ציבוריות שמשפיעות על רבים - אנחנו תועלתנים (כמו מיל).\n\nוניטשה? הוא מזכיר לנו תמיד לשאול: מי נהנה מהמוסר הזה? ומי משלם את המחיר?\n\nמה הלאה?\nבפרק הבא נצלול לשאלה אחרת לגמרי: מה אנחנו יכולים לדעת? ואיך אנחנו יודעים שאנחנו באמת יודעים?',
+            contentEn: 'Perhaps the truth is that we need all three approaches together:\n\nWhen we are forming our personal character - we are Aristotelian.\nWhen we think about foundational principles that cannot be violated - we are Kantian.\nWhen we make public decisions that affect many - we are utilitarian (like Mill).\n\nAnd Nietzsche? He always reminds us to ask: who benefits from this morality? And who pays the price?\n\nWhat\'s next?\nNext chapter we dive into a completely different question: what can we know? And how do we know that we really know?',
           },
           {
             type: 'quiz',
@@ -6014,15 +6321,15 @@ const corpusData = {
         sections: [
           {
             type: 'idea',
-            title: 'ברוכים הבאים לשבוע הבונוס',
-            titleEn: 'Welcome to the Bonus Week',
-            content: 'ענקיות טכנולוגיה כמו Anthropic ו-OpenAI כבר לא מעסיקות רק מתכנתים - הן מגייסות פילוסופים כדי לנסח "חוקה" למכונות. השאלה היא כבר לא רק מה המכונה יכולה לעשות, אלא מה מותר לה לעשות.\n\nהשבוע נפגוש חמישה פילוסופים שלא הכירו בינה מלאכותית - אבל השאלות שהם שאלו לפני מאות שנים הן בדיוק השאלות שמדעני המחשב מתמודדים איתן היום.',
-            contentEn: 'Tech giants like Anthropic and OpenAI no longer hire only programmers - they are recruiting philosophers to draft a "Constitution" for machines. The question is no longer just what the machine can do, but what it is allowed to do.\n\nThis week we will meet five philosophers who never knew artificial intelligence - but the questions they asked hundreds of years ago are exactly the questions that computer scientists face today.'
+            title: 'ברוכים הבאים לפרק הבונוס',
+            titleEn: 'Welcome to the Bonus Chapter',
+            content: 'ענקיות טכנולוגיה כמו Anthropic ו-OpenAI כבר לא מעסיקות רק מתכנתים - הן מגייסות פילוסופים כדי לנסח "חוקה" למכונות. השאלה היא כבר לא רק מה המכונה יכולה לעשות, אלא מה מותר לה לעשות.\n\nהפרק נפגוש חמישה פילוסופים שלא הכירו בינה מלאכותית - אבל השאלות שהם שאלו לפני מאות שנים הן בדיוק השאלות שמדעני המחשב מתמודדים איתן היום.',
+            contentEn: 'Tech giants like Anthropic and OpenAI no longer hire only programmers - they are recruiting philosophers to draft a "Constitution" for machines. The question is no longer just what the machine can do, but what it is allowed to do.\n\nThis chapter we will meet five philosophers who never knew artificial intelligence - but the questions they asked hundreds of years ago are exactly the questions that computer scientists face today.'
           },
           {
             type: 'idea',
-            title: 'מה נחקור השבוע?',
-            titleEn: 'What Will We Explore This Week?',
+            title: 'מה נחקור הפרק?',
+            titleEn: 'What Will We Explore This Chapter?',
             content: 'יום 1 | קאנט והאמת: האם מותר ל-AI לשקר כדי לנחם משתמש במצוקה?\n\nיום 2 | מיל והמכונית האוטונומית: בניסוי ה-Moral Machine, מיליוני אנשים הכריעו מי יחיה ומי ימות.\n\nיום 3 | אריסטו והאחריות: כשה-AI טועה באבחון רפואי - מי אשם?\n\nיום 4 | ניטשה ומאבקי כוח: מי באמת קובע את הערכים של המכונה?\n\nיום 5 | סוקרטס והחשיבה: האם ה-AI הוא "מורה" שנותן תשובות מוכנות, או "מיילדת" שעוזרת לנו לחשוב בעצמנו?',
             contentEn: 'Day 1 | Kant and Truth: Is AI allowed to lie to comfort a user in distress?\n\nDay 2 | Mill and the Autonomous Car: In the "Moral Machine" experiment, millions decided who lives and who dies.\n\nDay 3 | Aristotle and Responsibility: When AI errs in a medical diagnosis - who is to blame?\n\nDay 4 | Nietzsche and Power: Who truly determines the machine\'s values?\n\nDay 5 | Socrates and Thinking: Is the AI a "teacher" providing ready-made answers, or a "midwife" that helps us think for ourselves?'
           }
@@ -6432,8 +6739,8 @@ const corpusData = {
           {
             type: 'idea',
             title: 'מה זה לדעת?', titleEn: 'What is it to know?',
-            content: 'עד עכשיו שאלנו שאלות אונטולוגיות - שאלות על מה קיים: האם אלוהים קיים? מהו המוסר? מהם טוב ורע? השבוע אנו עוברים לשאלה אחרת לגמרי.</p><p>אפיסטמולוגיה - ענף הפילוסופיה העוסק בידע - שואלת: לא מה קיים, אלא מה אנחנו יכולים לדעת. זה ההבדל בין השאלה "האם יש עולם חיצוני?" לבין השאלה "מה אני יכול לדעת על העולם החיצוני?" - שתי שאלות שנראות דומות, אך ההבדל ביניהן עצום.</p><p>ולפני הכל - שאלה בסיסית יותר: מה זה בכלל לדעת?',
-            contentEn: 'Until now, we\'ve asked ontological questions - questions about what exists: Does God exist? What is morality? What are good and evil? This week, we move to a completely different kind of question.</p><p>Epistemology - the branch of philosophy dealing with knowledge - asks: not what exists, but what we can know. This is the difference between "Is there an outside world?" and "What can I know about the outside world?" - two similar-looking questions, but the difference between them is vast.</p><p>And above all - a more basic question: What does it mean to know at all?',
+            content: 'עד עכשיו שאלנו שאלות אונטולוגיות - שאלות על מה קיים: האם אלוהים קיים? מהו המוסר? מהם טוב ורע? הפרק אנו עוברים לשאלה אחרת לגמרי.</p><p>אפיסטמולוגיה - ענף הפילוסופיה העוסק בידע - שואלת: לא מה קיים, אלא מה אנחנו יכולים לדעת. זה ההבדל בין השאלה "האם יש עולם חיצוני?" לבין השאלה "מה אני יכול לדעת על העולם החיצוני?" - שתי שאלות שנראות דומות, אך ההבדל ביניהן עצום.</p><p>ולפני הכל - שאלה בסיסית יותר: מה זה בכלל לדעת?',
+            contentEn: 'Until now, we\'ve asked ontological questions - questions about what exists: Does God exist? What is morality? What are good and evil? This chapter, we move to a completely different kind of question.</p><p>Epistemology - the branch of philosophy dealing with knowledge - asks: not what exists, but what we can know. This is the difference between "Is there an outside world?" and "What can I know about the outside world?" - two similar-looking questions, but the difference between them is vast.</p><p>And above all - a more basic question: What does it mean to know at all?',
           },
           {
             type: 'source',
@@ -6809,19 +7116,19 @@ const corpusData = {
       },
       {
         id: 7,
-        title: 'ספק וידע - סיכום השבוע', titleEn: 'Doubt and Knowledge - Weekly Summary',
+        title: 'ספק וידע - סיכום הפרק', titleEn: 'Doubt and Knowledge - Chapter Summary',
         thinker: 'סיכום', thinkerEn: 'Summary',
         thinkerId: 'audi', xp: 80,
         sections: [
           {
             type: 'idea',
-            title: 'סיכום שבוע 3 - מה אנחנו יכולים לדעת?', titleEn: 'Week 3 Summary - What Can We Know?',
-            content: 'שבוע שלם, שישה הוגים, שאלה אחת: מה אנחנו יכולים לדעת? לא הגענו לתשובה אחת מוחלטת, אך גילינו שהשאלה עצמה עמוקה ומורכבת הרבה יותר ממה שחשבנו בתחילה.',
-            contentEn: 'A whole week, six thinkers, one question: What can we know? We haven\'t reached one absolute answer, but we discovered that the question itself is much deeper and more complex than we thought at the beginning.',
+            title: 'סיכום פרק 3 - מה אנחנו יכולים לדעת?', titleEn: 'Chapter 3 Summary - What Can We Know?',
+            content: 'פרק שלם, שישה הוגים, שאלה אחת: מה אנחנו יכולים לדעת? לא הגענו לתשובה אחת מוחלטת, אך גילינו שהשאלה עצמה עמוקה ומורכבת הרבה יותר ממה שחשבנו בתחילה.',
+            contentEn: 'A whole chapter, six thinkers, one question: What can we know? We haven\'t reached one absolute answer, but we discovered that the question itself is much deeper and more complex than we thought at the beginning.',
           },
           {
             type: 'source',
-            title: 'ששת ההוגים של השבוע', titleEn: 'The Six Thinkers of the Week',
+            title: 'ששת ההוגים של הפרק', titleEn: 'The Six Thinkers in This Chapter',
             quote: '', quoteEn: '',
             attr: '', attrEn: '',
             content: '<b>אודי:</b> הגדיר ידע כאמונה מוצדקת ואמיתית.</p><p><b>דקארט:</b> מצא שהדבר היחיד שבטוח הוא שאני חושב, ולכן אני קיים.</p><p><b>יום:</b> הראה שאנחנו לא רואים סיבתיות, אלא רק רצף אירועים שאנחנו מפרשים ככאלה מכוח ההרגל.</p><p><b>קאנט:</b> הסביר שאנחנו לעולם לא רואים את העולם כפי שהוא באמת, אלא רק דרך "משקפי" התודעה שלנו.</p><p><b>גטייה:</b> הוכיח שאמונה מוצדקת ואמיתית עדיין אינה מספיקה כדי להוות ידע ודאי.</p><p><b>פופר:</b> טען שידע מדעי מתקדם על ידי ניסיונות הפרכה, ולא על ידי הוכחה סופית.',
@@ -6835,24 +7142,24 @@ const corpusData = {
           },
           {
             type: 'depth',
-            title: 'הקשר לשבועות הקודמים וקפיצה לשבוע הבא', titleEn: 'The Connection to Previous Weeks and Jumping to the Next',
-            content: 'שבוע 1 שאל מהי פילוסופיה, וסוקרטס ענה: הכרת גבולות הידע שלנו. השבוע ראינו בדיוק את זה - שישה הוגים שחקרו את הגבולות האלה לעומק.</p><p>אחרי ששאלנו מה נכון מוסרית (שבוע 2) ומה אנחנו יכולים לדעת (שבוע 3), בשבוע הבא נשאל את השאלה הבאה: מה בכלל קיים? ממה עשויה המציאות?',
-            contentEn: 'Week 1 asked what philosophy is, and Socrates answered: knowing the limits of our knowledge. This week we saw exactly that - six thinkers who explored these limits in depth.</p><p>After we asked what is morally right (Week 2) and what we can know (Week 3), next week we will ask the next question: What actually exists? What is reality made of?',
+            title: 'הקשר לפרקים הקודמים וקפיצה לפרק הבא', titleEn: 'The Connection to Previous Chapters and Jumping to the Next',
+            content: 'פרק 1 שאל מהי פילוסופיה, וסוקרטס ענה: הכרת גבולות הידע שלנו. הפרק ראינו בדיוק את זה - שישה הוגים שחקרו את הגבולות האלה לעומק.</p><p>אחרי ששאלנו מה נכון מוסרית (פרק 2) ומה אנחנו יכולים לדעת (פרק 3), בפרק הבא נשאל את השאלה הבאה: מה בכלל קיים? ממה עשויה המציאות?',
+            contentEn: 'Chapter 1 asked what philosophy is, and Socrates answered: knowing the limits of our knowledge. This chapter we saw exactly that - six thinkers who explored these limits in depth.</p><p>After we asked what is morally right (Chapter 2) and what we can know (Chapter 3), next chapter we will ask the next question: What actually exists? What is reality made of?',
           },
           {
             type: 'quiz',
-            question: 'עברנו דרך שישה הוגים שונים שחקרו את גבולות הידע. מהי הנקודה המשותפת לכל ההוגים שפגשנו השבוע, למרות המחלוקות ביניהם?',
-            questionEn: 'We went through six different thinkers who explored the limits of knowledge. What is the common point among all the thinkers we met this week, despite the disputes between them?',
+            question: 'עברנו דרך שישה הוגים שונים שחקרו את גבולות הידע. מהי הנקודה המשותפת לכל ההוגים שפגשנו הפרק, למרות המחלוקות ביניהם?',
+            questionEn: 'We went through six different thinkers who explored the limits of knowledge. What is the common point among all the thinkers we met this chapter, despite the disputes between them?',
             options: ['כולם מסכימים שידע אנושי הוא מוחלט ובלתי ניתן לערעור ברגע שמצאנו הוכחה מדעית.', 'כולם מכירים בכך שהידע האנושי מוגבל ושתמיד קיים פער בין המציאות כפי שהיא לבין התפיסה שלנו.', 'כולם טוענים שאין טעם לחפש ידע כיוון שהחושים שלנו תמיד מטעים אותנו.'],
             optionsEn: ['They all agree that human knowledge is absolute and irrefutable once we find scientific proof.', 'They all recognize that human knowledge is limited and that there\'s always a gap between reality as it is and our perception of it.', 'They all claim there\'s no point in seeking knowledge because our senses always deceive us.'],
             correctIndex: 1,
-            explanation: 'המכנה המשותף לשבוע האפיסטמולוגי הוא ה"ענווה האפיסטמית" - ההבנה שהידע שלנו הוא זמני, חלקי ותלוי במגבלות התודעה, החושים או הכלים המדעיים שלנו.',
-            explanationEn: 'The common denominator of the epistemological week is "epistemic humility" - the understanding that our knowledge is temporary, partial, and dependent on the limitations of consciousness, senses, or our scientific tools.',
+            explanation: 'המכנה המשותף לפרק האפיסטמולוגי הוא ה"ענווה האפיסטמית" - ההבנה שהידע שלנו הוא זמני, חלקי ותלוי במגבלות התודעה, החושים או הכלים המדעיים שלנו.',
+            explanationEn: 'The common denominator of the epistemological chapter is "epistemic humility" - the understanding that our knowledge is temporary, partial, and dependent on the limitations of consciousness, senses, or our scientific tools.',
           },
           {
             type: 'quiz',
-            question: 'בכל יום השבוע הוצבה "משוכה" חדשה בפני הידיעה שלנו. איזו מהקביעות הבאות מסכמת נכון את המהלך של אחד ההוגים מהשבוע?',
-            questionEn: 'Every day this week, a new "hurdle" was placed before our knowing. Which of the following statements correctly summarizes the move of one of the thinkers from this week?',
+            question: 'בכל יום הפרק הוצבה "משוכה" חדשה בפני הידיעה שלנו. איזו מהקביעות הבאות מסכמת נכון את המהלך של אחד ההוגים מהפרק?',
+            questionEn: 'Every day this chapter, a new "hurdle" was placed before our knowing. Which of the following statements correctly summarizes the move of one of the thinkers from this chapter?',
             options: ['יום טען שאנחנו יכולים לדעת בוודאות שהשמש תזרח מחר בגלל חוקי הפיזיקה.', 'דקארט הוכיח שהדבר היחיד שאי אפשר לפקפק בו הוא קיום העולם החיצוני.', 'קאנט טען שאנחנו רואים את העולם דרך \'משקפיים\' מובנים של השכל (כמו זמן ומרחב), ולכן לעולם לא נדע את \'הדבר כשלעצמו\'.'],
             optionsEn: ['Hume claimed we can know with certainty that the sun will rise tomorrow because of the laws of physics.', 'Descartes proved that the only thing that cannot be doubted is the existence of the external world.', 'Kant argued that we see the world through built-in \'glasses\' of the mind (like time and space), and therefore can never know \'the thing-in-itself.\'.'],
             correctIndex: 2,
@@ -6861,10 +7168,10 @@ const corpusData = {
           },
           {
             type: 'quiz',
-            question: 'פופר חתם את השבוע בהצעה שהמדע מתקדם דרך הפרכות. כיצד סיכום השבוע הזה מכין אותנו לשבוע הבא (מטאפיזיקה - מה קיים)?',
-            questionEn: 'Popper closed the week with the proposal that science progresses through refutations. How does this week\'s summary prepare us for next week (metaphysics - what exists)?',
-            options: ['אם הבנו איך אנחנו יודעים (אפיסטמולוגיה), נוכל כעת לשאול מהי המציאות שאותה אנחנו מנסים לדעת.', 'השבוע הבא יוכיח שכל מה שלמדנו השבוע על ספק אינו רלוונטי לחיים האמיתיים.', 'אחרי שלמדנו מהי ידיעה, נוכל להפסיק להטיל ספק ולהתחיל להאמין לכל מה שהחושים אומרים לנו.'],
-            optionsEn: ['If we understood how we know (epistemology), we can now ask what the reality is that we are trying to know.', 'Next week will prove that everything we learned this week about doubt is irrelevant to real life.', 'After learning what knowing is, we can stop doubting and start believing everything our senses tell us.'],
+            question: 'פופר חתם את הפרק בהצעה שהמדע מתקדם דרך הפרכות. כיצד סיכום הפרק הזה מכין אותנו לפרק הבא (מטאפיזיקה - מה קיים)?',
+            questionEn: 'Popper closed the chapter with the proposal that science progresses through refutations. How does this chapter\'s summary prepare us for next chapter (metaphysics - what exists)?',
+            options: ['אם הבנו איך אנחנו יודעים (אפיסטמולוגיה), נוכל כעת לשאול מהי המציאות שאותה אנחנו מנסים לדעת.', 'הפרק הבא יוכיח שכל מה שלמדנו הפרק על ספק אינו רלוונטי לחיים האמיתיים.', 'אחרי שלמדנו מהי ידיעה, נוכל להפסיק להטיל ספק ולהתחיל להאמין לכל מה שהחושים אומרים לנו.'],
+            optionsEn: ['If we understood how we know (epistemology), we can now ask what the reality is that we are trying to know.', 'Next chapter will prove that everything we learned this chapter about doubt is irrelevant to real life.', 'After learning what knowing is, we can stop doubting and start believing everything our senses tell us.'],
             correctIndex: 0,
             explanation: 'אפיסטמולוגיה (תורת הידע) ומטאפיזיקה (תורת היש) הן אחיות. אחרי שחקרנו את כלי הידיעה שלנו, אנחנו בשלים לחקור את שאלת קיום המציאות עצמה.',
             explanationEn: 'Epistemology (the theory of knowledge) and metaphysics (the theory of being) are sisters. After we explored the tools of our knowing, we are ready to explore the question of the existence of reality itself.',
@@ -6887,8 +7194,8 @@ const corpusData = {
           {
             type: 'idea',
             title: 'מה אמיתי?', titleEn: 'What is Real?',
-            content: 'שלושה שבועות שאלנו שאלות על חשיבה, מוסר וידע. היום שאלה אחרת - ואולי הבסיסית מכולן: מה בכלל קיים?\n\nלא "מה אני יודע שקיים" - זו שאלת השבוע הקודם. אלא: ממה עשויה המציאות? האם יש רק חומר? האם יש רוח? האם יש עולמות נסתרים שהחושים לא מגיעים אליהם?\n\nזו המטאפיזיקה - ענף הפילוסופיה העתיק ביותר.',
-            contentEn: 'For three weeks we asked questions about thinking, morality, and knowledge. Today, a different question - and perhaps the most fundamental of them all: what exists at all?\n\nNot "what do I know that exists" - that was last week\'s question. Rather: what is reality made of? Is there only matter? Is there also spirit? Are there hidden worlds the senses cannot reach?\n\nThis is metaphysics - the most ancient branch of philosophy.',
+            content: 'שלושה פרקים שאלנו שאלות על חשיבה, מוסר וידע. היום שאלה אחרת - ואולי הבסיסית מכולן: מה בכלל קיים?\n\nלא "מה אני יודע שקיים" - זו שאלת הפרק הקודם. אלא: ממה עשויה המציאות? האם יש רק חומר? האם יש רוח? האם יש עולמות נסתרים שהחושים לא מגיעים אליהם?\n\nזו המטאפיזיקה - ענף הפילוסופיה העתיק ביותר.',
+            contentEn: 'For three chapters we asked questions about thinking, morality, and knowledge. Today, a different question - and perhaps the most fundamental of them all: what exists at all?\n\nNot "what do I know that exists" - that was last chapter\'s question. Rather: what is reality made of? Is there only matter? Is there also spirit? Are there hidden worlds the senses cannot reach?\n\nThis is metaphysics - the most ancient branch of philosophy.',
           },
           {
             type: 'source',
@@ -6909,8 +7216,8 @@ const corpusData = {
           {
             type: 'depth',
             title: 'שלושת המחנות הגדולים', titleEn: 'The Three Great Camps',
-            content: 'ההיסטוריה של המטאפיזיקה נעה בין שלושה כיוונים עיקריים:\n\nמטריאליזם - כל מה שקיים הוא חומר. מחשבות, רגשות, ואפילו תודעה - הכל פעילות של חומר. זו התפיסה המדעית המקובלת היום.\n\nאידאליזם - המציאות האמיתית היא רוחנית או מנטלית. החומר הוא רק אופן שבו התודעה תופסת דברים. ברקלי - שנפגוש ביום 4 - הלך לקיצון: אין חומר כלל.\n\nדואליזם - יש שני סוגי מציאות: חומר ורוח. דקארט - שפגשנו בשבוע 3 - היה הדואליסט הגדול. הגוף הוא מכונה. הנפש היא משהו אחר לגמרי.\n\nהבעיה עם כל אחד מהם:\n\nמטריאליזם מתקשה להסביר מדוע יש חוויה סובייקטיבית - למה כואב לי כשמכים אותי, ולא רק "מתרחשות תגובות עצביות."\n\nאידאליזם נשמע מופרך - האם הכיסא נעלם כשאף אחד לא מסתכל עליו?\n\nדואליזם מתקשה להסביר איך שני סוגי מציאות שונים לגמרי - חומר ורוח - יכולים להשפיע זה על זה.',
-            contentEn: 'The history of metaphysics has moved between three main directions:\n\nMaterialism - everything that exists is matter. Thoughts, feelings, and even consciousness - all are activities of matter. This is the scientific view accepted today.\n\nIdealism - true reality is spiritual or mental. Matter is just the way consciousness perceives things. Berkeley - whom we\'ll meet on day 4 - took it to the extreme: there is no matter at all.\n\nDualism - there are two kinds of reality: matter and spirit. Descartes - whom we met in week 3 - was the great dualist. The body is a machine. The mind is something else entirely.\n\nThe problem with each of them:\n\nMaterialism struggles to explain why there is subjective experience - why it hurts when someone hits me, and not just "neural responses are occurring."\n\nIdealism sounds absurd - does the chair disappear when no one looks at it?\n\nDualism struggles to explain how two completely different kinds of reality - matter and spirit - can affect one another.',
+            content: 'ההיסטוריה של המטאפיזיקה נעה בין שלושה כיוונים עיקריים:\n\nמטריאליזם - כל מה שקיים הוא חומר. מחשבות, רגשות, ואפילו תודעה - הכל פעילות של חומר. זו התפיסה המדעית המקובלת היום.\n\nאידאליזם - המציאות האמיתית היא רוחנית או מנטלית. החומר הוא רק אופן שבו התודעה תופסת דברים. ברקלי - שנפגוש ביום 4 - הלך לקיצון: אין חומר כלל.\n\nדואליזם - יש שני סוגי מציאות: חומר ורוח. דקארט - שפגשנו בפרק 3 - היה הדואליסט הגדול. הגוף הוא מכונה. הנפש היא משהו אחר לגמרי.\n\nהבעיה עם כל אחד מהם:\n\nמטריאליזם מתקשה להסביר מדוע יש חוויה סובייקטיבית - למה כואב לי כשמכים אותי, ולא רק "מתרחשות תגובות עצביות."\n\nאידאליזם נשמע מופרך - האם הכיסא נעלם כשאף אחד לא מסתכל עליו?\n\nדואליזם מתקשה להסביר איך שני סוגי מציאות שונים לגמרי - חומר ורוח - יכולים להשפיע זה על זה.',
+            contentEn: 'The history of metaphysics has moved between three main directions:\n\nMaterialism - everything that exists is matter. Thoughts, feelings, and even consciousness - all are activities of matter. This is the scientific view accepted today.\n\nIdealism - true reality is spiritual or mental. Matter is just the way consciousness perceives things. Berkeley - whom we\'ll meet on day 4 - took it to the extreme: there is no matter at all.\n\nDualism - there are two kinds of reality: matter and spirit. Descartes - whom we met in chapter 3 - was the great dualist. The body is a machine. The mind is something else entirely.\n\nThe problem with each of them:\n\nMaterialism struggles to explain why there is subjective experience - why it hurts when someone hits me, and not just "neural responses are occurring."\n\nIdealism sounds absurd - does the chair disappear when no one looks at it?\n\nDualism struggles to explain how two completely different kinds of reality - matter and spirit - can affect one another.',
           },
           {
             type: 'quiz',
@@ -6969,8 +7276,8 @@ const corpusData = {
           {
             type: 'idea',
             title: 'אפלטון: עולם האידאות', titleEn: 'Plato: The World of Forms',
-            content: 'פגשנו את אפלטון בשבוע 1 - שם משל המערה לימד אותנו שמה שאנחנו רואים הוא רק צל של המציאות. היום נשאל: מה המציאות האמיתית הזו בעצם?\n\nלפי אפלטון - יש שני עולמות. העולם שאנחנו חיים בו, ועולם אחר, נסתר, שבו נמצאת האמת האמיתית.',
-            contentEn: 'We met Plato in week 1 - there, the Allegory of the Cave taught us that what we see is only a shadow of reality. Today we\'ll ask: what is this true reality, exactly?\n\nAccording to Plato - there are two worlds. The world we live in, and another, hidden world, where the real truth resides.',
+            content: 'פגשנו את אפלטון בפרק 1 - שם משל המערה לימד אותנו שמה שאנחנו רואים הוא רק צל של המציאות. היום נשאל: מה המציאות האמיתית הזו בעצם?\n\nלפי אפלטון - יש שני עולמות. העולם שאנחנו חיים בו, ועולם אחר, נסתר, שבו נמצאת האמת האמיתית.',
+            contentEn: 'We met Plato in chapter 1 - there, the Allegory of the Cave taught us that what we see is only a shadow of reality. Today we\'ll ask: what is this true reality, exactly?\n\nAccording to Plato - there are two worlds. The world we live in, and another, hidden world, where the real truth resides.',
           },
           {
             type: 'source',
@@ -7147,8 +7454,8 @@ const corpusData = {
           {
             type: 'depth',
             title: 'הביקורת הקלאסית', titleEn: 'The Classic Critique',
-            content: 'הפילוסוף סמואל ג\'ונסון בעט בסלע ואמר: "כך אני מפריך את ברקלי." כלומר - הסלע מרגיש מאוד אמיתי ועצמאי.\n\nאבל ברקלי היה עונה: הכאב שהרגשת מהבעיטה - זו גם תפיסה. לא הוכחת שהסלע קיים מחוץ לתודעה - הוכחת רק שיש לך תפיסה חזקה מאוד.\n\nהקשר לשבועות הקודמים: דקארט אמר שאפשר לפקפק בכל - חוץ מעצם העובדה שאני חושב. ברקלי לקח את זה צעד קדימה: לא רק שאי אפשר לוודא את העולם החיצוני - העולם החיצוני כעצם עצמאי פשוט לא קיים.\n\nהרלוונטיות היום: פיזיקת הקוונטים גילתה שחלקיקים אינם מקבלים מצב מוגדר לפני שנמדדים. כלומר - המדידה עצמה יוצרת את המציאות. זה לא בדיוק ברקלי, אבל זה קרוב מספיק כדי להפוך את שאלתו לרלוונטית מאוד.',
-            contentEn: 'The philosopher Samuel Johnson kicked a stone and said: "Thus I refute Berkeley." Meaning - the stone feels very real and independent.\n\nBut Berkeley would have answered: the pain you felt from kicking - that\'s also a perception. You haven\'t proven that the stone exists outside of consciousness - you\'ve only proven that you have a very strong perception.\n\nConnection to previous weeks: Descartes said we can doubt everything - except the very fact that I think. Berkeley took this a step further: not only can we not verify the external world - the external world as an independent substance simply does not exist.\n\nRelevance today: Quantum physics discovered that particles do not assume a definite state before being measured. That is - the measurement itself creates reality. This isn\'t exactly Berkeley, but it\'s close enough to make his question very relevant.',
+            content: 'הפילוסוף סמואל ג\'ונסון בעט בסלע ואמר: "כך אני מפריך את ברקלי." כלומר - הסלע מרגיש מאוד אמיתי ועצמאי.\n\nאבל ברקלי היה עונה: הכאב שהרגשת מהבעיטה - זו גם תפיסה. לא הוכחת שהסלע קיים מחוץ לתודעה - הוכחת רק שיש לך תפיסה חזקה מאוד.\n\nהקשר לפרקים הקודמים: דקארט אמר שאפשר לפקפק בכל - חוץ מעצם העובדה שאני חושב. ברקלי לקח את זה צעד קדימה: לא רק שאי אפשר לוודא את העולם החיצוני - העולם החיצוני כעצם עצמאי פשוט לא קיים.\n\nהרלוונטיות היום: פיזיקת הקוונטים גילתה שחלקיקים אינם מקבלים מצב מוגדר לפני שנמדדים. כלומר - המדידה עצמה יוצרת את המציאות. זה לא בדיוק ברקלי, אבל זה קרוב מספיק כדי להפוך את שאלתו לרלוונטית מאוד.',
+            contentEn: 'The philosopher Samuel Johnson kicked a stone and said: "Thus I refute Berkeley." Meaning - the stone feels very real and independent.\n\nBut Berkeley would have answered: the pain you felt from kicking - that\'s also a perception. You haven\'t proven that the stone exists outside of consciousness - you\'ve only proven that you have a very strong perception.\n\nConnection to previous chapters: Descartes said we can doubt everything - except the very fact that I think. Berkeley took this a step further: not only can we not verify the external world - the external world as an independent substance simply does not exist.\n\nRelevance today: Quantum physics discovered that particles do not assume a definite state before being measured. That is - the measurement itself creates reality. This isn\'t exactly Berkeley, but it\'s close enough to make his question very relevant.',
           },
           {
             type: 'quiz',
@@ -7213,8 +7520,8 @@ const corpusData = {
           {
             type: 'depth',
             title: 'המתח הגדול: פשטות מול מורכבות', titleEn: 'The Great Tension: Simplicity vs. Complexity',
-            content: 'כל אחד מהפילוסופים ניסה לפתור בעיה אמיתית. אפלטון ניסה להסביר מדוע יש אמיתות אוניברסליות. שפינוזה ניסה לפתור את הבעיה של דקארט - גוף ונפש. ברקלי ניסה לפתור את הסקפטיציזם.\n\nהבעיה: כל פתרון יוצר בעיה חדשה. כמו שמכסים חור אחד בגדר ומגלים שיש חור חדש.\n\nאולי השאלה עצמה שגויה: ויטגנשטיין, שפגשנו בשבוע 1, היה אומר שחלק מהשאלות המטאפיזיות הן בלבול לשוני. "מהי המציאות?" אולי אינה שאלה שיש לה תשובה - אלא שאלה שצריך לפרק.',
-            contentEn: 'Each of the philosophers tried to solve a real problem. Plato tried to explain why there are universal truths. Spinoza tried to solve Descartes\' problem - body and mind. Berkeley tried to solve skepticism.\n\nThe problem: every solution creates a new problem. Like covering one hole in the fence and discovering a new hole.\n\nPerhaps the question itself is wrong: Wittgenstein, whom we met in week 1, would have said that some metaphysical questions are linguistic confusions. "What is reality?" perhaps isn\'t a question that has an answer - but a question that needs to be dismantled.',
+            content: 'כל אחד מהפילוסופים ניסה לפתור בעיה אמיתית. אפלטון ניסה להסביר מדוע יש אמיתות אוניברסליות. שפינוזה ניסה לפתור את הבעיה של דקארט - גוף ונפש. ברקלי ניסה לפתור את הסקפטיציזם.\n\nהבעיה: כל פתרון יוצר בעיה חדשה. כמו שמכסים חור אחד בגדר ומגלים שיש חור חדש.\n\nאולי השאלה עצמה שגויה: ויטגנשטיין, שפגשנו בפרק 1, היה אומר שחלק מהשאלות המטאפיזיות הן בלבול לשוני. "מהי המציאות?" אולי אינה שאלה שיש לה תשובה - אלא שאלה שצריך לפרק.',
+            contentEn: 'Each of the philosophers tried to solve a real problem. Plato tried to explain why there are universal truths. Spinoza tried to solve Descartes\' problem - body and mind. Berkeley tried to solve skepticism.\n\nThe problem: every solution creates a new problem. Like covering one hole in the fence and discovering a new hole.\n\nPerhaps the question itself is wrong: Wittgenstein, whom we met in chapter 1, would have said that some metaphysical questions are linguistic confusions. "What is reality?" perhaps isn\'t a question that has an answer - but a question that needs to be dismantled.',
           },
           {
             type: 'quiz',
@@ -7279,8 +7586,8 @@ const corpusData = {
           {
             type: 'depth',
             title: 'הקשר לדקארט ולברקלי', titleEn: 'The Connection to Descartes and Berkeley',
-            content: 'דקארט פקפק בחושים - אבל הניח שיש מציאות חיצונית. ברקלי אמר שאין חומר - רק תפיסה. בוסטרום מציע גרסה שלישית: יש מציאות חיצונית - אבל היא ממוחשבת, לא פיזית.\n\nומה אם כן: אם אנחנו בסימולציה - האם זה משנה? האכפתיות, האהבה, הסבל, השמחה - כל אלה אמיתיים מבפנים, גם אם "הקוד" מחוצה לנו.\n\nאבל יש בעיה: אם מישהו מריץ את הסימולציה - הוא יכול לסגור אותה. זה מקנה לאותה ישות כוח מוחלט - קרוב מאוד למושג של אלוהים.\n\nהביקורת: הפיזיקאית סביין הוסנפלדר טוענת שטיעון הסימולציה הוא טענה שנראית מדעית אבל לא עומדת בקריטריונים של מדע אמיתי. לפי פופר, שפגשנו בשבוע 3, תיאוריה שאי אפשר להפריך - שאין ניסוי שיכול לשלול אותה - אינה מדע.',
-            contentEn: 'Descartes doubted the senses - but assumed there is an external reality. Berkeley said there is no matter - only perception. Bostrom proposes a third version: there is an external reality - but it is computed, not physical.\n\nAnd if so: if we are in a simulation - does it matter? The caring, the love, the suffering, the joy - all are real from the inside, even if "the code" is outside us.\n\nBut there is a problem: if someone is running the simulation - they can close it. This grants that being absolute power - very close to the concept of God.\n\nThe critique: The physicist Sabine Hossenfelder argues that the simulation argument is a claim that appears scientific but doesn\'t meet the criteria of real science. According to Popper, whom we met in week 3, a theory that cannot be falsified - that no experiment can refute - is not science.',
+            content: 'דקארט פקפק בחושים - אבל הניח שיש מציאות חיצונית. ברקלי אמר שאין חומר - רק תפיסה. בוסטרום מציע גרסה שלישית: יש מציאות חיצונית - אבל היא ממוחשבת, לא פיזית.\n\nומה אם כן: אם אנחנו בסימולציה - האם זה משנה? האכפתיות, האהבה, הסבל, השמחה - כל אלה אמיתיים מבפנים, גם אם "הקוד" מחוצה לנו.\n\nאבל יש בעיה: אם מישהו מריץ את הסימולציה - הוא יכול לסגור אותה. זה מקנה לאותה ישות כוח מוחלט - קרוב מאוד למושג של אלוהים.\n\nהביקורת: הפיזיקאית סביין הוסנפלדר טוענת שטיעון הסימולציה הוא טענה שנראית מדעית אבל לא עומדת בקריטריונים של מדע אמיתי. לפי פופר, שפגשנו בפרק 3, תיאוריה שאי אפשר להפריך - שאין ניסוי שיכול לשלול אותה - אינה מדע.',
+            contentEn: 'Descartes doubted the senses - but assumed there is an external reality. Berkeley said there is no matter - only perception. Bostrom proposes a third version: there is an external reality - but it is computed, not physical.\n\nAnd if so: if we are in a simulation - does it matter? The caring, the love, the suffering, the joy - all are real from the inside, even if "the code" is outside us.\n\nBut there is a problem: if someone is running the simulation - they can close it. This grants that being absolute power - very close to the concept of God.\n\nThe critique: The physicist Sabine Hossenfelder argues that the simulation argument is a claim that appears scientific but doesn\'t meet the criteria of real science. According to Popper, whom we met in chapter 3, a theory that cannot be falsified - that no experiment can refute - is not science.',
           },
           {
             type: 'quiz',
@@ -7316,42 +7623,42 @@ const corpusData = {
       },
       {
         id: 7,
-        title: 'מהי המציאות? - סיכום השבוע', titleEn: 'What is Reality? - Week Summary',
-        thinker: 'סיכום שבוע', thinkerEn: 'Week Summary',
+        title: 'מהי המציאות? - סיכום הפרק', titleEn: 'What is Reality? - Chapter Summary',
+        thinker: 'סיכום פרק', thinkerEn: 'Chapter Summary',
         thinkerId: null, xp: 50,
         sections: [
           {
             type: 'idea',
-            title: 'מהי המציאות? - סיכום השבוע', titleEn: 'What is Reality? - Week Summary',
-            content: 'שבוע שלם, ארבעה פילוסופים, ואחת השאלות הישנות ביותר שאדם יכול לשאול: מה קיים באמת?\n\nלא הגענו לתשובה. אבל הגענו למשהו אחר - מפה של האפשרויות.',
-            contentEn: 'A whole week, four philosophers, and one of the oldest questions a person can ask: what truly exists?\n\nWe didn\'t reach an answer. But we reached something else - a map of the possibilities.',
+            title: 'מהי המציאות? - סיכום הפרק', titleEn: 'What is Reality? - Chapter Summary',
+            content: 'פרק שלם, ארבעה פילוסופים, ואחת השאלות הישנות ביותר שאדם יכול לשאול: מה קיים באמת?\n\nלא הגענו לתשובה. אבל הגענו למשהו אחר - מפה של האפשרויות.',
+            contentEn: 'A whole chapter, four philosophers, and one of the oldest questions a person can ask: what truly exists?\n\nWe didn\'t reach an answer. But we reached something else - a map of the possibilities.',
           },
           {
             type: 'source',
-            title: 'ארבעת ההוגים של השבוע', titleEn: 'The Four Thinkers of the Week',
+            title: 'ארבעת ההוגים של הפרק', titleEn: 'The Four Thinkers in This Chapter',
             quote: '״אפלטון - יש שני עולמות: עולם החושים הזמני ועולם האידאות הנצחי. שפינוזה - יש עצם אחד בלבד: אלוהים והטבע הם אותו דבר. ברקלי - אין חומר כלל: קיומו של דבר הוא תפיסה שלו. בוסטרום - אולי המציאות שלנו היא סימולציה ממוחשבת.״',
             quoteEn: '"Plato - there are two worlds: the temporary world of the senses and the eternal world of Forms. Spinoza - there is only one substance: God and Nature are the same thing. Berkeley - there is no matter at all: the existence of a thing is the perception of it. Bostrom - perhaps our reality is a computer simulation."',
-            attr: 'סיכום שבוע 4',
-            attrEn: 'Week 4 Summary',
+            attr: 'סיכום פרק 4',
+            attrEn: 'Chapter 4 Summary',
             content: 'ארבעה פילוסופים, ארבע תשובות שונות לאותה שאלה.',
             contentEn: 'Four philosophers, four different answers to the same question.',
           },
           {
             type: 'explanation',
-            title: 'מפת השבוע', titleEn: 'Map of the Week',
+            title: 'מפת הפרק', titleEn: 'Map of This Chapter',
             content: 'יום 1 - מה אמיתי?: המטאפיזיקה שואלת שאלות יסוד: מה קיים, ממה עשויה המציאות, מה הקשר בין גוף לנפש. שלושה מחנות: מטריאליזם, אידאליזם, דואליזם - וכל אחד מהם מתמודד עם קשיים.\n\nיום 2 - אפלטון: עולם האידאות: יש שני עולמות. עולם החושים - זמני ומשתנה. ועולם האידאות - נצחי ומושלם. הכיסא שאתה יושב עליו הוא צל של האידאה של "כיסא."\n\nיום 3 - שפינוזה: הכל אחד: לא שני עולמות - עצם אחד בלבד. אלוהים והטבע הם אותו דבר. גוף ונפש הם שני אופנים לתאר אותו עצם. הכל פועל לפי חוקים קבועים.\n\nיום 4 - ברקלי: להיות זה להיתפס: אין חומר כלל. קיומו של דבר הוא תפיסה שלו. הכיסא קיים כי אתה תופס אותו. כשאתה יוצא מהחדר - אלוהים תופס אותו במקומך.\n\nיום 5 - ביקורת: כל גישה נתקלת בקשיים. אפלטון - מה מחבר בין הדבר לאידאה? שפינוזה - כיצד מסבירים רוע ואחריות? ברקלי - כיצד מוכיחים שאלוהים קיים?\n\nיום 6 - סימולציה: בוסטרום לקח את שאלת ברקלי לעידן המודרני: אולי המציאות שלנו היא קוד ממוחשב שמישהו מריץ. אי אפשר להוכיח או להפריך.',
             contentEn: 'Day 1 - What is Real?: Metaphysics asks foundational questions: what exists, what reality is made of, what the relationship between body and mind is. Three camps: materialism, idealism, dualism - and each of them faces difficulties.\n\nDay 2 - Plato: The World of Forms: There are two worlds. The world of the senses - temporary and changing. And the world of Forms - eternal and perfect. The chair you sit on is a shadow of the Form of "chair."\n\nDay 3 - Spinoza: All is One: Not two worlds - only one substance. God and Nature are the same thing. Body and mind are two modes describing the same substance. Everything operates according to fixed laws.\n\nDay 4 - Berkeley: To Be is to Be Perceived: There is no matter at all. The existence of a thing is the perception of it. The chair exists because you perceive it. When you leave the room - God perceives it in your place.\n\nDay 5 - Critique: Every approach encounters difficulties. Plato - what connects the thing to the Form? Spinoza - how do we explain evil and responsibility? Berkeley - how do we prove that God exists?\n\nDay 6 - Simulation: Bostrom took Berkeley\'s question to the modern era: perhaps our reality is a computer code that someone is running. It cannot be proven or refuted.',
           },
           {
             type: 'depth',
-            title: 'המתח הגדול של השבוע', titleEn: 'The Great Tension of the Week',
-            content: 'המתח האמיתי של השבוע אינו בין הפילוסופים השלושה - אלא בין שתי גישות יסוד: האם המציאות קיימת עצמאית מהתודעה שלנו, או שהתודעה היא זו שיוצרת אותה?\n\nדקארט, שפינוזה ואפלטון - כל אחד בדרכו - האמינו שיש מציאות עצמאית. ברקלי ובוסטרום, מהזווית שלהם, טוענים שהמציאות תלויה בתפיסה.\n\nושאלה זו - שהחלה אצל הפרה-סוקרטים ביוון - עדיין לא נפתרה.\n\nהקשר לשבועות הקודמים: שבוע 3 שאל מה אנחנו יכולים לדעת? שבוע 4 שאל מה קיים? והם קשורים עמוקות: מה שקיים מעבר לתפיסה שלנו - אנחנו לעולם לא יכולים לדעת עליו בוודאות. כפי שקאנט אמר: אנחנו רואים רק את העולם כפי שהוא נתפס - לא כפי שהוא באמת.',
-            contentEn: 'The real tension of the week is not between the three philosophers - but between two fundamental approaches: Does reality exist independently of our consciousness, or is consciousness the one that creates it?\n\nDescartes, Spinoza, and Plato - each in their own way - believed there is an independent reality. Berkeley and Bostrom, from their angle, claim that reality depends on perception.\n\nAnd this question - which began with the Pre-Socratics in Greece - has still not been resolved.\n\nThe connection to previous weeks: Week 3 asked what we can know? Week 4 asked what exists? And they are deeply connected: what exists beyond our perception - we can never know with certainty. As Kant said: we see only the world as it is perceived - not as it really is.',
+            title: 'המתח הגדול של הפרק', titleEn: 'The Great Tension of This Chapter',
+            content: 'המתח האמיתי של הפרק אינו בין הפילוסופים השלושה - אלא בין שתי גישות יסוד: האם המציאות קיימת עצמאית מהתודעה שלנו, או שהתודעה היא זו שיוצרת אותה?\n\nדקארט, שפינוזה ואפלטון - כל אחד בדרכו - האמינו שיש מציאות עצמאית. ברקלי ובוסטרום, מהזווית שלהם, טוענים שהמציאות תלויה בתפיסה.\n\nושאלה זו - שהחלה אצל הפרה-סוקרטים ביוון - עדיין לא נפתרה.\n\nהקשר לפרקים הקודמים: פרק 3 שאל מה אנחנו יכולים לדעת? פרק 4 שאל מה קיים? והם קשורים עמוקות: מה שקיים מעבר לתפיסה שלנו - אנחנו לעולם לא יכולים לדעת עליו בוודאות. כפי שקאנט אמר: אנחנו רואים רק את העולם כפי שהוא נתפס - לא כפי שהוא באמת.',
+            contentEn: 'The real tension of the chapter is not between the three philosophers - but between two fundamental approaches: Does reality exist independently of our consciousness, or is consciousness the one that creates it?\n\nDescartes, Spinoza, and Plato - each in their own way - believed there is an independent reality. Berkeley and Bostrom, from their angle, claim that reality depends on perception.\n\nAnd this question - which began with the Pre-Socratics in Greece - has still not been resolved.\n\nThe connection to previous chapters: Chapter 3 asked what we can know? Chapter 4 asked what exists? And they are deeply connected: what exists beyond our perception - we can never know with certainty. As Kant said: we see only the world as it is perceived - not as it really is.',
           },
           {
             type: 'quiz',
-            question: 'מהו המתח המרכזי העובר כחוט השני בין כל הפילוסופים שעסקנו בהם השבוע?',
-            questionEn: 'What is the central tension running as a common thread between all the philosophers we dealt with this week?',
+            question: 'מהו המתח המרכזי העובר כחוט השני בין כל הפילוסופים שעסקנו בהם הפרק?',
+            questionEn: 'What is the central tension running as a common thread between all the philosophers we dealt with this chapter?',
             options: ['המתח בין אמונה דתית לבין חקירה מדעית', 'השאלה האם המציאות מורכבת מכיסאות או רק מאטומים', 'השאלה האם המציאות קיימת באופן עצמאי מהתודעה שלנו, או שהיא תלויה בתפיסה'],
             optionsEn: ['The tension between religious belief and scientific inquiry', 'The question of whether reality is composed of chairs or only of atoms', 'The question of whether reality exists independently of our consciousness, or whether it depends on perception'],
             correctIndex: 2,
@@ -7360,18 +7667,18 @@ const corpusData = {
           },
           {
             type: 'quiz',
-            question: 'כיצד מתחבר שבוע המטאפיזיקה (מה קיים?) לשבוע האפיסטמולוגיה (מה אני יודע?) לפי סיכום השבוע?',
-            questionEn: 'How does the week of metaphysics (what exists?) connect to the week of epistemology (what do I know?) according to the week summary?',
-            options: ['אין קשר בין השבועות; אלו תחומים נפרדים לחלוטין', 'מה שקיים מעבר לתפיסה שלנו הוא משהו שלעולם לא נוכל לדעת עליו בוודאות', 'המטאפיזיקה מוכיחה שהאפיסטמולוגיה היא טעות אחת גדולה'],
-            optionsEn: ['There is no connection between the weeks; these are completely separate fields', 'What exists beyond our perception is something we can never know with certainty', 'Metaphysics proves that epistemology is one great mistake'],
+            question: 'כיצד מתחבר פרק המטאפיזיקה (מה קיים?) לפרק האפיסטמולוגיה (מה אני יודע?) לפי סיכום הפרק?',
+            questionEn: 'How does the chapter of metaphysics (what exists?) connect to the chapter of epistemology (what do I know?) according to the chapter summary?',
+            options: ['אין קשר בין הפרקים; אלו תחומים נפרדים לחלוטין', 'מה שקיים מעבר לתפיסה שלנו הוא משהו שלעולם לא נוכל לדעת עליו בוודאות', 'המטאפיזיקה מוכיחה שהאפיסטמולוגיה היא טעות אחת גדולה'],
+            optionsEn: ['There is no connection between the chapters; these are completely separate fields', 'What exists beyond our perception is something we can never know with certainty', 'Metaphysics proves that epistemology is one great mistake'],
             correctIndex: 1,
             explanation: 'כפי שהוזכר בסיכום (בהשראת קאנט), יש פער בלתי ניתן לגישור: אנחנו מוגבלים למה שהחושים והתבונה שלנו מאפשרים לנו לקלוט. לכן, השאלה "מה קיים" תמיד תהיה מוגבלת על ידי השאלה "מה אני מסוגל לדעת".',
             explanationEn: 'As mentioned in the summary (inspired by Kant), there is a gap that cannot be bridged: we are limited to what our senses and reason allow us to grasp. Therefore, the question "what exists" will always be limited by the question "what am I capable of knowing."',
           },
           {
             type: 'quiz',
-            question: 'אם היינו צריכים לסכם את "מפת האפשרויות" של השבוע, מי מהפילוסופים היה מייצג את הגישה שאין בכלל הבדל בין רוח לחומר?',
-            questionEn: 'If we had to summarize the "map of possibilities" of the week, who among the philosophers would represent the approach that there is no difference at all between spirit and matter?',
+            question: 'אם היינו צריכים לסכם את "מפת האפשרויות" של הפרק, מי מהפילוסופים היה מייצג את הגישה שאין בכלל הבדל בין רוח לחומר?',
+            questionEn: 'If we had to summarize the "map of possibilities" of the chapter, who among the philosophers would represent the approach that there is no difference at all between spirit and matter?',
             options: ['אפלטון (עולם האידאות)', 'שפינוזה (הכל אחד)', 'ברקלי (אין חומר)'],
             optionsEn: ['Plato (the world of Forms)', 'Spinoza (all is one)', 'Berkeley (there is no matter)'],
             correctIndex: 1,
@@ -7904,7 +8211,7 @@ const economicsData = {
           },
           { type: 'quiz_summary' },
         ] },
-        { id: 7, title: 'סיכום: מה זאת בכלל כלכלה?', titleEn: 'Summary: What is Economics Anyway?', thinker: 'סיכום שבוע', thinkerEn: 'Week Summary', thinkerId: null, xp: 50, isSummary: true, sections: [
+        { id: 7, title: 'סיכום: מה זאת בכלל כלכלה?', titleEn: 'Summary: What is Economics Anyway?', thinker: 'סיכום פרק', thinkerEn: 'Chapter Summary', thinkerId: null, xp: 50, isSummary: true, sections: [
           {
             type: 'idea',
             title: 'סיכום: מה זאת בכלל כלכלה?', titleEn: 'Summary: What is Economics Anyway?',
@@ -8506,7 +8813,7 @@ const economicsData = {
           },
           { type: 'quiz_summary' },
         ] },
-        { id: 7, title: 'סיכום: מהו ערך?', titleEn: 'Summary: What is Value?', thinker: 'סיכום שבוע', thinkerEn: 'Week Summary', thinkerId: null, xp: 50, isSummary: true, sections: [
+        { id: 7, title: 'סיכום: מהו ערך?', titleEn: 'Summary: What is Value?', thinker: 'סיכום פרק', thinkerEn: 'Chapter Summary', thinkerId: null, xp: 50, isSummary: true, sections: [
           {
             type: 'idea',
             title: 'סיכום: מהו ערך?', titleEn: 'Summary: What is Value?',
@@ -9025,7 +9332,7 @@ const economicsData = {
           },
           { type: 'quiz_summary' },
         ] },
-        { id: 6, title: 'סיכום: הון ועבודה', titleEn: 'Summary: Capital and Labor', thinker: 'סיכום שבוע', thinkerEn: 'Week Summary', thinkerId: null, xp: 50, isSummary: true, sections: [
+        { id: 6, title: 'סיכום: הון ועבודה', titleEn: 'Summary: Capital and Labor', thinker: 'סיכום פרק', thinkerEn: 'Chapter Summary', thinkerId: null, xp: 50, isSummary: true, sections: [
           {
             type: 'idea',
             title: 'סיכום: הון ועבודה', titleEn: 'Summary: Capital and Labor',
@@ -9629,7 +9936,7 @@ const economicsData = {
           },
           { type: 'quiz_summary' },
         ] },
-        { id: 7, title: 'סיכום: צדק כלכלי', titleEn: 'Summary: Economic Justice', thinker: 'סיכום שבוע', thinkerEn: 'Week Summary', thinkerId: null, xp: 50, isSummary: true, sections: [
+        { id: 7, title: 'סיכום: צדק כלכלי', titleEn: 'Summary: Economic Justice', thinker: 'סיכום פרק', thinkerEn: 'Chapter Summary', thinkerId: null, xp: 50, isSummary: true, sections: [
           {
             type: 'idea',
             title: 'סיכום: צדק כלכלי', titleEn: 'Summary: Economic Justice',
@@ -10335,11 +10642,11 @@ const WEEKS = [
         ],
       },
       {
-        id: 7, title: 'שבוע ראשון - מה לקחנו?', thinker: 'כל ההוגים', thinkerId: 'descartes', xp: 80,
+        id: 7, title: 'פרק ראשון - מה לקחנו?', thinker: 'כל ההוגים', thinkerId: 'descartes', xp: 80,
         sections: [
           {
             type: 'idea', title: 'שבעה ימים, שאלה אחת',
-            body: 'שבוע שלם בשאלה "מהי פילוסופיה?" - ולא תשובה אחת. סוקרטס אמר: שאל. אפלטון אמר: צא מהמערה. ראסל אמר: שא חוסר ודאות. ויטגנשטיין אמר: שים לב לשפתך. אורליוס אמר: חיה את הרעיונות. אריסטו אמר: תמה. ואולי - כל אלה יחד הם פילוסופיה.',
+            body: 'פרק שלם בשאלה "מהי פילוסופיה?" - ולא תשובה אחת. סוקרטס אמר: שאל. אפלטון אמר: צא מהמערה. ראסל אמר: שא חוסר ודאות. ויטגנשטיין אמר: שים לב לשפתך. אורליוס אמר: חיה את הרעיונות. אריסטו אמר: תמה. ואולי - כל אלה יחד הם פילוסופיה.',
           },
           {
             type: 'source',
@@ -10354,17 +10661,17 @@ const WEEKS = [
           },
           {
             type: 'quiz',
-            question: 'מי מהוגים השבוע לא כתב ספרים - ומה שיודעים עליו הגיע מאחרים?',
+            question: 'מי מהוגים הפרק לא כתב ספרים - ומה שיודעים עליו הגיע מאחרים?',
             options: ['אריסטו', 'אפלטון', 'סוקרטס'],
             correct: 2,
             explanation: 'סוקרטס לא כתב דבר! כל מה שאנו יודעים עליו הגיע ממקורות שניים - בעיקר אפלטון, אבל גם קסנופון ואריסטופנס. חוקרים עד היום דנים אם הסוקרטס של אפלטון הוא "הסוקרטס ההיסטורי" - או אפלטון עצמו בדרמה.',
           },
           {
-            type: 'reflection', title: 'שאלות הסיום - שבוע ראשון',
+            type: 'reflection', title: 'שאלות הסיום - פרק ראשון',
             questions: [
-              'מי מהוגים השבוע דיבר אליך הכי חזק? למה?',
-              'מה שינה השבוע במחשבתך?',
-              'שאלה אחת פילוסופית שתרצה לשאת איתך השבוע הבא?',
+              'מי מהוגים הפרק דיבר אליך הכי חזק? למה?',
+              'מה שינה הפרק במחשבתך?',
+              'שאלה אחת פילוסופית שתרצה לשאת איתך הפרק הבא?',
             ],
           },
         ],
@@ -10388,11 +10695,11 @@ const WEEKS = [
             title: 'שלוש שאלות של אתיקה',
             quote: '"האתיקה עוסקת בשלוש שאלות יסוד: מה טוב? מה נכון? מי כדאי שאהיה? שלוש שאלות, שלוש גישות - ואף פילוסוף עדיין לא ניצח."',
             attr: '- קארסטן הריס, מבוא לאתיקה, ייל 2013',
-            body: 'הריס מלמד שלא קיימת תשובה אחת לאתיקה - יש שלושה צירים: ציר הטוב (מה מביא פריחה?), ציר הנכון (מה מחייב אותי?), ציר הזהות (מה אני רוצה להיות?). שלושת הפילוסופים של השבוע - אריסטו, קאנט ומיל - עונים כל אחד על ציר אחר.',
+            body: 'הריס מלמד שלא קיימת תשובה אחת לאתיקה - יש שלושה צירים: ציר הטוב (מה מביא פריחה?), ציר הנכון (מה מחייב אותי?), ציר הזהות (מה אני רוצה להיות?). שלושת הפילוסופים של הפרק - אריסטו, קאנט ומיל - עונים כל אחד על ציר אחר.',
           },
           {
             type: 'explanation', title: 'אובייקטיבי, סובייקטיבי, יחסי',
-            body: 'לפני שנצלול, שלוש עמדות בסיסיות: המוסר האובייקטיבי אומר - יש אמיתות מוסריות שנכונות ללא תלות בתרבות או בדעה. המוסר הסובייקטיבי אומר - מוסר הוא ביטוי של העדפות אישיות. המוסר היחסי אומר - מוסר תלוי בתרבות ובחברה, ואין קנה מידה חיצוני לשפוט ביניהן. השבוע נחקור את המתח בין הגישות הללו דרך שלושה הוגים גדולים.',
+            body: 'לפני שנצלול, שלוש עמדות בסיסיות: המוסר האובייקטיבי אומר - יש אמיתות מוסריות שנכונות ללא תלות בתרבות או בדעה. המוסר הסובייקטיבי אומר - מוסר הוא ביטוי של העדפות אישיות. המוסר היחסי אומר - מוסר תלוי בתרבות ובחברה, ואין קנה מידה חיצוני לשפוט ביניהן. הפרק נחקור את המתח בין הגישות הללו דרך שלושה הוגים גדולים.',
           },
           {
             type: 'quiz',
@@ -10611,11 +10918,11 @@ const WEEKS = [
         ],
       },
       {
-        id: 7, title: 'שבוע שני - מפת האתיקה', thinker: 'כל ההוגים', thinkerId: 'mill', xp: 80,
+        id: 7, title: 'פרק שני - מפת האתיקה', thinker: 'כל ההוגים', thinkerId: 'mill', xp: 80,
         sections: [
           {
             type: 'idea', title: 'שלוש שאלות, שלושה פילוסופים',
-            body: 'עברנו שבוע שלם באתיקה. שלושה פילוסופים, שלוש שאלות שונות, שלוש תשובות שונות. אריסטו שאל: מי אני כדאי להיות? קאנט שאל: מה עלי לעשות? מיל שאל: מה יביא לרווחה הגדולה ביותר? לא תשובה אחת ניצחה - אך כל אחת מאירה זווית אמיתית.',
+            body: 'עברנו פרק שלם באתיקה. שלושה פילוסופים, שלוש שאלות שונות, שלוש תשובות שונות. אריסטו שאל: מי אני כדאי להיות? קאנט שאל: מה עלי לעשות? מיל שאל: מה יביא לרווחה הגדולה ביותר? לא תשובה אחת ניצחה - אך כל אחת מאירה זווית אמיתית.',
           },
           {
             type: 'source',
@@ -10630,21 +10937,21 @@ const WEEKS = [
           },
           {
             type: 'quiz',
-            question: 'איזה שאלה מרכזית כל פילוסוף מייצג בשבוע זה?',
+            question: 'איזה שאלה מרכזית כל פילוסוף מייצג בפרק זה?',
             options: [
               'אריסטו: מה נכון? קאנט: מה טוב? מיל: מי אני?',
               'אריסטו: מי אני? קאנט: מה עלי לעשות? מיל: מה יביא לאושר המרבי?',
               'כולם ענו על אותה שאלה בדרכים שונות',
             ],
             correct: 1,
-            explanation: 'זו מפת השבוע: אריסטו = אתיקת מידות (מי אני, מה האופי שלי?). קאנט = דאונטולוגיה (מה חובתי, מה העיקרון?). מיל = אוטיליטריזם (מה יביא לרווחה הגדולה ביותר?). שלוש גישות שמוגדרות לפי השאלה שהן שואלות.',
+            explanation: 'זו מפת הפרק: אריסטו = אתיקת מידות (מי אני, מה האופי שלי?). קאנט = דאונטולוגיה (מה חובתי, מה העיקרון?). מיל = אוטיליטריזם (מה יביא לרווחה הגדולה ביותר?). שלוש גישות שמוגדרות לפי השאלה שהן שואלות.',
           },
           {
-            type: 'reflection', title: 'שאלות סיום - שבוע שני',
+            type: 'reflection', title: 'שאלות סיום - פרק שני',
             questions: [
               'איזו גישה - אריסטו, קאנט, מיל - הכי קרובה לאיך שאתה מקבל החלטות מוסריות?',
-              'האם השבוע שינה משהו בדרך שבה אתה חושב על "מה נכון לעשות"?',
-              'שאלה מוסרית אחת שתרצה לשאת איתך לשבוע הבא?',
+              'האם הפרק שינה משהו בדרך שבה אתה חושב על "מה נכון לעשות"?',
+              'שאלה מוסרית אחת שתרצה לשאת איתך לפרק הבא?',
             ],
           },
         ],
@@ -10672,7 +10979,7 @@ const WEEKS = [
           },
           {
             type: 'explanation', title: 'המטיל ספק - Skeptic',
-            body: 'הסקפטיק הפילוסופי שואל: האם ניתן להיות ודאי לגמרי מכל דבר? אולי החושים שלנו מטעים אותנו. אולי הזיכרון לא מדויק. אולי מה שסיפרו לנו לא נכון. הספקנות הפילוסופית אינה אומרת "אני לא מאמין בכלום" - היא שואלת: "מה בדיוק מצדיק את האמונות שלנו?" זוהי שאלת השבוע כולו.',
+            body: 'הסקפטיק הפילוסופי שואל: האם ניתן להיות ודאי לגמרי מכל דבר? אולי החושים שלנו מטעים אותנו. אולי הזיכרון לא מדויק. אולי מה שסיפרו לנו לא נכון. הספקנות הפילוסופית אינה אומרת "אני לא מאמין בכלום" - היא שואלת: "מה בדיוק מצדיק את האמונות שלנו?" זוהי שאלת הפרק כולו.',
           },
           {
             type: 'quiz',
@@ -10887,11 +11194,11 @@ const WEEKS = [
         ],
       },
       {
-        id: 7, title: 'שבוע שלישי - מפת הידע', thinker: 'סיכום', thinkerId: 'audi', xp: 80,
+        id: 7, title: 'פרק שלישי - מפת הידע', thinker: 'סיכום', thinkerId: 'audi', xp: 80,
         sections: [
           {
-            type: 'idea', title: 'ספק וידע - סיכום השבוע',
-            body: 'שבוע שלם, שישה הוגים, שאלה אחת: מה אנחנו יכולים לדעת?\n\nלא הגענו לתשובה אחת. אבל הגענו למשהו אחר - הבנה עמוקה יותר של למה השאלה כל כך קשה.',
+            type: 'idea', title: 'ספק וידע - סיכום הפרק',
+            body: 'פרק שלם, שישה הוגים, שאלה אחת: מה אנחנו יכולים לדעת?\n\nלא הגענו לתשובה אחת. אבל הגענו למשהו אחר - הבנה עמוקה יותר של למה השאלה כל כך קשה.',
           },
           {
             type: 'source', title: 'הרקע שהחמצנו - הויכוח הגדול',
@@ -10900,25 +11207,25 @@ const WEEKS = [
             body: 'מהמאה ה-17 ועד ה-18 שלטו שני מחנות יריבים בפילוסופיה:\n\nהרציונליסטים - דקארט, שפינוזה, לייבניץ. טענו שהידע האמיתי מגיע מהשכל, לא מהחושים. החושים מטעים. רק התבונה - בהיגיון ובמתמטיקה - מגיעה לאמת.\n\nהאמפיריציסטים - לוק, יום, ברקלי. טענו שכל ידע מגיע מניסיון. אנחנו נולדים כ"לוח חלק" - tabula rasa - ורק הניסיון ממלא אותנו בידע.\n\nשניהם תפסו משהו אמיתי. ושניהם נתקלו בקשיים.\n\nואז הגיע קאנט - וביצע את הסינתזה: שניהם צדקו וגם טענו יתר על המידה. הניסיון מספק את החומר של הידע. השכל מספק את הצורה. בלי ניסיון - השכל ריק. בלי שכל - הניסיון עיוור.',
           },
           {
-            type: 'explanation', title: 'מפת השבוע',
+            type: 'explanation', title: 'מפת הפרק',
             body: 'יום 1 - מה זה לדעת?: ידע הוא אמונה מוצדקת ואמיתית. אבל מה זה בדיוק אומר?\n\nיום 2 - דקארט: הדבר היחיד הבטוח הוא שאני חושב. משמע אני קיים. אבל מכאן - איך ממשיכים?\n\nיום 3 - יום: אנחנו לא רואים סיבתיות - רק רצף של אירועים שאנחנו מפרשים. והשמש? אולי לא תזרח מחר.\n\nיום 4 - קאנט: אנחנו לא רואים את העולם כפי שהוא - רק כפי שהשכל שלנו, עם הקטגוריות שלו, מארגן את הניסיון. קאנט אמר שאנחנו לעולם לא נוכל לדעת מהו "הדבר כשלעצמו" - העולם כפי שהוא קיים מחוץ לתפיסה האנושית.\n\nיום 5 - גטייה: אמונה מוצדקת ואמיתית עדיין לא מספיקה לידע. ושלושת הפתרונות שהוצעו - כולם נכשלים במקרה כלשהו.\n\nיום 6 - פופר: מדע מתקדם על ידי הפרכה, לא הוכחה. אבל דוהם וקון מראים שגם זה מסובך יותר ממה שנדמה.',
           },
           {
-            type: 'depth', title: 'המתח הגדול של השבוע',
-            body: 'כל ההוגים שפגשנו השבוע מסכימים על דבר אחד: הידע שלנו מוגבל יותר ממה שאנחנו נוטים לחשוב.\n\nדקארט לא יכול לדעת שהעולם קיים. יום לא יכול לדעת שהשמש תזרח מחר. קאנט אמר שאנחנו לעולם לא נוכל לדעת מהו "הדבר כשלעצמו". גטייה מראה שאפילו כשאנחנו חושבים שאנחנו יודעים - אולי איננו.\n\nאבל זה לא פסימיזם - זו ענווה אפיסטמית. ההכרה שהידע שלנו תמיד זמני, תמיד חלקי, תמיד פתוח לתיקון. ופופר הוסיף: וזה בדיוק מה שהופך את המדע לכוח כל כך גדול - לא הוודאות שלו, אלא הנכונות שלו להיות מופרך.\n\nהקשר לשבועות הקודמים: שבוע 1 שאל מהי פילוסופיה - וסוקרטס ענה: הכרת גבולות הידע שלנו. השבוע ראינו בדיוק את זה - שישה הוגים שחקרו את הגבולות האלה לעומק. שבוע הבא נשאל: מה בכלל קיים? ממה עשויה המציאות?',
+            type: 'depth', title: 'המתח הגדול של הפרק',
+            body: 'כל ההוגים שפגשנו הפרק מסכימים על דבר אחד: הידע שלנו מוגבל יותר ממה שאנחנו נוטים לחשוב.\n\nדקארט לא יכול לדעת שהעולם קיים. יום לא יכול לדעת שהשמש תזרח מחר. קאנט אמר שאנחנו לעולם לא נוכל לדעת מהו "הדבר כשלעצמו". גטייה מראה שאפילו כשאנחנו חושבים שאנחנו יודעים - אולי איננו.\n\nאבל זה לא פסימיזם - זו ענווה אפיסטמית. ההכרה שהידע שלנו תמיד זמני, תמיד חלקי, תמיד פתוח לתיקון. ופופר הוסיף: וזה בדיוק מה שהופך את המדע לכוח כל כך גדול - לא הוודאות שלו, אלא הנכונות שלו להיות מופרך.\n\nהקשר לפרקים הקודמים: פרק 1 שאל מהי פילוסופיה - וסוקרטס ענה: הכרת גבולות הידע שלנו. הפרק ראינו בדיוק את זה - שישה הוגים שחקרו את הגבולות האלה לעומק. פרק הבא נשאל: מה בכלל קיים? ממה עשויה המציאות?',
           },
           {
             type: 'quiz',
-            question: 'מה משותף לכל ההוגים שפגשנו השבוע?',
+            question: 'מה משותף לכל ההוגים שפגשנו הפרק?',
             options: ['כולם האמינו שאי אפשר לדעת שום דבר בוודאות', 'כולם הראו שהידע שלנו מוגבל יותר ממה שאנחנו נוטים לחשוב', 'כולם דחו את הניסיון החושי כמקור לידע'],
             correct: 1,
-            explanation: 'דקארט, יום, קאנט, גטייה ופופר - כולם הראו, בדרכים שונות, שהידע האנושי מוגבל יותר ממה שנדמה לנו. לא ספקנות מוחלטת, אלא ענווה אפיסטמית. מקור: סיכום שבוע 3 - ספק וידע.',
+            explanation: 'דקארט, יום, קאנט, גטייה ופופר - כולם הראו, בדרכים שונות, שהידע האנושי מוגבל יותר ממה שנדמה לנו. לא ספקנות מוחלטת, אלא ענווה אפיסטמית. מקור: סיכום פרק 3 - ספק וידע.',
           },
           {
             type: 'reflection', title: 'לסיום - לחשוב',
             questions: [
               'שאלה פילוסופית: קאנט אמר שהרציונליסטים טענו שהשכל לבדו מגיע לידע. האמפיריציסטים טענו שהניסיון לבדו מספיק. קאנט הראה שצריך את שניהם. האם אתה מסכים שצריך את שניהם - או שאחד מהמחנות צודק יותר?',
-              'שאלה מסכמת: אחרי שבוע שלם על גבולות הידע - האם אתה מרגיש שאתה יודע פחות עכשיו מאשר בתחילת השבוע? ואם כן - האם זה דבר טוב?',
+              'שאלה מסכמת: אחרי פרק שלם על גבולות הידע - האם אתה מרגיש שאתה יודע פחות עכשיו מאשר בתחילת הפרק? ואם כן - האם זה דבר טוב?',
             ],
           },
         ],
@@ -10936,7 +11243,7 @@ const WEEKS = [
           { type: 'idea', title: 'מה קיים בכלל?', body: 'מטפיזיקה שואלת: מה קיים? ממה עשויה המציאות? מה הקשר בין גוף לנפש? שלוש אסכולות מרכזיות: מטריאליזם (רק חומר קיים), אידיאליזם (המציאות היא מנטלית), דואליזם (שני סוגי מציאות). לכל אחת בעיות קשות. האם מספרים קיימים? האם אהבה קיימת באותו אופן שכיסא קיים?' },
           { type: 'source', title: 'אונטולוגיה: מלאי המציאות', quote: '"מטפיזיקה היא ענף הפילוסופיה שחוקר את הטבע היסודי של הקיום - מה קיים, אילו סוגי דברים קיימים, ומה הקשרים ביניהם."', attr: '- קונס ופיקוונס, מטפיזיקה: היסודות, וויילי (2015)', body: 'כשאתה שואל "מה קיים?" אתה עושה אונטולוגיה. כיסא קיים - ברור. אבל מה עם מספרים? מה עם צדק? מה עם כאב? כולם "קיימים" - אבל לא באותו אופן. הפילוסוף חייב לנסות לארגן את כל מה שיש ביקום לתוך קטגוריות קוהרנטיות.' },
           { type: 'explanation', title: 'שלוש התפיסות הגדולות', body: 'המטריאליסט אומר: רק חומר קיים - המחשבות שלך הן פעילות מוחית. האידיאליסט אומר: רק התודעה קיימת - החומר הוא בעצם רעיון בתודעה. הדואליסט אומר: שניהם קיימים - גוף ונפש הם שתי מהויות נפרדות. כל עמדה פותרת בעיה אחת ויוצרת אחרת. הפילוסופיה לא תמיד נותנת תשובות - היא מדייקת את השאלות.' },
-          { type: 'quiz', question: 'מה היא אונטולוגיה?', options: ['חקר הידע וכיצד אנחנו יודעים דברים', 'חקר מה קיים ומלאי המציאות', 'חקר ערכים מוסריים ואתיקה'], correct: 1, explanation: 'אונטולוגיה (מיוונית: ontos = קיום) היא ענף המטפיזיקה העוסק בשאלה "מה קיים?" - איזה סוגי ישויות יש ביקום ומה הקשרים ביניהן. חקר הידע הוא אפיסטמולוגיה (שבוע 3), וחקר הערכים הוא אתיקה (שבוע 2).' },
+          { type: 'quiz', question: 'מה היא אונטולוגיה?', options: ['חקר הידע וכיצד אנחנו יודעים דברים', 'חקר מה קיים ומלאי המציאות', 'חקר ערכים מוסריים ואתיקה'], correct: 1, explanation: 'אונטולוגיה (מיוונית: ontos = קיום) היא ענף המטפיזיקה העוסק בשאלה "מה קיים?" - איזה סוגי ישויות יש ביקום ומה הקשרים ביניהן. חקר הידע הוא אפיסטמולוגיה (פרק 3), וחקר הערכים הוא אתיקה (פרק 2).' },
           { type: 'reflection', title: 'לסיום - לחשוב', questions: ['בחר שלושה דברים שאתה בטוח שהם "קיימים" - האם הם קיימים באותו אופן?', 'האם אהבה, כאב, ומספרים קיימים? אם כן - באיזה מובן?', 'מה עמדתך: מטריאליזם, אידיאליזם, או דואליזם? למה?'] },
         ],
       },
@@ -10989,7 +11296,7 @@ const WEEKS = [
           },
           {
             type: 'depth', title: 'המתח הגדול: פשטות מול מורכבות',
-            body: 'כל אחד מהפילוסופים ניסה לפתור בעיה אמיתית. אפלטון ניסה להסביר מדוע יש אמיתות אוניברסליות. שפינוזה ניסה לפתור את הבעיה של דקארט - גוף ונפש. ברקלי ניסה לפתור את הסקפטיציזם.\n\nהבעיה: כל פתרון יוצר בעיה חדשה. כמו שמכסים חור אחד בגדר ומגלים שיש חור חדש.\n\nאולי השאלה עצמה שגויה: ויטגנשטיין, שפגשנו בשבוע 1, היה אומר שחלק מהשאלות המטאפיזיות הן בלבול לשוני. "מהי המציאות?" אולי אינה שאלה שיש לה תשובה - אלא שאלה שצריך לפרק.',
+            body: 'כל אחד מהפילוסופים ניסה לפתור בעיה אמיתית. אפלטון ניסה להסביר מדוע יש אמיתות אוניברסליות. שפינוזה ניסה לפתור את הבעיה של דקארט - גוף ונפש. ברקלי ניסה לפתור את הסקפטיציזם.\n\nהבעיה: כל פתרון יוצר בעיה חדשה. כמו שמכסים חור אחד בגדר ומגלים שיש חור חדש.\n\nאולי השאלה עצמה שגויה: ויטגנשטיין, שפגשנו בפרק 1, היה אומר שחלק מהשאלות המטאפיזיות הן בלבול לשוני. "מהי המציאות?" אולי אינה שאלה שיש לה תשובה - אלא שאלה שצריך לפרק.',
           },
           {
             type: 'quiz',
@@ -11020,11 +11327,11 @@ const WEEKS = [
       {
         id: 7, title: 'סיכום', thinker: 'קאנט', thinkerId: 'kant', xp: 80,
         sections: [
-          { type: 'idea', title: 'המתח הגדול', body: 'המתח האמיתי: האם המציאות קיימת באופן עצמאי מתודעתנו - או שהתודעה יוצרת אותה? אפלטון, שפינוזה, דקארט האמינו במציאות עצמאית. ברקלי ובוסטרום טוענים שהמציאות תלויה בתפיסה. שאלה זו - שהחלה עם הפרה-סוקרטיים ביוון - נותרת פתוחה. קשר לשבוע 3: מה שקיים מעבר לתפיסתנו, לא נוכל לדעת בוודאות.' },
+          { type: 'idea', title: 'המתח הגדול', body: 'המתח האמיתי: האם המציאות קיימת באופן עצמאי מתודעתנו - או שהתודעה יוצרת אותה? אפלטון, שפינוזה, דקארט האמינו במציאות עצמאית. ברקלי ובוסטרום טוענים שהמציאות תלויה בתפיסה. שאלה זו - שהחלה עם הפרה-סוקרטיים ביוון - נותרת פתוחה. קשר לפרק 3: מה שקיים מעבר לתפיסתנו, לא נוכל לדעת בוודאות.' },
           { type: 'source', title: 'קאנט כגשר', quote: '"הדברים כשלעצמם (ה-Ding an sich) אינם נגישים לתודעה האנושית. אנחנו רואים רק את הופעתם - כפי שהחושים שלנו מארגנים אותם."', attr: '- עמנואל קאנט, ביקורת התבונה הטהורה, תרגום יוסף אור, הוצאת מאגנס', body: 'קאנט ניסה לגשר בין שתי העמדות: הוא הסכים עם ברקלי שאיננו יכולים לגשת למציאות כפי שהיא "בפני עצמה" - אבל הוא לא הסכים שהיא אינה קיימת. יש מציאות עצמאית (Ding an sich), אבל היא תמיד מגיעה אלינו מסוננת דרך מבנה התודעה שלנו. פתרון חלקי - אבל אולי הכי כנה מכולם.' },
-          { type: 'explanation', title: 'מה השבוע הזה פתר - ומה לא', body: 'השבוע למדנו שלא ברור מה "מציאות" - אפילו השאלה עצמה שנויה במחלוקת. ראינו ארבע עמדות גדולות, ביקרנו כל אחת, ומצאנו שכל אחת מסבירה משהו. מה שלא פתרנו: האם יש מציאות מעבר לתפיסה? מה הקשר בין גוף לנפש? שאלות אלה נותרות פתוחות - ואולי הפילוסופיה לא באה לפתור אותן אלא ללמד אותנו לחיות איתן.' },
+          { type: 'explanation', title: 'מה הפרק הזה פתר - ומה לא', body: 'הפרק למדנו שלא ברור מה "מציאות" - אפילו השאלה עצמה שנויה במחלוקת. ראינו ארבע עמדות גדולות, ביקרנו כל אחת, ומצאנו שכל אחת מסבירה משהו. מה שלא פתרנו: האם יש מציאות מעבר לתפיסה? מה הקשר בין גוף לנפש? שאלות אלה נותרות פתוחות - ואולי הפילוסופיה לא באה לפתור אותן אלא ללמד אותנו לחיות איתן.' },
           { type: 'quiz', question: 'מה ה-Ding an sich של קאנט?', options: ['הדבר כפי שהתודעה שלנו תופסת אותו', 'הדבר כפי שהוא קיים בפני עצמו, מעבר לכל תפיסה אנושית', 'אידאה אפלטונית של הדבר המושלם'], correct: 1, explanation: 'ה-Ding an sich ("הדבר כשלעצמו") של קאנט הוא המציאות כפי שהיא קיימת באופן עצמאי - בלתי נגישה לתודעה האנושית. אנחנו תמיד פוגשים את הדברים כפי שהחושים ותבנית החשיבה שלנו מארגנים אותם, לא כפי שהם "ממש" הם.' },
-          { type: 'reflection', title: 'לסיום - לחשוב', questions: ['אחרי השבוע הזה - האם השתנתה תשובתך לשאלה "האם המספר 7 קיים?"', 'מאיזה מארבעת השבועות נשארת עם השאלה הכי קשה לשכחה?'] },
+          { type: 'reflection', title: 'לסיום - לחשוב', questions: ['אחרי הפרק הזה - האם השתנתה תשובתך לשאלה "האם המספר 7 קיים?"', 'מאיזה מארבעת הפרקים נשארת עם השאלה הכי קשה לשכחה?'] },
         ],
       },
     ],
@@ -11077,12 +11384,12 @@ const WEEKS_EN = [
         { type:'quiz', question:'Who was Aristotle\'s teacher?', options:['Socrates','Plato','Heraclitus'], correct:1, explanation:'Aristotle studied under Plato for about 20 years at the Academy - but ultimately broke with his teacher on key points. For Aristotle, Plato\'s Forms don\'t exist in a separate realm but within things themselves. One of the great debates in philosophical history.' },
         { type:'reflection', title:'To Close - Think', questions:['When were you last genuinely amazed by something?','What caused you to stop wondering - and what might help you return?','If you stepped outside tomorrow with a child\'s eyes, what would you see differently?'] },
       ]},
-      { id:7, title:'Week One - What Have We Learned?', thinker:'All Thinkers', thinkerId:'descartes', xp:50, sections:[
-        { type:'idea', title:'Seven Days, One Question', body:'A whole week on "What is philosophy?" - and not one answer. Socrates said: ask. Plato said: leave the cave. Russell said: bear uncertainty. Wittgenstein said: watch your language. Aurelius said: live the ideas. Aristotle said: keep wondering. And perhaps all of these together are philosophy.' },
+      { id:7, title:'Chapter One - What Have We Learned?', thinker:'All Thinkers', thinkerId:'descartes', xp:50, sections:[
+        { type:'idea', title:'Seven Days, One Question', body:'A whole chapter on "What is philosophy?" - and not one answer. Socrates said: ask. Plato said: leave the cave. Russell said: bear uncertainty. Wittgenstein said: watch your language. Aurelius said: live the ideas. Aristotle said: keep wondering. And perhaps all of these together are philosophy.' },
         { type:'source', title:'The Heart of It All', quote:'"The unexamined life is not worth living."', attr:'- Socrates, The Apology', body:'Perhaps this sentence is the heart of everything we\'ve learned. Not to live on autopilot. Not to take everything for granted. To pause and ask - and continue anyway.' },
         { type:'explanation', title:'Philosophy in Your Life', body:'Philosophy is not a profession - it\'s an attitude. Every question you ask about your life, your values, what matters to you - that\'s philosophy. Every moment in which you stop and reflect - that\'s philosophy. You don\'t need Plato to be a philosopher. You need the will to think.' },
-        { type:'quiz', question:'Which of this week\'s thinkers wrote nothing himself - everything we know came from others?', options:['Aristotle','Plato','Socrates'], correct:2, explanation:'Socrates wrote nothing! Everything we know about him came from secondary sources - primarily Plato, but also Xenophon and Aristophanes. Scholars still debate whether Plato\'s Socrates is the historical Socrates or Plato himself in dramatic form.' },
-        { type:'reflection', title:'Week One Closing Questions', questions:['Which of this week\'s thinkers spoke to you most strongly? Why?','What did this week change in your thinking?','One philosophical question you\'d like to carry into next week?'] },
+        { type:'quiz', question:'Which of this chapter\'s thinkers wrote nothing himself - everything we know came from others?', options:['Aristotle','Plato','Socrates'], correct:2, explanation:'Socrates wrote nothing! Everything we know about him came from secondary sources - primarily Plato, but also Xenophon and Aristophanes. Scholars still debate whether Plato\'s Socrates is the historical Socrates or Plato himself in dramatic form.' },
+        { type:'reflection', title:'Chapter One Closing Questions', questions:['Which of this chapter\'s thinkers spoke to you most strongly? Why?','What did this chapter change in your thinking?','One philosophical question you\'d like to carry into next chapter?'] },
       ]},
     ],
   },
@@ -11091,8 +11398,8 @@ const WEEKS_EN = [
     days: [
       { id:1, title:'The Moral Problem', thinker:'Introduction to Ethics', thinkerId:'descartes', xp:30, sections:[
         { type:'idea', title:'When Inherited Maps Stop Working', body:'We are all born into a moral map - values, rules, expectations absorbed from family, society, and religion. Most of the time the map works. We know what\'s "right" and what\'s "wrong" - and don\'t ask why. But a moment comes - personal, social, moral - when the map fails. What do you do when there\'s no ready-made answer? That\'s where ethics begins.' },
-        { type:'source', title:'Three Questions of Ethics', quote:'"Ethics concerns three foundational questions: What is good? What is right? Who should I be? Three questions, three approaches - and no philosopher has yet won."', attr:'- Karsten Harries, Introduction to Ethics, Yale, 2013', body:'Harries teaches that there\'s no single answer to ethics - there are three axes: the axis of the good (what brings flourishing?), the axis of the right (what obligates me?), and the axis of identity (who do I want to become?). The three philosophers of this week - Aristotle, Kant, and Mill - each answers one axis.' },
-        { type:'explanation', title:'Objective, Subjective, Relative', body:'Three basic positions: Objective morality says there are moral truths valid regardless of culture or opinion. Subjective morality says morality is an expression of personal preferences. Relative morality says morality depends on culture and society, with no external standard to judge between them. This week we\'ll explore the tension through three great thinkers.' },
+        { type:'source', title:'Three Questions of Ethics', quote:'"Ethics concerns three foundational questions: What is good? What is right? Who should I be? Three questions, three approaches - and no philosopher has yet won."', attr:'- Karsten Harries, Introduction to Ethics, Yale, 2013', body:'Harries teaches that there\'s no single answer to ethics - there are three axes: the axis of the good (what brings flourishing?), the axis of the right (what obligates me?), and the axis of identity (who do I want to become?). The three philosophers of this chapter - Aristotle, Kant, and Mill - each answers one axis.' },
+        { type:'explanation', title:'Objective, Subjective, Relative', body:'Three basic positions: Objective morality says there are moral truths valid regardless of culture or opinion. Subjective morality says morality is an expression of personal preferences. Relative morality says morality depends on culture and society, with no external standard to judge between them. This chapter we\'ll explore the tension through three great thinkers.' },
         { type:'quiz', question:'What is the difference between subjective and relative morality?', options:['There is no difference - both reject objective morality','Subjective morality depends on the individual; relative morality depends on culture','Relative morality is more scientifically grounded'], correct:1, explanation:'Subjectivism says morality expresses personal preferences - "I think murder is wrong" like "I like chocolate." Relativism says morality depends on culture - so one culture cannot judge another. Both differ from objectivism, which believes in universal moral norms.' },
         { type:'reflection', title:'To Close - Think', questions:['When did your "moral map" last fail to provide an answer?','Do you believe there are objective moral truths? Why?','Which values did you inherit - and which did you choose yourself?'] },
       ]},
@@ -11131,12 +11438,12 @@ const WEEKS_EN = [
         { type:'quiz', question:'Why do most people divert a trolley but refuse to push a person - even when the outcome is the same?', options:['Because they\'re not thinking clearly','Because personal, direct harm triggers a different emotional response','Because they\'re unfamiliar with utilitarianism'], correct:1, explanation:'This is the central point of the trolley experiments: even when victim counts are identical, the way harm is caused changes our moral intuition. Direct, physical, hands-on harm triggers a stronger emotional response than indirect harm. This raises the question: is morality rational or emotional - or both?' },
         { type:'reflection', title:'To Close - Think', questions:['What would you do in each version of the trolley problem? Are your decisions consistent?','Are moral intuitions evidence - or bias?','What does it mean that our brains respond differently to personal versus impersonal harm?'] },
       ]},
-      { id:7, title:'Week Two - The Map of Ethics', thinker:'All Thinkers', thinkerId:'mill', xp:50, sections:[
-        { type:'idea', title:'Three Questions, Three Philosophers', body:'A whole week in ethics. Three philosophers, three different questions, three different answers. Aristotle asked: who should I be? Kant asked: what must I do? Mill asked: what will produce the greatest well-being? No single answer won - but each illuminates something real.' },
+      { id:7, title:'Chapter Two - The Map of Ethics', thinker:'All Thinkers', thinkerId:'mill', xp:50, sections:[
+        { type:'idea', title:'Three Questions, Three Philosophers', body:'A whole chapter in ethics. Three philosophers, three different questions, three different answers. Aristotle asked: who should I be? Kant asked: what must I do? Mill asked: what will produce the greatest well-being? No single answer won - but each illuminates something real.' },
         { type:'source', title:'The Remaining Tension', quote:'"It may be that one of the great features of ethics is that its questions resist final resolution - and that this is precisely what compels us to keep thinking."', attr:'- Karsten Harries, Introduction to Ethics, Yale, 2013', body:'Utilitarianism asks: what are the consequences? Kantian deontology asks: what is the principle? Virtue ethics asks: what is the character? Each approach highlights a real dimension. The one who can deploy all three wisely may be the mature moral philosopher.' },
         { type:'explanation', title:'Ethics as Practice, Not Just Knowledge', body:'The problem with studying ethics is that it\'s easy to know it and not live it. Aristotle stressed: virtues are acquired through habit. Kant stressed: a deliberate decision to act from duty is required. Mill stressed: we must expand our thinking beyond ourselves to others. Ethics is not only what you believe - it\'s what you do when it\'s hard.' },
-        { type:'quiz', question:'Which central question does each philosopher represent in this week?', options:['Aristotle: what is right? Kant: what is good? Mill: who am I?','Aristotle: who should I be? Kant: what must I do? Mill: what brings greatest happiness?','All three answered the same question in different ways'], correct:1, explanation:'This is the map of the week: Aristotle = virtue ethics (who am I, what is my character?). Kant = deontology (what is my duty, what principle guides me?). Mill = utilitarianism (what will bring the greatest well-being?). Three approaches defined by the question they ask.' },
-        { type:'reflection', title:'Week Two Closing Questions', questions:['Which approach - Aristotle, Kant, or Mill - comes closest to how you make moral decisions?','Did this week change anything about how you think about "what is right"?','One moral question you\'d like to carry into the next week?'] },
+        { type:'quiz', question:'Which central question does each philosopher represent in this chapter?', options:['Aristotle: what is right? Kant: what is good? Mill: who am I?','Aristotle: who should I be? Kant: what must I do? Mill: what brings greatest happiness?','All three answered the same question in different ways'], correct:1, explanation:'This is the map of the chapter: Aristotle = virtue ethics (who am I, what is my character?). Kant = deontology (what is my duty, what principle guides me?). Mill = utilitarianism (what will bring the greatest well-being?). Three approaches defined by the question they ask.' },
+        { type:'reflection', title:'Chapter Two Closing Questions', questions:['Which approach - Aristotle, Kant, or Mill - comes closest to how you make moral decisions?','Did this chapter change anything about how you think about "what is right"?','One moral question you\'d like to carry into the next chapter?'] },
       ]},
     ],
   },
@@ -11165,7 +11472,7 @@ const WEEKS_EN = [
         { type:'reflection', title:'To Close - Think', questions:['Which "laws" in your life operate through habit - not through having been tested?','Does the problem of induction frighten you - or can you live with it peacefully?','What\'s the difference between "I know the sun will rise" and "I expect the sun to rise"?'] },
       ]},
       { id:4, title:'Kant - What Does the Mind Bring to Knowledge?', thinker:'Immanuel Kant', thinkerId:'kant', xp:30, sections:[
-        { type:'idea', title:'Kant Returns - This Time About Knowledge', body:'We met Kant in Week 2 - there he asked "what must I do?" Here he asks "what can I know?" Kant said Hume "awakened him from his dogmatic slumber." He agreed that not everything can be known from experience - but also that not everything comes from reason alone. The truth? Both are required.' },
+        { type:'idea', title:'Kant Returns - This Time About Knowledge', body:'We met Kant in Chapter 2 - there he asked "what must I do?" Here he asks "what can I know?" Kant said Hume "awakened him from his dogmatic slumber." He agreed that not everything can be known from experience - but also that not everything comes from reason alone. The truth? Both are required.' },
         { type:'source', title:'The Copernican Revolution in Philosophy', quote:'"Hitherto it has been assumed that all our knowledge must conform to objects. But suppose instead that objects conform to our knowledge. Just as Copernicus reversed the motion - I reverse the knowing: objects circle the mind."', attr:'- Immanuel Kant, Critique of Pure Reason, trans. Yosef Or, Magnes Press', body:'Kant argued that the mind brings "templates" to experience: time, space, cause and effect - these are not things we learn from the world, they are the lenses through which we see it. Therefore we never see the world "as it really is" (Ding an sich) - only as our mind allows us to perceive it.' },
         { type:'explanation', title:'A Priori and A Posteriori', body:'Kant distinguished: "a priori" knowledge precedes experience - "every event has a cause" is something we bring to experience, not learn from it. "A posteriori" knowledge comes from experience - "it is raining outside." And there\'s a marvel: "synthetic a priori" - statements that expand knowledge and yet can be known prior to experience. This is his central achievement.' },
         { type:'quiz', question:'What is Kant\'s "Copernican revolution" in philosophy?', options:['That the Earth revolves around the Sun','That the world conforms to our mind, not our mind to the world','That knowledge comes only from experience'], correct:1, explanation:'Copernicus reversed the order: not the sun around the earth, but the earth around the sun. Kant did something analogous: not the mind adapting to objects - objects adapting to the mind. We don\'t "discover" categories like causality - we impose them on experience. A pivotal turning point in the history of philosophy.' },
@@ -11185,12 +11492,12 @@ const WEEKS_EN = [
         { type:'quiz', question:'According to Popper, what makes a theory scientific?', options:['That it has been confirmed by many experiments','That it can in principle be refuted by experience','That it was developed by a trained scientist'], correct:1, explanation:'Popper reversed the logic: not "how many experiments confirmed it?" but "is there an experiment that could refute it?" A theory that could be refuted and hasn\'t been - is stronger. A theory that cannot be refuted - is not scientific (even if true). Science, for Popper, is a process of constant attempted falsification.' },
         { type:'reflection', title:'To Close - Think', questions:['Which of your beliefs are "unfalsifiable" - and what does that mean about them?','Is there value in truths that aren\'t scientific - like values, love, art?','What\'s the difference between "this hasn\'t been proven false" and "this has been proven true"?'] },
       ]},
-      { id:7, title:'Week Three - The Map of Knowledge', thinker:'All Thinkers', thinkerId:'audi', xp:50, sections:[
-        { type:'idea', title:'Two Great Camps', body:'A whole week asking "what can we know?" - and we found two camps: the rationalists - Descartes and Kant - claim the mind brings independent knowledge prior to experience. The empiricists - Hume and Popper - claim everything (or nearly everything) comes from experience. And Gettier? He broke the formula both sides were using.' },
+      { id:7, title:'Chapter Three - The Map of Knowledge', thinker:'All Thinkers', thinkerId:'audi', xp:50, sections:[
+        { type:'idea', title:'Two Great Camps', body:'A whole chapter asking "what can we know?" - and we found two camps: the rationalists - Descartes and Kant - claim the mind brings independent knowledge prior to experience. The empiricists - Hume and Popper - claim everything (or nearly everything) comes from experience. And Gettier? He broke the formula both sides were using.' },
         { type:'source', title:'The Open Question', quote:'"The skeptic asks: is there any certain knowledge at all? 2500 years after the question was raised - it remains open. But perhaps that is precisely what is right about it."', attr:'- Robert Audi, Epistemology: A Contemporary Introduction, 2011', body:'The formula "knowledge = justified true belief" survived 2500 years. Gettier broke it in 3 pages. There\'s still no agreed replacement. And perhaps that\'s just what we\'ve learned: philosophy doesn\'t always end in an answer - it ends in a deeper question.' },
-        { type:'explanation', title:'Three Questions, Three Weeks', body:'Three weeks, three questions: Week 1 - what is philosophy? Week 2 - what must I do? Week 3 - what can I know? These are three of Kant\'s great questions: what can I know? what must I do? what may I hope? And perhaps a fourth question connects them all: what is a human being?' },
-        { type:'quiz', question:'Who among this week\'s thinkers broke the formula "knowledge = justified true belief"?', options:['David Hume','Karl Popper','Edmund Gettier'], correct:2, explanation:'Gettier broke Plato\'s formula in 1963 - with a three-page paper. Hume and Popper criticized induction and the foundations of empirical knowledge, but the formula itself - JTB - was cracked by Gettier.' },
-        { type:'reflection', title:'Week Three Closing Questions', questions:['After this week - is the formula "knowledge = justified true belief" still valid for you?','Which of the three weekly questions is hardest to live without an answer: what is philosophy, what must I do, or what can I know?','One thinker from this week who spoke to you most - and why?'] },
+        { type:'explanation', title:'Three Questions, Three Chapters', body:'Three chapters, three questions: Chapter 1 - what is philosophy? Chapter 2 - what must I do? Chapter 3 - what can I know? These are three of Kant\'s great questions: what can I know? what must I do? what may I hope? And perhaps a fourth question connects them all: what is a human being?' },
+        { type:'quiz', question:'Who among this chapter\'s thinkers broke the formula "knowledge = justified true belief"?', options:['David Hume','Karl Popper','Edmund Gettier'], correct:2, explanation:'Gettier broke Plato\'s formula in 1963 - with a three-page paper. Hume and Popper criticized induction and the foundations of empirical knowledge, but the formula itself - JTB - was cracked by Gettier.' },
+        { type:'reflection', title:'Chapter Three Closing Questions', questions:['After this chapter - is the formula "knowledge = justified true belief" still valid for you?','Which of the three weekly questions is hardest to live without an answer: what is philosophy, what must I do, or what can I know?','One thinker from this chapter who spoke to you most - and why?'] },
       ]},
     ],
   },
@@ -11199,7 +11506,7 @@ const WEEKS_EN = [
       { type:'idea', title:'What Exists at All?', body:'Metaphysics asks: what exists? What is reality made of? What is the connection between body and mind? Three major camps: materialism (only matter exists), idealism (reality is mental), dualism (two kinds of reality). Each faces serious problems. Do numbers exist? Does love exist in the same way a chair exists?' },
       { type:'source', title:'Ontology: The Inventory of Reality', quote:'"Metaphysics is the branch of philosophy that investigates the fundamental nature of existence - what exists, what kinds of things exist, and what the relations between them are."', attr:'- Koons & Pickavance, Metaphysics: The Fundamentals, Wiley (2015)', body:'When you ask "what exists?" you are doing ontology. A chair exists - obviously. But what about numbers? What about justice? What about pain? They all "exist" - but not in the same way. The philosopher must try to organize everything in the universe into coherent categories.' },
       { type:'explanation', title:'The Three Great Views', body:'The materialist says: only matter exists - your thoughts are brain activity. The idealist says: only mind exists - matter is really just an idea in consciousness. The dualist says: both exist - body and mind are two distinct substances. Each position solves one problem and creates another. Philosophy doesn\'t always give answers - it sharpens the questions.' },
-      { type:'quiz', question:'What is ontology?', options:['The study of knowledge and how we know things','The study of what exists and the inventory of reality','The study of moral values and ethics'], correct:1, explanation:'Ontology (from Greek: ontos = being) is the branch of metaphysics concerned with the question "what exists?" - what kinds of entities are there in the universe and what are their relations. The study of knowledge is epistemology (Week 3), and the study of values is ethics (Week 2).' },
+      { type:'quiz', question:'What is ontology?', options:['The study of knowledge and how we know things','The study of what exists and the inventory of reality','The study of moral values and ethics'], correct:1, explanation:'Ontology (from Greek: ontos = being) is the branch of metaphysics concerned with the question "what exists?" - what kinds of entities are there in the universe and what are their relations. The study of knowledge is epistemology (Chapter 3), and the study of values is ethics (Chapter 2).' },
       { type:'reflection', title:'To Close - Think', questions:['Choose three things you are certain "exist" - do they exist in the same way?','Do love, pain, and numbers exist? If so - in what sense?','What is your position: materialism, idealism, or dualism? Why?'] },
     ]},
     { id:2, title:'Plato: The World of Forms', thinker:'Plato', thinkerId:'plato', xp:30, sections:[
@@ -11228,7 +11535,7 @@ const WEEKS_EN = [
       { type:'source', title:'The Infinite Regress', quote:'"If the Form of Horse explains the resemblance between horses, what explains the resemblance between the horses and the Form? A third Form is needed - then a fourth - and there is no end."', attr:'- After Koons & Pickavance, Metaphysics: The Fundamentals, Wiley (2015)', body:'Every major metaphysical theory collapses at some point. The critique of Plato comes from Aristotle himself - his own student. The critique of Spinoza: if everything that happens is necessary, why is there suffering? Critique of Berkeley: if "to be seen is to exist," what happens when different people see the same thing differently? Wittgenstein: "The limits of my language are the limits of my world."' },
       { type:'explanation', title:'Are the Questions Even Right?', body:'The later Wittgenstein offered a striking idea: perhaps the great philosophical problems are not real problems - but the result of misusing language. When we ask "what is ultimate reality?" - perhaps we are using the word "reality" in a way that generates confusion. Not that there are no questions - but that some questions cannot be answered because they are not genuine questions.' },
       { type:'quiz', question:'What is the "Third Man Argument" against Plato?', options:['Plato had three main arguments that contradict each other','Connecting a thing to its Form requires another Form, leading to infinite regress','Three men in Plato\'s dialogues argued against the theory of Forms'], correct:1, explanation:'The Third Man Argument (by Aristotle) is: if the resemblance between chairs is explained by the Form of Chair, what explains the resemblance between the particular chairs and the Form itself? A third Form is needed - then a fourth - and so on to infinity. This is a serious problem for the theory of Forms.' },
-      { type:'reflection', title:'To Close - Think', questions:['Do the critiques convince you - or do you still have sympathy for one of the views?','Do you agree with Wittgenstein that some questions are "linguistic confusions"?','What do you think is the hardest unsolved problem from this week?'] },
+      { type:'reflection', title:'To Close - Think', questions:['Do the critiques convince you - or do you still have sympathy for one of the views?','Do you agree with Wittgenstein that some questions are "linguistic confusions"?','What do you think is the hardest unsolved problem from this chapter?'] },
     ]},
     { id:6, title:'The Simulation Argument', thinker:'Descartes', thinkerId:'descartes', xp:30, sections:[
       { type:'idea', title:'Are We Living in a Simulation?', body:'Nick Bostrom (2003): at least one of three must be true: (1) humanity goes extinct before reaching a posthuman stage, (2) posthuman civilizations don\'t run simulations, (3) we are almost certainly living in a simulation. If billions of simulated worlds exist and only one real world - what are the odds you\'re in the real one?' },
@@ -11238,11 +11545,11 @@ const WEEKS_EN = [
       { type:'reflection', title:'To Close - Think', questions:['If you knew you were in a simulation - would you behave differently?','Is the simulation argument genuine philosophy or science fiction speculation?','What is the difference between Descartes\' "evil demon" and Bostrom\'s "simulation"?'] },
     ]},
     { id:7, title:'Summary', thinker:'Kant', thinkerId:'kant', xp:50, sections:[
-      { type:'idea', title:'The Great Tension', body:'The real tension: does reality exist independently of our consciousness, or does consciousness create it? Plato, Spinoza, and Descartes believed in independent reality. Berkeley and Bostrom argue that reality depends on perception. This question - begun by the Pre-Socratics in ancient Greece - remains unsolved. Connection to Week 3: what exists beyond our perception, we can never know with certainty (Kant).' },
+      { type:'idea', title:'The Great Tension', body:'The real tension: does reality exist independently of our consciousness, or does consciousness create it? Plato, Spinoza, and Descartes believed in independent reality. Berkeley and Bostrom argue that reality depends on perception. This question - begun by the Pre-Socratics in ancient Greece - remains unsolved. Connection to Chapter 3: what exists beyond our perception, we can never know with certainty (Kant).' },
       { type:'source', title:'Kant as Bridge', quote:'"Things in themselves (the Ding an sich) are not accessible to human consciousness. We see only their appearance - as our senses organize them."', attr:'- Immanuel Kant, Critique of Pure Reason', body:'Kant tried to bridge both positions: he agreed with Berkeley that we cannot access reality as it is "in itself" - but he disagreed that it does not exist. There is an independent reality (Ding an sich), but it always reaches us filtered through the structure of our consciousness. A partial solution - but perhaps the most honest of all.' },
-      { type:'explanation', title:'What This Week Solved - and What It Didn\'t', body:'This week we learned that it is not clear what "reality" is - even the question itself is contested. We saw four major positions, critiqued each, and found that each explains something. What we did not solve: is there reality beyond perception? What is the connection between body and mind? These questions remain open - and perhaps philosophy does not come to solve them, but to teach us to live with them.' },
+      { type:'explanation', title:'What This Chapter Solved - and What It Didn\'t', body:'This chapter we learned that it is not clear what "reality" is - even the question itself is contested. We saw four major positions, critiqued each, and found that each explains something. What we did not solve: is there reality beyond perception? What is the connection between body and mind? These questions remain open - and perhaps philosophy does not come to solve them, but to teach us to live with them.' },
       { type:'quiz', question:'What is Kant\'s Ding an sich?', options:['The thing as our mind perceives it','The thing as it exists in itself, beyond all human perception','A Platonic ideal of the perfect thing'], correct:1, explanation:'The Ding an sich ("thing in itself") is reality as it exists independently - inaccessible to human consciousness. We always encounter things as our senses and cognitive structures organize them, not as they "really" are. This differs from Plato\'s Form (which is more real) and from the sensory world (which is less real).' },
-      { type:'reflection', title:'To Close - Think', questions:['After this week - has your answer to "does the number 7 exist?" changed?','Which of the four weeks left you with the hardest question to forget?'] },
+      { type:'reflection', title:'To Close - Think', questions:['After this chapter - has your answer to "does the number 7 exist?" changed?','Which of the four chapters left you with the hardest question to forget?'] },
     ]},
   ]},
 ];
@@ -11253,7 +11560,7 @@ const WEEKS_EN = [
 
 const UI = {
   he: {
-    streak:'רצף', level:'רמה', thinkers:'הוגים שנאספו', weeks:'שבועות',
+    streak:'רצף', level:'רמה', thinkers:'הוגים שנאספו', chapters:'פרקים',
     comingSoon:'בקרוב', maxLevel:'רמה מקסימלית!', backArrow:'→',
     nextBtn:'המשך ←', finishBtn:'סיום היום ✓',
     labels:{ idea:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-idea"/></svg> רעיון', source:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-source"/></svg> מקור', explanation:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-explain"/></svg> הסבר', depth:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-depth"/></svg> עומק', quiz:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-question"/></svg> שאלת הבנה', reflection:'✦ לחשוב' },
@@ -11277,7 +11584,7 @@ const UI = {
     langToggleLabel:'English',
   },
   en: {
-    streak:'Streak', level:'Level', thinkers:'Collected Thinkers', weeks:'Weeks',
+    streak:'Streak', level:'Level', thinkers:'Collected Thinkers', chapters:'Chapters',
     comingSoon:'Coming soon', maxLevel:'Maximum level!', backArrow:'←',
     nextBtn:'Continue →', finishBtn:'Complete Day ✓',
     labels:{ idea:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-idea"/></svg> Idea', source:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-source"/></svg> Source', explanation:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-explain"/></svg> Explanation', depth:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-depth"/></svg> Deeper', quiz:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-question"/></svg> Comprehension', reflection:'✦ Reflect' },
@@ -11469,8 +11776,11 @@ let state = {
   userEmail: '',
   userMeta: {},
   lastActiveDate: '',
+  lastStreakShownDate: '',
   activeDates: [],
   streakHistory: {},
+  chapterCompleteShown: {}, // { weekId: true } — fires the chapter-complete overlay once per chapter
+
   subject: 'philosophy',
 };
 
@@ -11532,6 +11842,30 @@ function showScreen(id) {
   if (nav) nav.style.display = hideNavScreens.includes(id) ? 'none' : 'flex';
   const toggle = document.getElementById('drawer-toggle-btn');
   if (toggle) toggle.style.display = id === 'home' ? 'flex' : 'none';
+  const pc = document.getElementById('practice-card');
+  if (pc) {
+    // Show practice-card on home/profile/pantheon (where "Next Up" makes sense), hide elsewhere.
+    const showPracticeCard = ['home', 'profile', 'pantheon'].includes(id);
+    if (showPracticeCard) {
+      // Only show if renderHome has populated content; otherwise leave the CSS default (none).
+      if (pc.innerHTML.trim()) pc.style.display = 'block';
+    } else {
+      pc.style.display = 'none';
+    }
+  }
+  // Global topbar: show on home/profile/pantheon, hide on reader (has reader-topbar) / subject / auth / onboarding / level-journey (has journey-header)
+  const globalTopbar = document.getElementById('topbar');
+  if (globalTopbar) {
+    const showTopbar = ['home', 'profile', 'pantheon'].includes(id);
+    globalTopbar.style.display = showTopbar ? 'flex' : 'none';
+  }
+  // Global stats subheader: show on home/profile/pantheon, hide on reader/subject/auth/onboarding
+  const statsBar = document.querySelector('.stats-subheader');
+  if (statsBar) {
+    const showStats = ['home', 'profile', 'pantheon'].includes(id);
+    statsBar.style.display = showStats ? 'flex' : 'none';
+    if (showStats) updateStatsBar();
+  }
   requestAnimationFrame(fixStatsPosition);
 }
 
@@ -11703,17 +12037,75 @@ function migrateCompletedDaysKeys() {
   console.log('[Migration] Migrated', oldKeys.length, 'completedDays keys to subject-scoped format');
 }
 
+// === Daily streak (consecutive days) ===
+function updateDailyStreak() {
+  const today = new Date().toISOString().split('T')[0];
+  const lastDate = state.lastActiveDate;
+
+  if (!lastDate) {
+    state.dailyStreak = 1;
+  } else if (lastDate === today) {
+    if (!state.activeDates) state.activeDates = [];
+    if (!state.activeDates.includes(today)) state.activeDates.push(today);
+    saveStateLocal();
+    return;
+  } else {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    state.dailyStreak = (lastDate === yesterdayStr) ? ((state.dailyStreak || 0) + 1) : 1;
+  }
+
+  state.lastActiveDate = today;
+  if (!state.activeDates) state.activeDates = [];
+  if (!state.activeDates.includes(today)) state.activeDates.push(today);
+  state.streakHistory = state.streakHistory || {};
+  state.streakHistory[today] = state.dailyStreak;
+  saveStateLocal();
+}
+
+// Repairs state.dailyStreak from state.activeDates (runs once on app load)
+function recalculateStreak() {
+  const activeDates = (state.activeDates || []).slice().sort();
+  if (activeDates.length === 0) {
+    state.dailyStreak = 0;
+    saveStateLocal();
+    return;
+  }
+  const today = new Date().toISOString().split('T')[0];
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+  const lastActive = activeDates[activeDates.length - 1];
+
+  if (lastActive === today || lastActive === yesterdayStr) {
+    let streak = 1;
+    for (let i = activeDates.length - 2; i >= 0; i--) {
+      const currentDate = new Date(activeDates[i + 1]);
+      currentDate.setDate(currentDate.getDate() - 1);
+      const expectedPrev = currentDate.toISOString().split('T')[0];
+      if (activeDates[i] === expectedPrev) streak++;
+      else break;
+    }
+    state.dailyStreak = streak;
+  } else {
+    state.dailyStreak = 0;
+  }
+  state.lastActiveDate = lastActive;
+  saveStateLocal();
+}
+
 function isWeekCompleted(weekId) {
-  const week = getW().find(w => w.id === weekId);
-  if (!week) return false;
-  return week.days.every(d => state.completedDays[dayKey(weekId, d.id)]);
+  const chapter = getW().find(w => w.id === weekId);
+  if (!chapter) return false;
+  return chapter.days.every(d => state.completedDays[dayKey(weekId, d.id)]);
 }
 
 function getWeekProgress(weekId) {
-  const week = getW().find(w => w.id === weekId);
-  if (!week) return 0;
-  const total = week.days.length;
-  const completed = week.days.filter(d => state.completedDays[dayKey(weekId, d.id)]).length;
+  const chapter = getW().find(w => w.id === weekId);
+  if (!chapter) return 0;
+  const total = chapter.days.length;
+  const completed = chapter.days.filter(d => state.completedDays[dayKey(weekId, d.id)]).length;
   return total > 0 ? completed / total : 0;
 }
 
@@ -11741,7 +12133,7 @@ function showUnlockOverlay() {
   const titleEl = document.getElementById('unlock-title');
   const subtitleEl = document.getElementById('unlock-subtitle');
   const ctaEl = document.getElementById('unlock-cta');
-  if (titleEl) titleEl.textContent = isEn ? 'Bonus Week Unlocked!' : 'פרק בונוס נפתח!';
+  if (titleEl) titleEl.textContent = isEn ? 'Bonus Chapter Unlocked!' : 'פרק בונוס נפתח!';
   if (subtitleEl) subtitleEl.textContent = isEn ? 'Ethics and Artificial Intelligence · Kant meets ChatGPT' : 'אתיקה ובינה מלאכותית · קאנט פוגש את ChatGPT';
   if (ctaEl) ctaEl.textContent = isEn ? "Let's go →" : 'בוא נראה ←';
 
@@ -11772,21 +12164,101 @@ function closeUnlockOverlay() {
   goHome();
 }
 
+// === Chapter-complete overlay (reuses .dc-screen aesthetic) ===
+function showChapterCompleteOverlay(chapter) {
+  const overlay = document.getElementById('chapter-complete-overlay');
+  if (!overlay || !chapter) return;
+  const isEn = state.lang === 'en';
+  const weekNumber = typeof chapter.id === 'number' ? chapter.id : '';
+  const title = isEn ? `Chapter ${weekNumber} Completed!` : `פרק ${weekNumber} הושלם!`;
+  const subtitle = isEn ? (chapter.titleEn || chapter.title || '') : (chapter.title || '');
+
+  document.getElementById('chapter-complete-title').textContent = title;
+  document.getElementById('chapter-complete-subtitle').textContent = subtitle;
+
+  // Stats
+  const lessonsCount = chapter.days ? chapter.days.length : 0;
+  const thinkers = new Set();
+  if (chapter.days) {
+    chapter.days.forEach(d => {
+      const tid = d.thinkerId || d.thinker;
+      if (tid) thinkers.add(tid);
+    });
+  }
+  const xpEarned = chapter.xp || (lessonsCount * 20);
+
+  document.getElementById('chapter-complete-xp').textContent = `+${xpEarned}`;
+  document.getElementById('chapter-stat-lessons').textContent = lessonsCount;
+  document.getElementById('chapter-stat-thinkers').textContent = thinkers.size;
+
+  // Labels — language switch
+  const xpLabel = overlay.querySelector('.dc-xp-label');
+  const labels = overlay.querySelectorAll('.metric-label');
+  if (xpLabel) xpLabel.textContent = isEn ? 'XP earned' : 'XP הרווחת';
+  if (labels[0]) labels[0].textContent = isEn ? 'dialogues' : 'דיאלוגים';
+  if (labels[1]) labels[1].textContent = isEn ? 'thinkers met' : 'הוגים שפגשנו';
+
+  // Buttons
+  const continueBtn = document.getElementById('chapter-continue-btn');
+  continueBtn.textContent = isEn ? 'Continue to Next Chapter' : 'המשך לפרק הבא';
+  continueBtn.onclick = () => {
+    closeChapterCompleteOverlay();
+    document.getElementById('modal-complete').classList.remove('active');
+    const allWeeks = getW();
+    const currentIndex = allWeeks.findIndex(w => w.id === chapter.id);
+    const nextWeek = allWeeks[currentIndex + 1];
+    if (nextWeek && nextWeek.days && nextWeek.days[0]) {
+      openReader(nextWeek.id, nextWeek.days[0].id);
+    } else {
+      showScreen('home');
+    }
+  };
+
+  const homeBtn = document.getElementById('chapter-back-home-btn');
+  homeBtn.textContent = isEn ? 'Back to Home' : 'חזרה לבית';
+  homeBtn.onclick = () => {
+    closeChapterCompleteOverlay();
+    document.getElementById('modal-complete').classList.remove('active');
+    showScreen('home');
+  };
+
+  overlay.style.display = 'flex';
+}
+
+function closeChapterCompleteOverlay() {
+  const overlay = document.getElementById('chapter-complete-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+// Single update function for the global stats subheader (XP, streak, level)
+function updateStatsBar() {
+  const streakEl = document.getElementById('stat-streak');
+  const xpEl = document.getElementById('stat-xp');
+  const levelEl = document.getElementById('stat-level');
+  if (streakEl) streakEl.textContent = state.dailyStreak || 0;
+  if (xpEl) xpEl.textContent = state.xp || 0;
+  if (levelEl) levelEl.textContent = getLevel(state.xp || 0);
+}
+
 function fixStatsPosition() {
   document.querySelectorAll('.topbar').forEach(t => {
     if (t.closest('#screen-profile') || t.closest('#screen-pantheon')) {
       t.style.transform = 'none';
     }
   });
-  if (state.currentScreen === 'profile') return;
-  if (state.currentScreen === 'pantheon') return;
-  const topbar = document.querySelector('.topbar');
+  // Position the global stats-subheader directly under whatever topbar is currently visible.
+  // Pick the topbar that belongs to the active screen (or home's topbar by default).
+  const id = state.currentScreen || 'home';
+  let topbar = document.querySelector('#screen-' + id + ' .topbar') || document.querySelector('.topbar');
   const stats = document.querySelector('.stats-subheader');
   if (topbar && stats) {
-    stats.style.top = topbar.offsetHeight + 'px';
-    const scrollContent = document.querySelector('.scroll-content');
+    // Fallback to 54 if offsetHeight is 0 (pre-layout on initial paint or reflow)
+    const topbarHeight = topbar.offsetHeight || 54;
+    stats.style.top = topbarHeight + 'px';
+    const scrollContent = document.querySelector('#screen-' + id + ' .scroll-content') || document.querySelector('.scroll-content');
     if (scrollContent) {
-      scrollContent.style.paddingTop = (topbar.offsetHeight + stats.offsetHeight + 8) + 'px';
+      const statsHeight = stats.offsetHeight || 42;
+      scrollContent.style.paddingTop = (topbarHeight + statsHeight + 8) + 'px';
     }
   }
 }
@@ -11872,7 +12344,7 @@ function renderHome() {
   // === Level + Lesson Circles Layout ===
   try {
     const isEn = state.lang === 'en';
-    const weeks = getW();
+    const chapters = getW();
 
     // Build weekLockMap once
     const weekLockMap = {
@@ -11883,9 +12355,9 @@ function renderHome() {
       4: isWeekCompleted(3),
     };
 
-    // Find the single next-up lesson (first non-done, non-locked lesson across all weeks)
+    // Find the single next-up lesson (first non-done, non-locked lesson across all chapters)
     let nextUpWeekId = null, nextUpDayId = null;
-    for (const w of weeks) {
+    for (const w of chapters) {
       const wkUnlocked = weekLockMap[w.id] !== undefined ? weekLockMap[w.id] : true;
       if (w.locked || !wkUnlocked || !w.days) continue;
       for (let di = 0; di < w.days.length; di++) {
@@ -11898,7 +12370,7 @@ function renderHome() {
       if (nextUpWeekId !== null) break;
     }
 
-    // Auto-select expanded week on first render or subject switch
+    // Auto-select expanded chapter on first render or subject switch
     if (_homeExpandedWeekId === undefined) {
       _homeExpandedWeekId = nextUpWeekId;
     }
@@ -11908,8 +12380,10 @@ function renderHome() {
     hl.innerHTML = '';
 
     let levelNum = 0;
-    weeks.forEach(w => {
+    chapters.forEach(w => {
       if (!w || !w.id) return;
+      // Bonus chapters are shown in the home thinker carousel (see populateCarousel), not in the level-card list
+      if (w.isBonus) return;
       const wkUnlocked = weekLockMap[w.id] !== undefined ? weekLockMap[w.id] : true;
       const wkLocked = w.locked || !wkUnlocked;
       const isBonus = !!w.isBonus;
@@ -11917,14 +12391,15 @@ function renderHome() {
 
       const weekTitle = isEn ? (w.titleEn || w.title) : w.title;
       const eyebrow = isBonus
-        ? (isEn ? 'BONUS WEEK' : 'שבוע בונוס')
+        ? (isEn ? 'BONUS CHAPTER' : 'פרק בונוס')
         : (isEn ? `LEVEL ${levelNum}` : `שלב ${levelNum}`);
       const numDisplay = isBonus ? '★' : levelNum;
       const isExpanded = !wkLocked && (_homeExpandedWeekId === w.id);
 
       // Level card wrapper
+      const isCompleted = w.days && w.days.length > 0 && w.days.every(d => state.completedDays[dayKey(w.id, d.id)]);
       const card = document.createElement('div');
-      card.className = 'level-card' + (isExpanded ? ' expanded' : '') + (wkLocked ? ' locked-week' : '');
+      card.className = 'level-card' + (isExpanded ? ' expanded' : '') + (wkLocked ? ' locked-week' : '') + (isCompleted ? ' completed' : '');
       card.id = 'level-card-' + w.id;
       if (!wkLocked) card.onclick = () => toggleLevel(w.id);
 
@@ -11943,7 +12418,7 @@ function renderHome() {
       `;
       card.appendChild(header);
 
-      // Lesson path (only for unlocked weeks)
+      // Lesson path (only for unlocked chapters)
       if (!wkLocked && w.days && w.days.length) {
         const pathWrap = document.createElement('div');
         pathWrap.className = 'lesson-path-wrap' + (isExpanded ? ' open' : '');
@@ -12015,7 +12490,7 @@ function renderHome() {
     const pc = document.getElementById('practice-card');
     if (pc) {
       if (nextUpWeekId !== null) {
-        const nw = weeks.find(w => w.id === nextUpWeekId);
+        const nw = chapters.find(w => w.id === nextUpWeekId);
         const nd = nw ? (nw.days || []).find(d => d.id === nextUpDayId) : null;
         if (nw && nd) {
           const hasStarted = Object.keys(state.completedDays || {}).length > 0;
@@ -12069,6 +12544,43 @@ function populateCarousel() {
   if (!thinkers.length) { carousel.parentElement.style.display = 'none'; return; }
   carousel.parentElement.style.display = '';
   carousel.innerHTML = '';
+  // Bonus chapter card — philosophy only, always visible; ring fills as chapters 1+2 complete
+  if (subject === 'philosophy') {
+    const isEn = state.lang === 'en';
+    const totalDays = 14;
+    let completedCount = 0;
+    for (let wk = 1; wk <= 2; wk++) {
+      for (let dy = 1; dy <= 7; dy++) {
+        if (state.completedDays[`philosophy-${wk}-${dy}`]) completedCount++;
+      }
+    }
+    const progress = Math.min(1, completedCount / totalDays);
+    const isUnlocked = completedCount >= totalDays;
+    const r = 30;
+    const circumference = 2 * Math.PI * r;
+    const dashOffset = circumference * (1 - progress);
+    const bonusCard = document.createElement('div');
+    bonusCard.className = 'thinker-carousel-card bonus-carousel-item ' + (isUnlocked ? 'unlocked' : 'locked');
+    bonusCard.innerHTML = `
+      <div class="bonus-circle-wrapper">
+        <svg class="bonus-progress-ring" width="64" height="64">
+          <circle cx="32" cy="32" r="${r}" fill="none" stroke="rgba(212,175,55,0.2)" stroke-width="2"/>
+          <circle cx="32" cy="32" r="${r}" fill="none" stroke="#D4AF37" stroke-width="2"
+                  stroke-dasharray="${circumference}"
+                  stroke-dashoffset="${dashOffset}"
+                  transform="rotate(-90 32 32)"/>
+        </svg>
+        <div class="bonus-circle">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#9B6FE4" stroke="#D4AF37" stroke-width="2" stroke-linejoin="round">
+            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+          </svg>
+        </div>
+      </div>
+      <div class="thinker-carousel-name">${isEn ? 'AI & Ethics' : 'בינה ואתיקה'}</div>
+    `;
+    bonusCard.onclick = () => { if (isUnlocked) openBonusChapter(); };
+    carousel.appendChild(bonusCard);
+  }
   thinkers.forEach(t => {
     const unlocked = state.unlockedThinkers.includes(t.id);
     const card = document.createElement('div');
@@ -12080,6 +12592,15 @@ function populateCarousel() {
     if (unlocked) card.onclick = () => openThinkerModal(t.id);
     carousel.appendChild(card);
   });
+}
+
+function openBonusChapter() {
+  const allWeeks = getW();
+  const bonusWeek = allWeeks.find(w => w.id === 'bonus1');
+  if (!bonusWeek || !bonusWeek.days) return;
+  const nextDay = bonusWeek.days.find(d => !state.completedDays[dayKey('bonus1', d.id)]);
+  const target = nextDay || bonusWeek.days[0];
+  if (target) openReader('bonus1', target.id);
 }
 
 function handleHeroContinue() {
@@ -12116,7 +12637,7 @@ function openReader(weekId, dayId) {
     alert(state.lang === 'en' ? 'Coming soon' : 'בקרוב');
     return;
   }
-  try { posthog.capture('lesson_started', { week: weekId, day: dayId }); } catch(e) {}
+  try { posthog.capture('lesson_started', { chapter: weekId, day: dayId }); } catch(e) {}
   state.currentWeek = weekId;
   state.currentDay = dayId;
   state.currentSection = 0;
@@ -12143,8 +12664,8 @@ function updateReadingProgress() {
 }
 
 function renderSectionDots() {
-  const week = getW().find(w => w.id === state.currentWeek);
-  const day = week?.days.find(d => d.id === state.currentDay);
+  const chapter = getW().find(w => w.id === state.currentWeek);
+  const day = chapter?.days.find(d => d.id === state.currentDay);
   if (!day) return;
   const dots = document.getElementById('section-dots');
   if (!dots) return;
@@ -12161,8 +12682,8 @@ function toParas(text) {
 }
 
 function renderReader() {
-  const week = getW().find(w => w.id === state.currentWeek);
-  const day = week.days.find(d => d.id === state.currentDay);
+  const chapter = getW().find(w => w.id === state.currentWeek);
+  const day = chapter.days.find(d => d.id === state.currentDay);
   // Normalize: quiz always comes before reflection, regardless of data order
   const sections = [...day.sections];
   const rIdx = sections.findIndex(s => s.type === 'reflection');
@@ -12295,7 +12816,7 @@ function renderReader() {
     const quizBtnBar = document.getElementById('reader-btn-bar');
     quizBtnBar.innerHTML = '';
     const isFirstSection = state.currentSection === 0;
-    const isFirstDay = week && week.days && week.days[0] && week.days[0].id === state.currentDay;
+    const isFirstDay = chapter && chapter.days && chapter.days[0] && chapter.days[0].id === state.currentDay;
     if (!(isFirstSection && isFirstDay)) {
       const quizRow = document.createElement('div');
       quizRow.className = 'reader-nav-row';
@@ -12389,9 +12910,9 @@ function makeNextBtn(label, isFinish = false, disabled = false) {
   const btnBar = document.getElementById('reader-btn-bar');
   btnBar.innerHTML = '';
 
-  const week = getW().find(w => w.id === state.currentWeek);
+  const chapter = getW().find(w => w.id === state.currentWeek);
   const isFirstSection = state.currentSection === 0;
-  const isFirstDay = week && week.days && week.days[0] && week.days[0].id === state.currentDay;
+  const isFirstDay = chapter && chapter.days && chapter.days[0] && chapter.days[0].id === state.currentDay;
   const hideBack = isFirstSection && isFirstDay;
 
   const row = document.createElement('div');
@@ -12420,14 +12941,14 @@ function makeNextBtn(label, isFinish = false, disabled = false) {
 
 function nextSection() {
   console.log('Next button clicked');
-  const week = getW().find(w => w.id === state.currentWeek);
-  const day = week.days.find(d => d.id === state.currentDay);
+  const chapter = getW().find(w => w.id === state.currentWeek);
+  const day = chapter.days.find(d => d.id === state.currentDay);
   if (state.currentSection < day.sections.length - 1) {
     state.readerXP += 5;
     const xpEl = document.getElementById('reader-xp-display');
     if (xpEl) xpEl.textContent = state.readerXP;
     state.currentSection++;
-    state.lastSection = { week: state.currentWeek, day: state.currentDay, section: state.currentSection };
+    state.lastSection = { chapter: state.currentWeek, day: state.currentDay, section: state.currentSection };
     saveStateLocal();
     state.quizAnswered = {};
     renderReader();
@@ -12487,7 +13008,7 @@ function handleQuiz(chosen, correctIdx, explanation, btn, questionIdx, isSingleQ
   if (!state.dayQuizResults[_dqKey]) state.dayQuizResults[_dqKey] = {};
   state.dayQuizResults[_dqKey][questionIdx] = isCorrect;
 
-  try { posthog.capture('question_answered', { correct: isCorrect, week: state.currentWeek, day: state.currentDay }); } catch(e) {}
+  try { posthog.capture('question_answered', { correct: isCorrect, chapter: state.currentWeek, day: state.currentDay }); } catch(e) {}
 
   if (isSingleQ) {
     // Legacy single-question: show Continue → explanation modal (unchanged behavior)
@@ -12516,8 +13037,8 @@ function handleQuiz(chosen, correctIdx, explanation, btn, questionIdx, isSingleQ
     const sectionBase = `${state.currentSection}-`;
     const answeredCount = Object.keys(state.quizAnswered).filter(k => String(k).startsWith(sectionBase)).length;
     if (answeredCount >= totalQ) {
-      const week = getW().find(w => w.id === state.currentWeek);
-      const day = week && week.days.find(d => d.id === state.currentDay);
+      const chapter = getW().find(w => w.id === state.currentWeek);
+      const day = chapter && chapter.days.find(d => d.id === state.currentDay);
       const isLastSection = day && state.currentSection >= day.sections.length - 1;
       makeNextBtn(isLastSection ? ui.finishBtn : ui.nextBtn, isLastSection);
     }
@@ -12538,8 +13059,8 @@ function showQuizExplanation(earnedXP, isCorrect, explanation) {
 
 function closeQuizFeedbackModal() {
   document.getElementById('modal-quiz-feedback').classList.remove('active');
-  const week = getW().find(w => w.id === state.currentWeek);
-  const day = week.days.find(d => d.id === state.currentDay);
+  const chapter = getW().find(w => w.id === state.currentWeek);
+  const day = chapter.days.find(d => d.id === state.currentDay);
   if (state.currentSection >= day.sections.length - 1) {
     finishDay();
   } else {
@@ -12548,13 +13069,13 @@ function closeQuizFeedbackModal() {
 }
 
 function getNextLessonInfo() {
-  const weeks = getW();
-  const currentWeek = weeks.find(w => w.id === state.currentWeek);
+  const chapters = getW();
+  const currentWeek = chapters.find(w => w.id === state.currentWeek);
   if (!currentWeek) return { hasNext: false };
   const currentDayIndex = currentWeek.days.findIndex(d => d.id === state.currentDay);
   const nextDay = currentWeek.days[currentDayIndex + 1];
   if (nextDay) return { hasNext: true, weekId: state.currentWeek, dayId: nextDay.id };
-  const nextWeek = weeks.find(w => w.id === state.currentWeek + 1);
+  const nextWeek = chapters.find(w => w.id === state.currentWeek + 1);
   if (nextWeek && nextWeek.days.length > 0) {
     return { hasNext: true, weekId: nextWeek.id, dayId: nextWeek.days[0].id };
   }
@@ -12572,8 +13093,19 @@ function _showDcStats(titleText, subtitleText, xpAmount, streakCount, onContinue
   document.getElementById('complete-title').textContent = titleText;
   document.getElementById('complete-subtitle').textContent = subtitleText;
   document.getElementById('modal-xp-earned-label').textContent = isEn ? 'XP earned' : 'XP הרווחת';
-  document.getElementById('modal-streak-label').textContent = isEn ? 'Answer streak' : 'רצף שאלות';
-  document.getElementById('complete-streak').textContent = streakCount;
+  // Day streak: show only once per day; subsequent dialogues hide the metric entirely.
+  const todayStr = new Date().toISOString().split('T')[0];
+  const streakAlreadyShownToday = state.lastStreakShownDate === todayStr;
+  const streakItem = document.getElementById('metric-streak-item');
+  if (streakAlreadyShownToday) {
+    if (streakItem) streakItem.style.display = 'none';
+  } else {
+    if (streakItem) streakItem.style.display = 'flex';
+    document.getElementById('metric-streak-days').textContent = state.dailyStreak || 0;
+    document.getElementById('metric-streak-days-label').textContent = isEn ? 'day streak' : 'ימים רצופים';
+    state.lastStreakShownDate = todayStr;
+    saveStateLocal();
+  }
 
   const xpEl = document.getElementById('complete-xp');
   xpEl.textContent = '+0';
@@ -12608,7 +13140,7 @@ function _showDcStats(titleText, subtitleText, xpAmount, streakCount, onContinue
   setTimeout(() => launchConfetti(), 1200);
 }
 
-function showThinkerCardScreen(thinker, week, day) {
+function showThinkerCardScreen(thinker, chapter, day) {
   const isEn = state.lang === 'en';
   const card = document.getElementById('thinker-unlock-box');
 
@@ -12669,8 +13201,8 @@ function showThinkerCardScreen(thinker, week, day) {
 
 
 function finishDay() {
-  const week = getW().find(w => w.id === state.currentWeek);
-  const day = week.days.find(d => d.id === state.currentDay);
+  const chapter = getW().find(w => w.id === state.currentWeek);
+  const day = chapter.days.find(d => d.id === state.currentDay);
   const key = dayKey(state.currentWeek, state.currentDay);
   const ui = u();
   const isEn = state.lang === 'en';
@@ -12712,29 +13244,14 @@ function finishDay() {
   const todayIndex = new Date().getDay();
   if (!state.activeDays) state.activeDays = {};
   state.activeDays[todayIndex] = true;
-  const today = new Date().toISOString().split('T')[0];
-  if (state.lastActiveDate !== today) {
-    state.lastActiveDate = today;
-    if (!state.activeDates) state.activeDates = [];
-    if (!state.activeDates.includes(today)) state.activeDates.push(today);
-    let streak = 0;
-    let checkDate = new Date();
-    while (true) {
-      const dateStr = checkDate.toISOString().split('T')[0];
-      if (state.activeDates.includes(dateStr)) { streak++; checkDate.setDate(checkDate.getDate() - 1); }
-      else break;
-    }
-    state.dailyStreak = streak;
-    state.streakHistory = state.streakHistory || {};
-    state.streakHistory[today] = state.dailyStreak;
-  }
+  updateDailyStreak();
 
   // Unlock thinker
   const thinkerId = day.thinkerId;
   const isNewThinker = thinkerId && !state.unlockedThinkers.includes(thinkerId);
   if (isNewThinker) state.unlockedThinkers.push(thinkerId);
 
-  // Week completion bonus
+  // Chapter completion bonus
   const totalDays = getW().find(w => w.id === state.currentWeek).days.length;
   const completedInWeek = getW().find(w => w.id === state.currentWeek).days
     .filter(d => state.completedDays[dayKey(state.currentWeek, d.id)]).length;
@@ -12744,14 +13261,26 @@ function finishDay() {
   try { saveState(); } catch(e) { saveStateLocal(); }
 
   try {
-    posthog.capture('day_completed', { week: state.currentWeek, day: state.currentDay });
-    if (completedInWeek === totalDays) posthog.capture('week_completed', { week: state.currentWeek });
+    posthog.capture('day_completed', { chapter: state.currentWeek, day: state.currentDay });
+    if (completedInWeek === totalDays) posthog.capture('week_completed', { chapter: state.currentWeek });
   } catch(e) {}
 
   if (state.currentWeek === 2 && state.currentDay === 7 && isWeekCompleted(2) && isWeekCompleted(1) && !state.bonusUnlockShown) {
     state.bonusUnlockShown = true;
     saveStateLocal();
     setTimeout(() => showUnlockOverlay(), 1000);
+  }
+
+  // Chapter-complete celebration overlay — fires once per chapter when the last day completes the chapter
+  const currentWeekId = state.currentWeek;
+  const completedWeek = getW().find(w => w.id === currentWeekId);
+  if (completedWeek && completedWeek.days && completedWeek.days.length > 0 &&
+      completedWeek.days.every(d => state.completedDays[dayKey(completedWeek.id, d.id)]) &&
+      !(state.chapterCompleteShown && state.chapterCompleteShown[completedWeek.id])) {
+    state.chapterCompleteShown = state.chapterCompleteShown || {};
+    state.chapterCompleteShown[completedWeek.id] = true;
+    saveStateLocal();
+    setTimeout(() => showChapterCompleteOverlay(completedWeek), 1000);
   }
 
   const thinker = getT().find(t => t.id === thinkerId);
@@ -12763,7 +13292,7 @@ function finishDay() {
     state.readerXP,
     state.correctInRow,
     showThinker
-      ? { label: isEn ? 'A new thinker awaits →' : 'הוגה חדש מחכה ←', fn: () => showThinkerCardScreen(thinker, week, day) }
+      ? { label: isEn ? 'A new thinker awaits →' : 'הוגה חדש מחכה ←', fn: () => showThinkerCardScreen(thinker, chapter, day) }
       : { label: isEn ? 'Back to Home' : 'חזרה לבית', fn: closeCompleteModal }
   );
 
@@ -12786,8 +13315,8 @@ function showSharePrompt() {
   const isEn = state.lang === 'en';
   const messages = {
     philosophy: {
-      en: 'Philosophy is a conversation, not a monologue. If you enjoyed this week - let a friend discover it too.',
-      he: 'פילוסופיה היא שיחה, לא מונולוג. אם נהנית מהשבוע הזה - תן לחבר לגלות אותו גם.'
+      en: 'Philosophy is a conversation, not a monologue. If you enjoyed this chapter - let a friend discover it too.',
+      he: 'פילוסופיה היא שיחה, לא מונולוג. אם נהנית מהפרק הזה - תן לחבר לגלות אותו גם.'
     },
     economics: {
       en: "The free market has determined you now have a surplus of knowledge. Let a friend discover it too - it's a rare case where sharing is also free.",
@@ -13382,7 +13911,7 @@ function setSubject(value) {
   state.subject = value;
   localStorage.setItem('corpus_subject', value);
   applyTheme(value);
-  _homeExpandedWeekId = undefined; // reset so new subject auto-selects active week
+  _homeExpandedWeekId = undefined; // reset so new subject auto-selects active chapter
 }
 
 function _subjGetIdx() {
@@ -13564,11 +14093,12 @@ async function enterApp(user) {
 
 function initUI() {
   try {
-    console.log('[Init] initUI started, corpusData weeks:', corpusData && corpusData.weeks && corpusData.weeks.length);
+    console.log('[Init] initUI started, corpusData chapters:', corpusData && corpusData.weeks && corpusData.weeks.length);
     console.log('[Init] THINKERS length:', THINKERS && THINKERS.length);
     loadState();
     migrateCompletedDaysKeys();
     migrateDayQuizResults();
+    recalculateStreak();
     applyTheme(state.subject);
     document.documentElement.dir = state.lang === 'en' ? 'ltr' : 'rtl';
     document.documentElement.lang = state.lang;
@@ -13724,9 +14254,7 @@ function showPantheonScreen() {
   updateBottomNav('pantheon');
   renderPantheon();
   showScreen('pantheon');
-  document.getElementById('pantheon-streak').textContent = state.dailyStreak;
-  document.getElementById('pantheon-xp').textContent = state.xp;
-  document.getElementById('pantheon-level').textContent = getLevel(state.xp);
+  updateStatsBar();
   requestAnimationFrame(() => {
     const pantheonTopbar = document.querySelector('#screen-pantheon .topbar');
     const pantheonStats = document.querySelector('#screen-pantheon .stats-subheader');
@@ -13779,7 +14307,7 @@ function renderProfile() {
   const streakLabel = document.getElementById('pf-streak-label');
   if (streakLabel) streakLabel.textContent = isEn ? 'Day Streak' : 'ימים ברצף';
 
-  // Week dots
+  // Chapter dots
   const dayLabels = ['א','ב','ג','ד','ה','ו','ש'];
   const dayLabelsEn = ['S','M','T','W','T','F','S'];
   const labels = isEn ? dayLabelsEn : dayLabels;
@@ -13822,11 +14350,16 @@ function renderProfile() {
     if (levelNameEl) levelNameEl.textContent = isEn ? (currentLevel.nameEn || currentLevel.name) : currentLevel.name;
     if (xpValEl) xpValEl.textContent = xp + ' XP';
 
-    // Big current-level badge
+    // Big current-level badge — clickable, opens the level-journey screen
     const badgeImg = document.getElementById('pf-current-badge-img');
     if (badgeImg && currentLevel.icon) {
       badgeImg.src = currentLevel.icon;
       badgeImg.alt = currentLevel.name;
+    }
+    const badgeWrapper = document.querySelector('.pf-current-badge');
+    if (badgeWrapper) {
+      badgeWrapper.style.cursor = 'pointer';
+      badgeWrapper.onclick = openLevelJourney;
     }
 
     if (nextLevel) {
@@ -13839,17 +14372,7 @@ function renderProfile() {
       if (xpNext) xpNext.textContent = 'Maximum level!';
     }
 
-    // Badges row — all 8 levels
-    const badgesRow = document.getElementById('pf-badges-row');
-    if (badgesRow) {
-      badgesRow.innerHTML = LEVELS.map((lvl, i) => {
-        const earned = levelIndex >= i;
-        return `<div class="pf-badge-item${earned ? ' earned' : ''}" title="${lvl.name}">
-          <img src="${lvl.icon}" alt="${lvl.name}"/>
-          <span class="pf-badge-name">${lvl.name}</span>
-        </div>`;
-      }).join('');
-    }
+    // Badges row removed — the level journey screen is now accessed by tapping the big current badge
   }
 
   const logoutBtn = document.getElementById('pf-logout-btn');
@@ -13911,6 +14434,134 @@ function showProfileScreen() {
   renderProfile();
   animateScreen(document.getElementById('screen-profile'), 'anim-fade-up');
 }
+
+// === Level Journey screen ===
+function getCurrentLevelIndex() {
+  if (!LEVELS) return 0;
+  const xp = state.xp || 0;
+  for (let i = LEVELS.length - 1; i >= 0; i--) {
+    if (xp >= LEVELS[i].min) return i;
+  }
+  return 0;
+}
+
+function openLevelJourney() {
+  const scrollContainer = document.getElementById('journey-scroll');
+  if (!scrollContainer) return;
+  scrollContainer.innerHTML = '';
+
+  const currentIndex = getCurrentLevelIndex();
+  // Render levels from highest (top) to lowest (bottom)
+  for (let i = LEVELS.length - 1; i >= 0; i--) {
+    const level = LEVELS[i];
+    const isCurrent = i === currentIndex;
+    const isEarned = i < currentIndex;
+    const isLocked = i > currentIndex;
+    let className = 'journey-level';
+    if (isCurrent) className += ' current';
+    if (isEarned) className += ' earned';
+    if (isLocked) className += ' locked';
+
+    const levelEl = document.createElement('div');
+    levelEl.className = className;
+    levelEl.dataset.levelIndex = i;
+    const xpText = isLocked
+      ? `${level.min.toLocaleString()} XP REQUIRED`
+      : `${level.min.toLocaleString()} XP`;
+    levelEl.innerHTML = `
+      ${isCurrent ? '<div class="journey-current-marker">YOU ARE HERE</div>' : ''}
+      <div class="journey-badge-wrapper">
+        <img class="journey-badge" src="${level.icon}" alt="${level.name}">
+      </div>
+      <div class="journey-name">${level.name}</div>
+      <div class="journey-xp">${xpText}</div>
+    `;
+
+    const badgeWrapper = levelEl.querySelector('.journey-badge-wrapper');
+    if (isEarned || isCurrent) {
+      badgeWrapper.addEventListener('click', () => {
+        levelEl.classList.add('rotating');
+        setTimeout(() => levelEl.classList.remove('rotating'), 800);
+      });
+    } else if (isLocked) {
+      badgeWrapper.addEventListener('click', () => {
+        levelEl.classList.add('shaking');
+        setTimeout(() => levelEl.classList.remove('shaking'), 400);
+        const needed = level.min - (state.xp || 0);
+        showJourneyToast(`Need ${needed.toLocaleString()} more XP to unlock`);
+      });
+    }
+    scrollContainer.appendChild(levelEl);
+  }
+
+  // Hide all other screens and reveal the journey
+  document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+  const screen = document.getElementById('screen-level-journey');
+  screen.style.display = 'block';
+
+  // Hide app chrome while immersive
+  const topbar = document.querySelector('.topbar');
+  const stats = document.querySelector('.stats-subheader');
+  const bottomNav = document.querySelector('.bottom-nav');
+  const practiceCard = document.getElementById('practice-card');
+  const drawerToggle = document.getElementById('drawer-toggle-btn');
+  if (topbar) topbar.style.display = 'none';
+  if (stats) stats.style.display = 'none';
+  if (bottomNav) bottomNav.style.display = 'none';
+  if (practiceCard) practiceCard.style.display = 'none';
+  if (drawerToggle) drawerToggle.style.display = 'none';
+
+  // Scroll to current level after layout settles
+  setTimeout(() => {
+    const currentEl = scrollContainer.querySelector('.journey-level.current');
+    if (currentEl) currentEl.scrollIntoView({ behavior: 'instant', block: 'center' });
+  }, 100);
+
+  state.currentScreen = 'level-journey';
+}
+
+function closeLevelJourney() {
+  const screen = document.getElementById('screen-level-journey');
+  if (screen) screen.style.display = 'none';
+
+  // Clear the inline display:none we set on all .screen elements when opening the journey,
+  // so the .screen / .screen.active CSS rules can take over again.
+  document.querySelectorAll('.screen').forEach(s => {
+    if (s.id !== 'screen-level-journey') s.style.display = '';
+  });
+
+  // Restore chrome inline styles so showScreen's visibility logic can re-apply cleanly
+  const topbar = document.querySelector('.topbar');
+  const stats = document.querySelector('.stats-subheader');
+  const bottomNav = document.querySelector('.bottom-nav');
+  if (topbar) topbar.style.display = '';
+  if (stats) stats.style.display = '';
+  if (bottomNav) bottomNav.style.display = '';
+
+  // Show + render profile
+  showProfileScreen();
+  if (typeof renderProfile === 'function') renderProfile();
+}
+
+function showJourneyToast(text) {
+  let toast = document.getElementById('journey-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'journey-toast';
+    toast.className = 'journey-toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = text;
+  toast.classList.add('show');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// Wire the back button (the element already exists in the static HTML)
+document.addEventListener('DOMContentLoaded', () => {
+  const backBtn = document.getElementById('journey-back-btn');
+  if (backBtn) backBtn.addEventListener('click', closeLevelJourney);
+});
 
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
   initUI();
@@ -14074,6 +14725,36 @@ document.addEventListener('DOMContentLoaded', function() {
     <p class="unlock-p" id="unlock-subtitle">אתיקה ובינה מלאכותית · קאנט פוגש את ChatGPT</p>
     <button class="unlock-cta-btn" onclick="closeUnlockOverlay()" id="unlock-cta">בוא נראה ←</button>
   </div>
+</div>
+
+<div class="dc-screen dc-stats-screen" id="chapter-complete-overlay" style="display:none">
+  <div class="dc-title" id="chapter-complete-title">פרק 1 הושלם!</div>
+  <div class="dc-subtitle" id="chapter-complete-subtitle"></div>
+  <div class="dc-stats-zone">
+    <div class="dc-xp" id="chapter-xp-block">
+      <div class="dc-sparkle">✦</div>
+      <div class="dc-xp-value" id="chapter-complete-xp">+0</div>
+      <div class="dc-xp-label">XP הרווחת</div>
+    </div>
+    <div class="metrics-row">
+      <div class="metric-item">
+        <div class="metric-icon">
+          <svg width="56" height="56" viewBox="0 0 64 64"><use href="#ic-source"/></svg>
+        </div>
+        <div class="metric-number" id="chapter-stat-lessons">0</div>
+        <div class="metric-label">דיאלוגים</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-icon">
+          <svg width="56" height="56" viewBox="0 0 64 64"><use href="#ic-pantheon"/></svg>
+        </div>
+        <div class="metric-number" id="chapter-stat-thinkers">0</div>
+        <div class="metric-label">הוגים שפגשנו</div>
+      </div>
+    </div>
+  </div>
+  <button class="dc-continue-btn" id="chapter-continue-btn">המשך לפרק הבא</button>
+  <button id="chapter-back-home-btn">חזרה לבית</button>
 </div>
 
 
