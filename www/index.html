@@ -2934,6 +2934,20 @@
     text-align: center;
     font-family: 'Nunito', sans-serif;
   }
+  .auth-guest-link {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.85);
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 8px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.18s;
+  }
+  .auth-guest-link:hover { color: #fff; }
   .logout-btn {
     background: none;
     border: none;
@@ -4688,6 +4702,7 @@
     <button class="auth-btn auth-btn-primary" id="auth-submit-btn" onclick="handleAuthSubmit()">Sign In</button>
 
   </div>
+  <button class="auth-guest-link" onclick="enterAsGuest()">Try the first dialogue →</button>
 </div>
 
 <div id="app">
@@ -5087,6 +5102,14 @@ function hideAuthScreen() {
   document.getElementById('app').style.display = '';
   const nav = document.getElementById('bottom-nav');
   if (nav) nav.style.display = 'flex';
+}
+
+function enterAsGuest() {
+  // Guest entry: reveal the app without auth.
+  // Do NOT set appStarted (leave false so the real enterApp runs on sign-in).
+  // Do NOT set currentUser (leave null — that's how the engine knows it's a guest).
+  hideAuthScreen();
+  renderHome();
 }
 
 let authMode = 'signin';
