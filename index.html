@@ -296,6 +296,17 @@
     color: var(--accent);
     letter-spacing: -0.5px;
   }
+  .topbar-signin {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 6px 10px;
+    white-space: nowrap;
+  }
   .topbar-tagline {
     font-family: 'Nunito', sans-serif;
     font-size: 11px;
@@ -4702,7 +4713,7 @@
     <button class="auth-btn auth-btn-primary" id="auth-submit-btn" onclick="handleAuthSubmit()">Sign In</button>
 
   </div>
-  <button class="auth-guest-link" onclick="enterAsGuest()">Try the first dialogue →</button>
+  <button class="auth-guest-link" onclick="enterAsGuest()">Keep exploring →</button>
 </div>
 
 <div id="app">
@@ -4785,7 +4796,7 @@
     <div class="topbar-logo-wrap">
       <div class="topbar-logo">Corpus</div>
     </div>
-    <div style="width:44px"></div>
+    <button id="topbar-signin-btn" class="topbar-signin" onclick="setAuthMode('signup'); showAuthScreen();" style="display:none;">Sign in</button>
   </div>
 
   <!-- Fixed bottom practice card — sibling of screens so ancestor transforms don't drag it -->
@@ -5044,6 +5055,18 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-guest-signup">
+  <div class="modal-box">
+    <div class="modal-title" id="guest-signup-title">Save your progress</div>
+    <div class="modal-subtitle" id="guest-signup-body">Nice start. Create a free account so your progress is always here.</div>
+    <button class="nav-btn auth-btn-social" onclick="closeGuestSignupPrompt(); authWithGoogle();" style="margin-top:16px;">
+      <span class="auth-social-icon">G</span> Continue with Google
+    </button>
+    <button class="nav-btn" id="guest-signup-email-btn" onclick="closeGuestSignupPrompt(); setAuthMode('signup'); showAuthScreen();" style="margin-top:10px;">Sign up with email</button>
+    <div class="share-modal-skip" id="guest-signup-skip" onclick="closeGuestSignupPrompt();">Maybe later</div>
+  </div>
+</div>
+
 <script>
 // Script Version: 1.3 - GitHub Pages Migration
 // ═══════════════════════════════════════════════════════════
@@ -5199,20 +5222,28 @@ function showIntro() {
 }
 
 function showAuthFlow() {
-  // Logged-out entry point. Show intro once, then the auth form.
+  // Logged-out entry point. Show intro once, then enter as guest.
   if (!localStorage.getItem('corpus_intro_done')) {
     const overlay = document.getElementById('intro-overlay');
     if (overlay) { overlay.style.display = 'block'; return; }
   }
-  showAuthScreen();
+  enterAsGuest();
 }
 
 function closeIntro() {
   localStorage.setItem('corpus_intro_done', '1');
   document.getElementById('intro-overlay').style.display = 'none';
   if (!currentUser) {
-    // Pre-auth path: carousel finished, now ask them to sign in.
-    showAuthScreen();
+    // Pre-auth path: carousel finished. Reveal the app, then pick a subject
+    // first — subjConfirm() chains into startOnboarding on its own, so do NOT
+    // call startOnboarding here (it would double-fire).
+    hideAuthScreen();
+    if (!localStorage.getItem('corpus_subject')) {
+      showSubjectSelect();
+    } else {
+      renderHome();
+      setTimeout(startOnboarding, 500);
+    }
     return;
   }
   // Post-auth path (unchanged behavior):
@@ -11818,6 +11849,7 @@ let state = {
   activeDates: [],
   streakHistory: {},
   chapterCompleteShown: {}, // { weekId: true } — fires the chapter-complete overlay once per chapter
+  guestSignupPromptShown: false,
 
   subject: 'philosophy',
 };
@@ -12316,6 +12348,15 @@ function renderHome() {
     const subjName = (window.SUBJECTS || []).find(s => s.id === subj)?.name || (subj.charAt(0).toUpperCase() + subj.slice(1));
     const topbarIcon = document.getElementById('subj-topbar-icon');
     if (topbarIcon) { topbarIcon.src = subjIconSrc; topbarIcon.alt = subjName; }
+  } catch(e) {}
+
+  // Guest "Sign in" affordance in topbar
+  try {
+    const signinBtn = document.getElementById('topbar-signin-btn');
+    if (signinBtn) {
+      signinBtn.style.display = currentUser ? 'none' : 'inline-flex';
+      signinBtn.textContent = (state.lang === 'en') ? 'Sign in' : 'התחברות';
+    }
   } catch(e) {}
 
   // Back button
@@ -13342,8 +13383,48 @@ function finishDay() {
 function closeCompleteModal() {
   document.getElementById('modal-complete').classList.remove('active');
   const shouldShowShare = state.currentWeek === 1 && state.currentDay === 7;
+
+  const isFirstGuestCompletion = !currentUser
+    && !state.guestSignupPromptShown
+    && Object.keys(state.completedDays).filter(k => !k.endsWith('-0')).length === 1;
+
+  if (isFirstGuestCompletion) {
+    // Show the soft signup prompt as the user leaves the completion flow,
+    // AFTER they've seen the thinker card. Defer goHome until the prompt closes.
+    showGuestSignupPrompt(() => {
+      goHome();
+      if (shouldShowShare) setTimeout(showSharePrompt, 400);
+    });
+    return;
+  }
+
   goHome();
   if (shouldShowShare) setTimeout(showSharePrompt, 400);
+}
+
+let _guestSignupPendingFn = null;
+function showGuestSignupPrompt(originalFn) {
+  _guestSignupPendingFn = originalFn || null;
+  // Close the day-complete screen so the prompt isn't hidden behind it
+  const completeModal = document.getElementById('modal-complete');
+  if (completeModal) completeModal.classList.remove('active');
+  state.guestSignupPromptShown = true;
+  saveStateLocal();
+  document.getElementById('modal-guest-signup').classList.add('active');
+  // localize
+  const isEn = state.lang === 'en';
+  document.getElementById('guest-signup-title').textContent = isEn ? 'Save your progress' : 'שמרו על ההתקדמות';
+  document.getElementById('guest-signup-body').textContent = isEn ? 'Nice start. Create a free account so your progress is always here.' : 'התחלה יפה. צרו חשבון חינם כדי שההתקדמות תמיד תחכה לכם.';
+  const emailBtn = document.getElementById('guest-signup-email-btn');
+  if (emailBtn) emailBtn.textContent = isEn ? 'Sign up with email' : 'הרשמה עם אימייל';
+  const skip = document.getElementById('guest-signup-skip');
+  if (skip) skip.textContent = isEn ? 'Maybe later' : 'אולי אחר כך';
+}
+function closeGuestSignupPrompt() {
+  document.getElementById('modal-guest-signup').classList.remove('active');
+  const fn = _guestSignupPendingFn;
+  _guestSignupPendingFn = null;
+  if (typeof fn === 'function') fn();   // continue the original post-dialogue flow
 }
 
 function showSharePrompt() {
