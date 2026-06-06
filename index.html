@@ -187,9 +187,9 @@
 
   /* ── Top bar ── */
   .topbar {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: space-between;
     background: var(--bg);
     padding: 12px 16px;
     padding-top: calc(12px + env(safe-area-inset-top));
@@ -229,6 +229,7 @@
     font-weight: 800;
     font-size: 14px;
     color: var(--accent);
+    justify-self: center;
   }
   .stats-subheader {
     background: #FFFFFF;
@@ -306,6 +307,7 @@
     cursor: pointer;
     padding: 6px 10px;
     white-space: nowrap;
+    justify-self: end;
   }
   .topbar-tagline {
     font-family: 'Nunito', sans-serif;
@@ -5194,15 +5196,38 @@ async function handleAuthSubmit() {
 
 async function authWithGoogle() {
   const btn = document.querySelector('.auth-btn-social');
-  if (btn) { btn.disabled = true; btn.textContent = 'Redirecting...'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Signing in...'; }
+  const errEl0 = document.getElementById('auth-error');
+  if (errEl0) errEl0.textContent = '';
+  const _isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
   try {
-    const { error } = await sb.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: 'https://omeroth.github.io/corpus-app/' }
-    });
-    if (error) throw error;
+    if (_isNative) {
+      // Native iOS: native Google Sign-In via Capgo, then hand the idToken to Supabase.
+      // Log out of the plugin's cached Google session first so the account
+      // picker always appears (otherwise iOS silently reuses the last account).
+      try { await window.Capacitor.Plugins.SocialLogin.logout({ provider: 'google' }); } catch(e) {}
+      const res = await window.Capacitor.Plugins.SocialLogin.login({
+        provider: 'google',
+        options: { scopes: ['email', 'profile'] }
+      });
+      const idToken = res && res.result && res.result.idToken;
+      if (!idToken) throw new Error('No idToken from Google');
+      const { error } = await sb.auth.signInWithIdToken({ provider: 'google', token: idToken });
+      if (error) throw error;
+      // Native has no automatic reload like the web OAuth redirect. The
+      // in-place render path races on device, so reload: the persisted
+      // session fires INITIAL_SESSION on fresh load and enterApp runs cleanly.
+      window.location.reload();
+    } else {
+      // Web: existing OAuth redirect — unchanged.
+      const { error } = await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: 'https://omeroth.github.io/corpus-app/' }
+      });
+      if (error) throw error;
+    }
   } catch(e) {
-    console.error('[Auth] Google OAuth error:', e);
+    console.error('[Auth] Google sign-in error:', e);
     const errEl = document.getElementById('auth-error');
     if (errEl) errEl.textContent = 'Sign in failed. Please try again.';
     if (btn) { btn.disabled = false; btn.innerHTML = '<span class="auth-social-icon">G</span> Continue with Google'; }
@@ -14231,6 +14256,23 @@ function initUI() {
   (async function initApp() {
     try {
       console.log('[Auth] initApp started');
+
+      // Native Google Sign-In (Capgo plugin). No-op on web.
+      const _isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+      if (_isNative) {
+        try {
+          await window.Capacitor.Plugins.SocialLogin.initialize({
+            google: {
+              iOSClientId: '1010803138404-cs8f3t5vvcqjv0rgldlpm25o07sir1i7.apps.googleusercontent.com',
+              webClientId: '1010803138404-1s69nn3b8voc2ip3klgbrfugeu945bdp.apps.googleusercontent.com',
+              mode: 'online'
+            }
+          });
+          console.log('[Auth] SocialLogin initialized (native)');
+        } catch(e) {
+          console.error('[Auth] SocialLogin init failed:', e);
+        }
+      }
 
       // Handle email verification redirect (access_token in URL hash)
       let initialEventReceived = false;
