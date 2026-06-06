@@ -214,10 +214,9 @@
     top: 0;
     z-index: 100;
     background: var(--bg);
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: space-between;
     width: 100%;
     box-sizing: border-box;
     margin-left: 0;
@@ -682,13 +681,13 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding-left: 45px;
   }
   .pf-streak-group {
     display: flex;
     align-items: center;
     gap: 8px;
   }
+  [dir="ltr"] .pf-streak-group { flex-direction: row-reverse; }
   .pf-flame {
     width: 52px;
     height: 52px;
@@ -1376,8 +1375,9 @@
 
   /* ── Home: thinker carousel ── */
   .thinker-carousel-wrap {
-    overflow: hidden;
-    padding: 16px 0;
+    overflow: visible;
+    padding: 0;
+    margin: -38px 0;
     position: relative;
   }
   .thinker-carousel {
@@ -1386,7 +1386,7 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-    padding: 4px 16px 8px;
+    padding: 50px 16px 50px;
     cursor: grab;
   }
   .thinker-carousel::-webkit-scrollbar { display: none; }
@@ -4907,7 +4907,7 @@
       </div>
     </div>
 
-    <button class="pf-logout-btn" onclick="authLogout()" id="pf-logout-btn">התנתק</button>
+    <button class="pf-logout-btn" onclick="showLogoutConfirm()" id="pf-logout-btn">התנתק</button>
 
   </div>
 </div>
@@ -5066,6 +5066,15 @@
     </button>
     <button class="nav-btn" id="guest-signup-email-btn" onclick="closeGuestSignupPrompt(); setAuthMode('signup'); showAuthScreen();" style="margin-top:10px;">Sign up with email</button>
     <div class="share-modal-skip" id="guest-signup-skip" onclick="closeGuestSignupPrompt();">Maybe later</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-logout-confirm">
+  <div class="modal-box">
+    <div class="modal-title" id="logout-confirm-title">Sign out?</div>
+    <div class="modal-subtitle" id="logout-confirm-body">You'll need to sign back in to access your progress on this device.</div>
+    <button class="nav-btn" id="logout-confirm-yes" onclick="closeLogoutConfirm(); authLogout();" style="margin-top:16px;">Sign out</button>
+    <div class="share-modal-skip" id="logout-confirm-cancel" onclick="closeLogoutConfirm();">Cancel</div>
   </div>
 </div>
 
@@ -5267,6 +5276,7 @@ function closeIntro() {
       showSubjectSelect();
     } else {
       renderHome();
+      showScreen('home');
       setTimeout(startOnboarding, 500);
     }
     return;
@@ -11952,7 +11962,7 @@ function showScreen(id) {
   const globalTopbar = document.getElementById('topbar');
   if (globalTopbar) {
     const showTopbar = ['home', 'profile', 'pantheon'].includes(id);
-    globalTopbar.style.display = showTopbar ? 'flex' : 'none';
+    globalTopbar.style.display = showTopbar ? '' : 'none';
   }
   // Global stats subheader: show on home/profile/pantheon, hide on reader/subject/auth/onboarding
   const statsBar = document.querySelector('.stats-subheader');
@@ -12380,7 +12390,7 @@ function renderHome() {
     const signinBtn = document.getElementById('topbar-signin-btn');
     if (signinBtn) {
       signinBtn.style.display = currentUser ? 'none' : 'inline-flex';
-      signinBtn.textContent = (state.lang === 'en') ? 'Sign in' : 'התחברות';
+      signinBtn.textContent = 'Sign in';
     }
   } catch(e) {}
 
@@ -13452,6 +13462,20 @@ function closeGuestSignupPrompt() {
   if (typeof fn === 'function') fn();   // continue the original post-dialogue flow
 }
 
+function showLogoutConfirm() {
+  document.getElementById('modal-logout-confirm').classList.add('active');
+  const isEn = state.lang === 'en';
+  document.getElementById('logout-confirm-title').textContent = isEn ? 'Sign out?' : 'להתנתק?';
+  document.getElementById('logout-confirm-body').textContent = isEn ? "You'll need to sign back in to access your progress on this device." : 'תצטרכו להתחבר מחדש כדי לגשת להתקדמות שלכם במכשיר הזה.';
+  const yes = document.getElementById('logout-confirm-yes');
+  if (yes) yes.textContent = isEn ? 'Sign out' : 'התנתקות';
+  const cancel = document.getElementById('logout-confirm-cancel');
+  if (cancel) cancel.textContent = isEn ? 'Cancel' : 'ביטול';
+}
+function closeLogoutConfirm() {
+  document.getElementById('modal-logout-confirm').classList.remove('active');
+}
+
 function showSharePrompt() {
   const subject = state.subject || 'philosophy';
   const flagKey = `corpus_share_shown_${subject}`;
@@ -14223,7 +14247,9 @@ async function enterApp(user) {
     saveStateLocal();
   }
   hideAuthScreen();
+  _homeExpandedWeekId = undefined;
   renderHome();
+  showScreen('home');
   showIntro();
   // If intro already done, handle routing now; otherwise closeIntro() handles it
   if (localStorage.getItem('corpus_intro_done')) {
@@ -14249,6 +14275,7 @@ function initUI() {
     // Render home immediately from local state so the screen is never blank.
     // Auth check runs in parallel and calls renderHome() again once resolved.
     renderHome();
+    showScreen('home');
   } catch(e) {
     console.error('[Init] initUI failed:', e);
   }

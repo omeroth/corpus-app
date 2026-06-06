@@ -36,7 +36,7 @@
     display:flex;flex-direction:column;justify-content:flex-end;padding:24px 28px 32px}
 
   /* ===== Top chrome (progress + skip) ===== */
-  .top{position:absolute;top:18px;left:0;right:0;padding:0 22px;
+  .top{position:absolute;top:calc(18px + env(safe-area-inset-top));left:0;right:0;padding:0 22px;
     display:flex;align-items:center;justify-content:space-between;z-index:30}
   .dots{display:flex;gap:7px}
   .dot{width:24px;height:5px;border-radius:99px;background:rgba(255,255,255,.28);
@@ -305,7 +305,7 @@
       <button class="dot" data-i="1" aria-label="Step 2"></button>
       <button class="dot" data-i="2" aria-label="Step 3"></button>
     </div>
-    <button class="skip" id="skip">Sign in</button>
+    <button class="skip" id="skip">Skip</button>
   </div>
 
   <!-- ===== Carousel rail ===== -->
