@@ -12299,6 +12299,8 @@ function isWeekCompleted(weekId) {
 }
 
 function canAccessChapter(weekId) {
+  // TEMP: paywall disabled while Lemon Squeezy is in test mode — remove this line to re-enable
+  return true;
   // First chapter of each subject is always free
   if (weekId === 1) return true;
   // Everything else requires paid access
