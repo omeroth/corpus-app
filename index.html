@@ -12747,7 +12747,16 @@ function renderHome() {
 }
 
 const CAROUSEL_ORDER = {
-  philosophy: ['socrates', 'plato', 'russell', 'wittgenstein', 'aurelius', 'aristotle', 'kant', 'mill', 'nietzsche', 'thomson'],
+  philosophy: [
+    // Ch1: Foundations
+    'socrates', 'plato', 'russell', 'wittgenstein', 'aurelius',
+    // Ch2: Ethics
+    'aristotle', 'kant', 'mill', 'nietzsche', 'thomson',
+    // Ch3: Doubt & Knowledge
+    'descartes', 'hume', 'gettier', 'popper',
+    // Ch4: What is Reality?
+    'spinoza', 'berkeley', 'bostrom',
+  ],
   economics: ['samuelson', 'smith', 'marx', 'keynes', 'friedman', 'sen', 'jevons', 'marshall', 'kahneman', 'ricardo', 'piketty', 'aquinas', 'pareto', 'rawls', 'nozick', 'hayek', 'locke', 'mill-econ', 'walras', 'sandel'],
   psychology: []
 };
