@@ -5457,7 +5457,7 @@ async function authLogout() {
     lang, currentScreen: 'home', currentWeek: null, currentDay: null,
     currentSection: 0, readerXP: 0, quizAnswered: {}, quizCorrect: false,
     userEmail: '', userMeta: {}, activeDays: {}, todayCompleted: 0,
-    activeDates: [], lastActiveDate: '', lastStreakShownDate: '', streakHistory: {}, chapterCompleteShown: {}, subject: 'philosophy'
+    activeDates: [], lastActiveDate: '', lastStreakShownDate: '', streakHistory: {}, chapterCompleteShown: {}, chapterXPByWeek: {}, subject: 'philosophy'
   };
   try { localStorage.removeItem('corpus_state'); } catch(e) {}
   showAuthScreen();
@@ -5469,14 +5469,14 @@ async function authLogout() {
 // ═══════════════════════════════════════════════════════════
 
 const LEVELS = [
-  { name: 'Novice', min: 0, max: 200, icon: './images/levels/level1-novice.png', color: '#87CEEB', quote: 'The journey of a thousand miles begins with a single step.', quoteAuthor: 'Lao Tzu' },
-  { name: 'Apprentice', min: 200, max: 500, icon: './images/levels/level2-apprentice.png', color: '#9CAF88', quote: 'The mind is not a vessel to be filled, but a fire to be kindled.', quoteAuthor: 'Plutarch' },
-  { name: 'Disciple', min: 500, max: 1000, icon: './images/levels/level3-disciple.png', color: '#E4B556', quote: 'It is the mark of an educated mind to entertain a thought without accepting it.', quoteAuthor: 'Aristotle' },
-  { name: 'Scholar', min: 1000, max: 1800, icon: './images/levels/level4-scholar.png', color: '#E69A4A', quote: 'The more I read, the more I acquire, the more certain I am that I know nothing.', quoteAuthor: 'Voltaire' },
-  { name: 'Reasoner', min: 1800, max: 3000, icon: './images/levels/level5-reasoner.png', color: '#C8423D', quote: 'The greatest enemy of knowledge is not ignorance, it is the illusion of knowledge.', quoteAuthor: 'Stephen Hawking' },
-  { name: 'Philosopher', min: 3000, max: 4500, icon: './images/levels/level6-philosopher.png', color: '#2D4D8A', quote: 'We do not see things as they are, we see them as we are.', quoteAuthor: 'Anaïs Nin' },
-  { name: 'Sage', min: 4500, max: 6500, icon: './images/levels/level7-sage.png', color: '#6B4E8C', quote: 'Wisdom is not a product of schooling but of the lifelong attempt to acquire it.', quoteAuthor: 'Albert Einstein' },
-  { name: 'Luminary', min: 6500, max: 99999, icon: './images/levels/level8-luminary.png', color: '#D4A634', quote: 'Be the change you wish to see in the world.', quoteAuthor: 'Mahatma Gandhi' },
+  { name: 'Novice', min: 0, max: 450, icon: './images/levels/level1-novice.png', color: '#87CEEB', quote: 'The journey of a thousand miles begins with a single step.', quoteAuthor: 'Lao Tzu' },
+  { name: 'Apprentice', min: 450, max: 1100, icon: './images/levels/level2-apprentice.png', color: '#9CAF88', quote: 'The mind is not a vessel to be filled, but a fire to be kindled.', quoteAuthor: 'Plutarch' },
+  { name: 'Disciple', min: 1100, max: 2100, icon: './images/levels/level3-disciple.png', color: '#E4B556', quote: 'It is the mark of an educated mind to entertain a thought without accepting it.', quoteAuthor: 'Aristotle' },
+  { name: 'Scholar', min: 2100, max: 3600, icon: './images/levels/level4-scholar.png', color: '#E69A4A', quote: 'The more I read, the more I acquire, the more certain I am that I know nothing.', quoteAuthor: 'Voltaire' },
+  { name: 'Reasoner', min: 3600, max: 5800, icon: './images/levels/level5-reasoner.png', color: '#C8423D', quote: 'The greatest enemy of knowledge is not ignorance, it is the illusion of knowledge.', quoteAuthor: 'Stephen Hawking' },
+  { name: 'Philosopher', min: 5800, max: 8800, icon: './images/levels/level6-philosopher.png', color: '#2D4D8A', quote: 'We do not see things as they are, we see them as we are.', quoteAuthor: 'Anaïs Nin' },
+  { name: 'Sage', min: 8800, max: 13000, icon: './images/levels/level7-sage.png', color: '#6B4E8C', quote: 'Wisdom is not a product of schooling but of the lifelong attempt to acquire it.', quoteAuthor: 'Albert Einstein' },
+  { name: 'Luminary', min: 13000, max: 99999, icon: './images/levels/level8-luminary.png', color: '#D4A634', quote: 'Be the change you wish to see in the world.', quoteAuthor: 'Mahatma Gandhi' },
 ];
 const LEVELS_EN = LEVELS;
 
@@ -12413,18 +12413,20 @@ function showChapterCompleteOverlay(chapter) {
       if (tid) thinkers.add(tid);
     });
   }
-  const xpEarned = chapter.xp || (lessonsCount * 20);
+  const xpEarned = (state.chapterXPByWeek && state.chapterXPByWeek[chapter.id]) || (lessonsCount * 20);
 
   document.getElementById('chapter-complete-xp').textContent = `+${xpEarned}`;
-  document.getElementById('chapter-stat-lessons').textContent = lessonsCount;
+  if (state.chapterXPByWeek && state.chapterXPByWeek[chapter.id] != null) {
+    delete state.chapterXPByWeek[chapter.id];
+    try { saveStateLocal(); } catch(e) {}
+  }
   document.getElementById('chapter-stat-thinkers').textContent = thinkers.size;
 
   // Labels — language switch
   const xpLabel = overlay.querySelector('.dc-xp-label');
   const labels = overlay.querySelectorAll('.metric-label');
   if (xpLabel) xpLabel.textContent = isEn ? 'XP earned' : 'XP הרווחת';
-  if (labels[0]) labels[0].textContent = isEn ? 'dialogues' : 'דיאלוגים';
-  if (labels[1]) labels[1].textContent = isEn ? 'thinkers met' : 'הוגים שפגשנו';
+  if (labels[0]) labels[0].textContent = isEn ? 'thinkers met' : 'הוגים שפגשנו';
 
   // Buttons
   const continueBtn = document.getElementById('chapter-continue-btn');
@@ -13195,9 +13197,6 @@ function nextSection() {
   const chapter = getW().find(w => w.id === state.currentWeek);
   const day = chapter.days.find(d => d.id === state.currentDay);
   if (state.currentSection < day.sections.length - 1) {
-    state.readerXP += 5;
-    const xpEl = document.getElementById('reader-xp-display');
-    if (xpEl) xpEl.textContent = state.readerXP;
     state.currentSection++;
     state.lastSection = { chapter: state.currentWeek, day: state.currentDay, section: state.currentSection };
     saveStateLocal();
@@ -13506,7 +13505,11 @@ function finishDay() {
   const totalDays = getW().find(w => w.id === state.currentWeek).days.length;
   const completedInWeek = getW().find(w => w.id === state.currentWeek).days
     .filter(d => state.completedDays[dayKey(state.currentWeek, d.id)]).length;
-  if (completedInWeek === totalDays) state.readerXP += 100;
+  if (completedInWeek === totalDays) state.xp += 100;
+
+  // Per-chapter XP tracker (display-only; mirrors what was added to state.xp above)
+  state.chapterXPByWeek = state.chapterXPByWeek || {};
+  state.chapterXPByWeek[state.currentWeek] = (state.chapterXPByWeek[state.currentWeek] || 0) + state.readerXP + (completedInWeek === totalDays ? 100 : 0);
 
   const newLevel = getLevel(state.xp);
   try { saveState(); } catch(e) { saveStateLocal(); }
@@ -13537,10 +13540,11 @@ function finishDay() {
   const thinker = getT().find(t => t.id === thinkerId);
   const showThinker = !!(thinker && isNewThinker);
 
+  const dayXpEarned = state.readerXP + (completedInWeek === totalDays ? 100 : 0);
   _showDcStats(
     ui.dayCompleted(day.id),
     isEn ? (day.titleEn || day.title) : day.title,
-    state.readerXP,
+    dayXpEarned,
     state.correctInRow,
     showThinker
       ? { label: isEn ? 'A new thinker awaits →' : 'הוגה חדש מחכה ←', fn: () => showThinkerCardScreen(thinker, chapter, day) }
@@ -14942,6 +14946,8 @@ function showLevelUp(newLevelIndex) {
 
 function hideLevelUp() {
   document.getElementById('levelup-overlay').classList.remove('active');
+  const reveal = document.getElementById('levelup-reveal');
+  if (reveal) reveal.classList.remove('active');
   currentLevelUpData = null;
 }
 
@@ -15067,13 +15073,6 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="dc-xp-label">XP הרווחת</div>
     </div>
     <div class="metrics-row">
-      <div class="metric-item">
-        <div class="metric-icon">
-          <svg width="56" height="56" viewBox="0 0 64 64"><use href="#ic-source"/></svg>
-        </div>
-        <div class="metric-number" id="chapter-stat-lessons">0</div>
-        <div class="metric-label">דיאלוגים</div>
-      </div>
       <div class="metric-item">
         <div class="metric-icon">
           <svg width="56" height="56" viewBox="0 0 64 64"><use href="#ic-pantheon"/></svg>
