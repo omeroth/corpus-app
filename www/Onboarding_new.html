@@ -258,6 +258,7 @@
   .badge{position:absolute;display:flex;align-items:center;gap:8px;
     background:rgba(255,255,255,.97);color:var(--ink);
     padding:11px 14px 11px 12px;border-radius:18px;font-weight:800;font-size:14.5px;
+    min-width:170px;
     box-shadow:0 14px 32px -10px rgba(42,18,102,.35);z-index:4;
     border:0;cursor:pointer;font-family:inherit;text-align:left;
     transition:transform .15s ease,box-shadow .2s ease}
@@ -266,8 +267,8 @@
   .badge .ico{width:38px;height:38px;display:grid;place-items:center;flex:0 0 38px;
     filter:drop-shadow(0 2px 4px rgba(42,18,102,.2))}
   .badge .ico svg{width:100%;height:100%;display:block}
-  .badge .num{font-size:17px;letter-spacing:-.01em}
-  .badge .lbl{font-size:11px;font-weight:600;opacity:.65;letter-spacing:.02em;display:block;line-height:1}
+  .badge .num{font-size:17px;letter-spacing:-.01em;white-space:nowrap}
+  .badge .lbl{font-size:11px;font-weight:600;opacity:.65;letter-spacing:.02em;display:block;line-height:1;white-space:nowrap}
   .badge .meta{display:flex;flex-direction:column;gap:1px;align-items:flex-start}
   .badge.b-xp{top:18%;right:5%;animation:floatA 4.6s ease-in-out infinite}
   .badge.b-streak{top:39%;left:3%;animation:floatB 5s ease-in-out infinite .3s}

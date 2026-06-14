@@ -2947,6 +2947,14 @@
     border: 1.5px solid #e0d8f5;
   }
   .auth-btn-social:hover { background: #f7f4ff; border-color: var(--accent); }
+  .auth-btn-apple {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+    margin-top: 8px;
+  }
+  .auth-btn-apple:hover { background: #1a1a1a; border-color: #1a1a1a; }
+  .auth-btn-apple .auth-social-icon { color: #fff; display: inline-flex; align-items: center; }
   .auth-social-icon {
     font-size: 16px;
     font-weight: 900;
@@ -4740,6 +4748,9 @@
     <button class="auth-btn auth-btn-social" onclick="authWithGoogle()">
       <span class="auth-social-icon">G</span> Continue with Google
     </button>
+    <button class="auth-btn auth-btn-social auth-btn-apple" onclick="authWithApple()">
+      <span class="auth-social-icon"><svg width="14" height="17" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg></span> Continue with Apple
+    </button>
     <div class="auth-divider"><span>or</span></div>
     <div class="auth-error" id="auth-error"></div>
     <input type="email" class="auth-input" id="auth-email" placeholder="Email address" autocomplete="email" />
@@ -5096,6 +5107,9 @@
     <button class="nav-btn auth-btn-social" onclick="closeGuestSignupPrompt(); authWithGoogle();" style="margin-top:16px;">
       <span class="auth-social-icon">G</span> Continue with Google
     </button>
+    <button class="nav-btn auth-btn-social auth-btn-apple" onclick="closeGuestSignupPrompt(); authWithApple();" style="margin-top:8px;">
+      <span class="auth-social-icon"><svg width="14" height="17" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg></span> Continue with Apple
+    </button>
     <button class="nav-btn" id="guest-signup-email-btn" onclick="closeGuestSignupPrompt(); setAuthMode('signup'); showAuthScreen();" style="margin-top:10px;">Sign up with email</button>
     <div class="share-modal-skip" id="guest-signup-skip" onclick="closeGuestSignupPrompt();">Maybe later</div>
   </div>
@@ -5177,6 +5191,14 @@ async function syncProgressToSupabase() {
       chapter_complete_shown: Object.keys(state.chapterCompleteShown || {}),
     }, { onConflict: 'user_id' });
   } catch(e) {}
+  try {
+    // Separate upsert so a missing `onboarding_done` column doesn't break the main sync.
+    // Requires Supabase column: onboarding_done boolean on user_progress.
+    await sb.from('user_progress').upsert({
+      user_id: currentUser.id,
+      onboarding_done: !!localStorage.getItem('corpus_onboarding_done'),
+    }, { onConflict: 'user_id' });
+  } catch(e) {}
 }
 
 async function loadProgressFromSupabase() {
@@ -5193,6 +5215,12 @@ async function loadProgressFromSupabase() {
     });
     state.chapterCompleteShown = state.chapterCompleteShown || {};
     (data.chapter_complete_shown || []).forEach(k => { state.chapterCompleteShown[k] = true; });
+    // If Supabase says this user has completed onboarding, mark it locally so
+    // startOnboarding's localStorage check skips the spotlight tour on a new
+    // device / fresh install / cleared browser data. Defensive on missing column.
+    if (data.onboarding_done === true) {
+      try { localStorage.setItem('corpus_onboarding_done', '1'); } catch(e) {}
+    }
     migrateCompletedDaysKeys();
     saveStateLocal();
   } catch(e) {}
@@ -5378,7 +5406,27 @@ async function authWithGoogle() {
 }
 
 async function authWithApple() {
-  await sb.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: 'https://omeroth.github.io/corpus-app/' } });
+  const btn = document.querySelector('.auth-btn-apple');
+  if (btn) { btn.disabled = true; btn.textContent = 'Signing in...'; }
+  const errEl = document.getElementById('auth-error'); if (errEl) errEl.textContent = '';
+  const _isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  try {
+    if (_isNative) {
+      const res = await window.Capacitor.Plugins.SocialLogin.login({ provider: 'apple', options: { scopes: ['name', 'email'] } });
+      const idToken = res && res.result && res.result.idToken;
+      if (!idToken) throw new Error('No idToken from Apple');
+      const { error } = await sb.auth.signInWithIdToken({ provider: 'apple', token: idToken });
+      if (error) throw error;
+      window.location.reload();
+    } else {
+      const { error } = await sb.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: 'https://corpusapp.io/' } });
+      if (error) throw error;
+    }
+  } catch(e) {
+    console.error('[Auth] Apple sign-in error:', e);
+    if (errEl) errEl.textContent = 'Sign in failed. Please try again.';
+    if (btn) { btn.disabled = false; btn.innerHTML = '<span class="auth-social-icon"></span> Continue with Apple'; }
+  }
 }
 
 let _introCarouselInited = false;
@@ -13944,10 +13992,26 @@ function drawSpotlight(targetSelector) {
     if (el) {
       const rect = el.getBoundingClientRect();
       const padding = 12;
+      // If the spotlight target is or contains .thinker-carousel, tighten the rect
+      // to hug the visible cards row instead of including the carousel's 50px
+      // top/bottom padding. Defensive: any error falls through with
+      // padTop = padBottom = 0 (no adjustment — preserves existing behavior for
+      // every other spotlight target).
+      let padTop = 0, padBottom = 0;
+      try {
+        const padded = el.matches && el.matches('.thinker-carousel')
+          ? el
+          : (el.querySelector && el.querySelector('.thinker-carousel'));
+        if (padded) {
+          const cs = getComputedStyle(padded);
+          padTop = parseFloat(cs.paddingTop) || 0;
+          padBottom = parseFloat(cs.paddingBottom) || 0;
+        }
+      } catch(e) {}
       const x = rect.left - padding;
-      const y = rect.top - padding;
+      const y = rect.top - padding + padTop;
       const w = rect.width + padding * 2;
-      const h = rect.height + padding * 2;
+      const h = rect.height + padding * 2 - padTop - padBottom;
       const r = 16;
 
       ctx.save();
@@ -14139,6 +14203,10 @@ function nextOnboardingStep() {
   if (onboardingStep >= ONBOARDING_STEPS.length) {
     document.getElementById('onboarding-overlay').style.display = 'none';
     localStorage.setItem('corpus_onboarding_done', '1');
+    // Push the onboarding-done flag to Supabase so this device's choice
+    // survives on other devices / after a reinstall. Fire-and-forget (saveState
+    // calls syncProgressToSupabase without awaiting); never break onboarding on error.
+    try { saveState(); } catch(e) {}
     return;
   }
   renderOnboardingStep();
@@ -14149,6 +14217,9 @@ function finishOnboardingWithLang(lang) {
   document.getElementById('onboarding-lang-buttons').style.display = 'none';
   document.getElementById('onboarding-btn').style.display = '';
   localStorage.setItem('corpus_onboarding_done', '1');
+  // Push the onboarding-done flag to Supabase so this device's choice
+  // survives on other devices / after a reinstall. Fire-and-forget; never break onboarding on error.
+  try { saveState(); } catch(e) {}
   setTimeout(() => setAppLang(lang), 50);
 }
 
@@ -14412,19 +14483,22 @@ function subjConfirm() {
 
 function showSubjectSelect() {
   document.body.classList.add('on-subject-screen');
-  showScreen('subject');
+  showScreen('subject');                              // .active → display:flex; gives the carousel a layout box
+  // Set the carousel's scroll position SYNCHRONOUSLY, before the browser paints,
+  // so the selected subject card is already centered on the very first painted frame.
+  // void offsetWidth forces a synchronous layout flush so scrollLeft sticks
+  // (otherwise the assignment can be clamped/ignored while layout is still pending).
+  const idx = _subjGetIdx();
+  const carousel = document.getElementById('subj-carousel');
+  if (carousel) {
+    void carousel.offsetWidth;
+    carousel.scrollLeft = idx * 216;
+    try { carousel.scrollTo({ left: idx * 216, behavior: 'instant' }); } catch(e) {}
+  }
   previewSubjectTheme(state.subject);
   animateScreen(document.getElementById('screen-subject'), 'anim-fade-up');
-  const idx = _subjGetIdx();
-  requestAnimationFrame(() => {
-    const carousel = document.getElementById('subj-carousel');
-    if (carousel) {
-      carousel.scrollTo({ left: idx * 216, behavior: 'instant' });
-      carousel.scrollLeft = idx * 216;
-    }
-    _subjUpdateUI(idx);
-    _initSubjCarousel();
-  });
+  _subjUpdateUI(idx);
+  _initSubjCarousel();
 }
 
 function _initSubjCarousel() {
@@ -14547,7 +14621,8 @@ function initUI() {
               iOSClientId: '1010803138404-cs8f3t5vvcqjv0rgldlpm25o07sir1i7.apps.googleusercontent.com',
               webClientId: '1010803138404-1s69nn3b8voc2ip3klgbrfugeu945bdp.apps.googleusercontent.com',
               mode: 'online'
-            }
+            },
+            apple: { scopes: ['name', 'email'] }
           });
           console.log('[Auth] SocialLogin initialized (native)');
         } catch(e) {
