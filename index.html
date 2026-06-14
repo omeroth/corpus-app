@@ -13614,6 +13614,7 @@ function finishDay() {
   if (state.currentWeek === 2 && state.currentDay === 7 && isWeekCompleted(2) && isWeekCompleted(1) && !state.bonusUnlockShown) {
     state.bonusUnlockShown = true;
     saveStateLocal();
+    try { posthog.capture('bonus_unlocked', { user_id: currentUser?.id || null }); } catch(e) {}
     setTimeout(() => showUnlockOverlay(), 1000);
   }
 
@@ -14470,6 +14471,11 @@ async function enterApp(user) {
     try {
       const identities = user.identities || [];
       const method = identities.length > 0 ? identities[0].provider : 'email';
+      // user.created_at within 60s of now → freshly created account (signup), not a returning login.
+      // The L14457 opt_out_capturing for the internal user fires earlier in enterApp, so for that
+      // account BOTH user_signed_up and user_logged_in become no-ops automatically.
+      const isNewUser = !!user.created_at && (Date.now() - new Date(user.created_at).getTime() < 60000);
+      if (isNewUser) posthog.capture('user_signed_up', { method });
       posthog.capture('user_logged_in', { method });
     } catch(e) {}
     try {
@@ -14504,6 +14510,16 @@ function initUI() {
     console.log('[Init] initUI started, corpusData chapters:', corpusData && corpusData.weeks && corpusData.weeks.length);
     console.log('[Init] THINKERS length:', THINKERS && THINKERS.length);
     loadState();
+    // Fires once per page load, for EVERYONE (guests + logged-in). The referrer property
+    // is the linchpin for the landing→app funnel — when a user arrives from get.corpusapp.io,
+    // document.referrer contains that origin, letting PostHog join the two sessions in a funnel.
+    try {
+      posthog.capture('app_opened', {
+        is_returning: Object.keys(state.completedDays || {}).length > 0,
+        lang: state.lang,
+        referrer: document.referrer || ''
+      });
+    } catch(e) {}
     migrateCompletedDaysKeys();
     migrateDayQuizResults();
     recalculateStreak();
