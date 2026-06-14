@@ -1417,7 +1417,7 @@
   }
   /* Bonus chapter card (philosophy carousel) */
   .bonus-carousel-item { cursor: pointer; }
-  .bonus-carousel-item.locked { cursor: default; }
+  .bonus-carousel-item.locked { cursor: pointer; }
   .bonus-circle-wrapper {
     position: relative;
     width: 64px;
@@ -1464,6 +1464,31 @@
         0 0 50px rgba(123, 79, 212, 0.9);
     }
   }
+  /* One-shot celebratory pulse for the first time the bonus chapter is unlocked.
+     Applied via the .just-unlocked class added by closeUnlockOverlay; removed after 2.8s,
+     after which the regular infinite bonusHalo resumes. Rule placed AFTER the .unlocked
+     rule so it wins the cascade (equal specificity, later source order). */
+  @keyframes bonusJustUnlocked {
+    0% {
+      transform: scale(1);
+      box-shadow:
+        0 0 0 0 rgba(255, 217, 130, 0.95),
+        0 0 30px rgba(123, 79, 212, 0.6);
+    }
+    50% {
+      transform: scale(1.12);
+      box-shadow:
+        0 0 0 24px rgba(255, 217, 130, 0),
+        0 0 60px rgba(255, 217, 130, 0.95);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow:
+        0 0 0 0 rgba(255, 217, 130, 0),
+        0 0 30px rgba(123, 79, 212, 0.6);
+    }
+  }
+  .bonus-carousel-item.just-unlocked .bonus-circle { animation: bonusJustUnlocked 2.8s ease-out 1; }
   .thinker-carousel-card.locked img {
     filter: grayscale(100%) brightness(0.6);
     opacity: 0.45;
@@ -3066,6 +3091,12 @@
   .onboarding-speech.tail-left::before { content: ''; display: block; position: absolute; top: 20px; left: -10px; width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-right: 10px solid white; filter: drop-shadow(-2px 0 2px rgba(42,27,74,0.08)); }
   .onboarding-speech.tail-bottom::before { content: ''; display: block; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 10px solid white; }
   @keyframes bubblePop { 0% { transform: scale(0.7); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  /* Speech-bubble tooltip for the locked bonus card. Inherits .onboarding-speech base.
+     direction: inherit OVERRIDES .onboarding-speech's hardcoded direction: ltr so Hebrew
+     text renders correctly. Gold border + gold arrow to pair with the bonus card. */
+  .bonus-tooltip { width: max-content; border: 2px solid #D4AF37; white-space: normal; max-width: 200px; text-align: center; direction: inherit; pointer-events: none; opacity: 0; transition: opacity 0.25s; }
+  .bonus-tooltip.show { opacity: 1; }
+  .bonus-tooltip.tail-top::before { border-bottom-color: #D4AF37; }
   .onboarding-next-btn { display: block; margin-top: 10px; background: var(--accent); color: white; border: none; border-radius: 50px; padding: 8px 20px; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; }
   #onboarding-lang-buttons { display: flex; }
   .onboarding-lang-btn { flex: 1; max-width: 120px; padding: 8px 16px; background: var(--accent); color: white; border: none; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -12400,6 +12431,28 @@ function showUnlockOverlay() {
 function closeUnlockOverlay() {
   document.getElementById('unlock-overlay').style.display = 'none';
   goHome();
+  // After the home re-renders, surface the bonus card: scroll-into-view + pulse + toast.
+  // Two RAFs let renderHome() + populateCarousel() commit before we query/scroll.
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const bonusCard = document.querySelector('.bonus-carousel-item');
+      const carousel = document.getElementById('thinker-carousel');
+      if (!bonusCard || !carousel) return; // not on philosophy / carousel not rendered → skip silently
+      // scrollIntoView({ inline: 'center' }) is direction-aware: works for RTL and LTR
+      // without manual scrollLeft math (which differs across browser RTL modes).
+      try {
+        bonusCard.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+      } catch(e) {}
+      // One-shot celebratory pulse on top of the existing infinite bonusHalo.
+      bonusCard.classList.add('just-unlocked');
+      setTimeout(() => bonusCard.classList.remove('just-unlocked'), 2800);
+      // Toast pointing the user to interact with the card.
+      if (typeof showJourneyToast === 'function') {
+        const isEn = state.lang === 'en';
+        showJourneyToast(isEn ? 'Tap to start your bonus chapter' : 'הקישו כדי להתחיל את פרק הבונוס');
+      }
+    });
+  });
 }
 
 // === Chapter-complete overlay (reuses .dc-screen aesthetic) ===
@@ -12459,7 +12512,7 @@ function showChapterCompleteOverlay(chapter) {
   homeBtn.onclick = () => {
     closeChapterCompleteOverlay();
     document.getElementById('modal-complete').classList.remove('active');
-    showScreen('home');
+    goHome();
   };
 
   overlay.style.display = 'flex';
@@ -12619,9 +12672,19 @@ function renderHome() {
       if (nextUpWeekId !== null) break;
     }
 
-    // Auto-select expanded chapter on first render or subject switch
+    // Auto-select expanded chapter on first render or subject switch.
+    // Also bump to next chapter when the currently expanded one is finished,
+    // so finishing a chapter and returning home surfaces the next chapter.
+    let _expansionBumpedDueToCompletion = false;
     if (_homeExpandedWeekId === undefined) {
       _homeExpandedWeekId = nextUpWeekId;
+    } else if (
+      _homeExpandedWeekId !== null &&
+      _homeExpandedWeekId !== nextUpWeekId &&
+      isWeekCompleted(_homeExpandedWeekId)
+    ) {
+      _homeExpandedWeekId = nextUpWeekId;
+      _expansionBumpedDueToCompletion = true;
     }
 
     const hl = document.getElementById('home-levels');
@@ -12740,6 +12803,17 @@ function renderHome() {
       hl.appendChild(card);
     });
 
+    // After cards are appended: scroll the auto-expanded card into view only if
+    // CHANGE 1 bumped due to chapter completion. Skip on normal renders.
+    if (_expansionBumpedDueToCompletion) {
+      requestAnimationFrame(() => {
+        const expandedCard = document.querySelector('.level-card.expanded');
+        if (expandedCard) {
+          try { expandedCard.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e) {}
+        }
+      });
+    }
+
     // Practice card (fixed bottom)
     const pc = document.getElementById('practice-card');
     if (pc) {
@@ -12841,7 +12915,15 @@ function populateCarousel() {
       </div>
       <div class="thinker-carousel-name">${isEn ? 'AI & Ethics' : 'בינה ואתיקה'}</div>
     `;
-    bonusCard.onclick = () => { if (isUnlocked) openBonusChapter(); };
+    bonusCard.onclick = () => {
+      if (isUnlocked) {
+        openBonusChapter();
+      } else if (typeof showBonusTooltip === 'function') {
+        showBonusTooltip(bonusCard, isEn
+          ? 'Complete chapters 1 and 2 to unlock the bonus chapter'
+          : 'סיימו את פרקים 1 ו-2 כדי לפתוח את פרק הבונוס');
+      }
+    };
     carousel.appendChild(bonusCard);
   }
   thinkers.forEach(t => {
@@ -14899,6 +14981,34 @@ function showJourneyToast(text) {
   toast.classList.add('show');
   clearTimeout(toast._timer);
   toast._timer = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// Speech-bubble tooltip anchored to a thinker-carousel card. Used by the locked
+// bonus card to explain the unlock requirement right next to where it lives,
+// instead of a bottom-screen toast. Appends to the card's .thinker-carousel-wrap
+// (overflow: visible, position: relative) so the bubble isn't clipped by the
+// carousel's overflow-x: auto. RTL-safe via getBoundingClientRect + symmetric
+// translate(-50%, -100%).
+function showBonusTooltip(card, text) {
+  if (!card) return;
+  const wrap = card.closest('.thinker-carousel-wrap');
+  if (!wrap) return;
+  let tip = wrap.querySelector('.bonus-tooltip');
+  if (!tip) {
+    tip = document.createElement('div');
+    tip.className = 'bonus-tooltip onboarding-speech tail-top';
+    wrap.appendChild(tip);
+  }
+  tip.textContent = text;
+  const cardRect = card.getBoundingClientRect();
+  const wrapRect = wrap.getBoundingClientRect();
+  tip.style.position = 'absolute';
+  tip.style.left = (cardRect.left + cardRect.width / 2 - wrapRect.left) + 'px';
+  tip.style.top = (cardRect.bottom - wrapRect.top + 12) + 'px';
+  tip.style.transform = 'translate(-50%, 0)';
+  tip.classList.add('show');
+  clearTimeout(tip._timer);
+  tip._timer = setTimeout(() => tip.classList.remove('show'), 3000);
 }
 
 // Wire the back button (the element already exists in the static HTML)
