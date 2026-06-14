@@ -5138,6 +5138,14 @@ async function syncProgressToSupabase() {
       unlocked_thinkers: state.unlockedThinkers,
     }, { onConflict: 'user_id' });
   } catch(e) {}
+  try {
+    // Separate upsert so a missing `chapter_complete_shown` column doesn't break the main sync.
+    // Requires Supabase column: chapter_complete_shown text[] on user_progress.
+    await sb.from('user_progress').upsert({
+      user_id: currentUser.id,
+      chapter_complete_shown: Object.keys(state.chapterCompleteShown || {}),
+    }, { onConflict: 'user_id' });
+  } catch(e) {}
 }
 
 async function loadProgressFromSupabase() {
@@ -5152,6 +5160,8 @@ async function loadProgressFromSupabase() {
     (data.unlocked_thinkers || []).forEach(id => {
       if (!state.unlockedThinkers.includes(id)) state.unlockedThinkers.push(id);
     });
+    state.chapterCompleteShown = state.chapterCompleteShown || {};
+    (data.chapter_complete_shown || []).forEach(k => { state.chapterCompleteShown[k] = true; });
     migrateCompletedDaysKeys();
     saveStateLocal();
   } catch(e) {}
@@ -14390,7 +14400,7 @@ async function enterApp(user) {
   if (user) {
     state.userEmail = user.email || '';
     state.userMeta = user.user_metadata || {};
-    saveStateLocal();
+    await saveState();
   }
   hideAuthScreen();
   _homeExpandedWeekId = undefined;
