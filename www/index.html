@@ -875,6 +875,26 @@
     cursor: pointer;
     font-family: inherit;
   }
+  /* Delete-account text link — deliberately quieter than .pf-logout-btn:
+     no border, small muted grey text, subtle underline on hover. Signals
+     "this is a less prominent / dangerous action" without screaming. */
+  .pf-delete-account-link {
+    display: block;
+    text-align: center;
+    margin: 0 16px 24px;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    opacity: 0.7;
+    letter-spacing: 0.01em;
+  }
+  .pf-delete-account-link:hover { opacity: 1; text-decoration: underline; }
+  .pf-delete-account-link:active { transform: scale(0.97); }
   /* INTRO CAROUSEL */
   :root{--ink:#2A1266;--purple:#7B4FD4;--purple-light:#9B6FE4;--lilac:#B995F3;--bg:#F8F5FF;--amber:#F59E0B;--pink:#FF6FA8}
   /* Rail */
@@ -2412,6 +2432,15 @@
     border-bottom: 4px solid var(--accent-dark);
   }
   .nav-btn.secondary:hover { background: var(--accent-glow); }
+  /* Destructive variant — used by the delete-account confirmation. Uses the existing
+     --red variable; inherits all sizing/animation/disabled behaviour from .nav-btn. */
+  .nav-btn.destructive {
+    background: var(--red);
+    color: #fff;
+    border-color: var(--red);
+    border-bottom-color: rgba(0,0,0,0.2);
+  }
+  .nav-btn.destructive:disabled { opacity: 0.6; cursor: default; }
 
   /* ── Completion modal ── */
   .modal-overlay {
@@ -4951,6 +4980,7 @@
     </div>
 
     <button class="pf-logout-btn" onclick="showLogoutConfirm()" id="pf-logout-btn">התנתק</button>
+    <button class="pf-delete-account-link" onclick="showDeleteAccountConfirm()" id="pf-delete-account-link">מחיקת חשבון</button>
 
   </div>
 </div>
@@ -5121,6 +5151,16 @@
     <div class="modal-subtitle" id="logout-confirm-body">You'll need to sign back in to access your progress on this device.</div>
     <button class="nav-btn" id="logout-confirm-yes" onclick="closeLogoutConfirm(); authLogout();" style="margin-top:16px;">Sign out</button>
     <div class="share-modal-skip" id="logout-confirm-cancel" onclick="closeLogoutConfirm();">Cancel</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-delete-account">
+  <div class="modal-box">
+    <div class="modal-title" id="delete-account-title">Permanently delete your account?</div>
+    <div class="modal-subtitle" id="delete-account-body">This permanently deletes your account, all your progress (XP, streak, unlocked thinkers), and any subscription. This cannot be undone.</div>
+    <div id="delete-account-error" style="color:var(--red);font-size:13px;text-align:center;margin-top:12px;display:none"></div>
+    <button class="nav-btn destructive" id="delete-account-confirm" onclick="deleteAccount()" style="margin-top:16px;">Delete my account</button>
+    <div class="share-modal-skip" id="delete-account-cancel" onclick="closeDeleteAccountConfirm();">Cancel</div>
   </div>
 </div>
 
@@ -5550,6 +5590,54 @@ async function authLogout() {
   };
   try { localStorage.removeItem('corpus_state'); } catch(e) {}
   showAuthScreen();
+}
+
+async function deleteAccount() {
+  if (!currentUser) return;
+  const isEn = state.lang === 'en';
+  const confirmBtn = document.getElementById('delete-account-confirm');
+  const errEl = document.getElementById('delete-account-error');
+  if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = isEn ? 'Deleting...' : 'מוחק...'; }
+  if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
+  const userId = currentUser.id;
+  try {
+    // 1. Delete own data rows (RLS allows auth.uid() = user_id). Each wrapped
+    //    so one failing doesn't prevent the rest from being attempted.
+    try { await sb.from('user_progress').delete().eq('user_id', userId); } catch(e) {}
+    try { await sb.from('subscriptions').delete().eq('user_id', userId); } catch(e) {}
+    // 2. Invoke the Edge Function to delete the auth.users row + PostHog person.
+    //    Any failure here is fatal — surface it to the user so they can retry.
+    const { error } = await sb.functions.invoke('delete-account');
+    if (error) throw error;
+    // 3. Sign out the now-deleted session.
+    try { await sb.auth.signOut(); } catch(e) {}
+    // 4. Reset PostHog identified state on this device.
+    try { if (typeof posthog !== 'undefined') posthog.reset(true); } catch(e) {}
+    // 5. Clear ALL corpus_* localStorage keys (more thorough than authLogout's single-key removal).
+    try { Object.keys(localStorage).forEach(k => { if (k.startsWith('corpus_')) localStorage.removeItem(k); }); } catch(e) {}
+    // 6. Reset in-memory state to defaults — exact same shape as authLogout's reset.
+    currentUser = null;
+    appStarted = false;
+    const lang = state.lang;
+    state = {
+      xp: 0, streak: 0, dailyStreak: 0, correctInRow: 0,
+      completedDays: {}, unlockedThinkers: [],
+      lang, currentScreen: 'home', currentWeek: null, currentDay: null,
+      currentSection: 0, readerXP: 0, quizAnswered: {}, quizCorrect: false,
+      userEmail: '', userMeta: {}, activeDays: {}, todayCompleted: 0,
+      activeDates: [], lastActiveDate: '', lastStreakShownDate: '', streakHistory: {}, chapterCompleteShown: {}, chapterXPByWeek: {}, subject: 'philosophy'
+    };
+    // 7. Close the modal and bring the user to the auth screen.
+    closeDeleteAccountConfirm();
+    showAuthScreen();
+  } catch(e) {
+    console.error('[deleteAccount]', e);
+    if (errEl) {
+      errEl.textContent = isEn ? "Couldn't delete account. Please try again." : 'לא ניתן היה למחוק את החשבון. אנא נסו שוב.';
+      errEl.style.display = 'block';
+    }
+    if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.textContent = isEn ? 'Delete my account' : 'מחק את החשבון שלי'; }
+  }
 }
 
 
@@ -13758,6 +13846,24 @@ function closeLogoutConfirm() {
   document.getElementById('modal-logout-confirm').classList.remove('active');
 }
 
+function showDeleteAccountConfirm() {
+  document.getElementById('modal-delete-account').classList.add('active');
+  const isEn = state.lang === 'en';
+  document.getElementById('delete-account-title').textContent = isEn ? 'Permanently delete your account?' : 'למחוק את החשבון לצמיתות?';
+  document.getElementById('delete-account-body').textContent = isEn
+    ? 'This permanently deletes your account, all your progress (XP, streak, unlocked thinkers), and any subscription. This cannot be undone.'
+    : 'פעולה זו תמחק לצמיתות את החשבון שלך, את כל ההתקדמות שלך (XP, רצף, הוגים שפתחת) וכל מנוי. לא ניתן לבטל.';
+  const yes = document.getElementById('delete-account-confirm');
+  if (yes) { yes.disabled = false; yes.textContent = isEn ? 'Delete my account' : 'מחק את החשבון שלי'; }
+  const cancel = document.getElementById('delete-account-cancel');
+  if (cancel) cancel.textContent = isEn ? 'Cancel' : 'ביטול';
+  const err = document.getElementById('delete-account-error');
+  if (err) { err.textContent = ''; err.style.display = 'none'; }
+}
+function closeDeleteAccountConfirm() {
+  document.getElementById('modal-delete-account').classList.remove('active');
+}
+
 function showSharePrompt() {
   const subject = state.subject || 'philosophy';
   const flagKey = `corpus_share_shown_${subject}`;
@@ -14894,6 +15000,8 @@ function renderProfile() {
 
   const logoutBtn = document.getElementById('pf-logout-btn');
   if (logoutBtn) logoutBtn.textContent = isEn ? 'Sign Out' : 'התנתק';
+  const deleteAccountLink = document.getElementById('pf-delete-account-link');
+  if (deleteAccountLink) deleteAccountLink.textContent = isEn ? 'Delete account' : 'מחיקת חשבון';
 
   updateLangUI();
 }
