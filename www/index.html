@@ -895,6 +895,27 @@
   }
   .pf-delete-account-link:hover { opacity: 1; text-decoration: underline; }
   .pf-delete-account-link:active { transform: scale(0.97); }
+  /* Privacy Policy link — quieter than delete-account: smaller, lighter, always-underlined
+     (signals external link without screaming). Sits at the very bottom of the profile. */
+  .pf-privacy-link {
+    display: block;
+    text-align: center;
+    margin: 0 16px 20px;
+    padding: 4px 12px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 11.5px;
+    font-weight: 400;
+    cursor: pointer;
+    font-family: inherit;
+    opacity: 0.55;
+    letter-spacing: 0.01em;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .pf-privacy-link:hover { opacity: 1; }
+  .pf-privacy-link:active { transform: scale(0.97); }
   /* INTRO CAROUSEL */
   :root{--ink:#2A1266;--purple:#7B4FD4;--purple-light:#9B6FE4;--lilac:#B995F3;--bg:#F8F5FF;--amber:#F59E0B;--pink:#FF6FA8}
   /* Rail */
@@ -4981,6 +5002,7 @@
 
     <button class="pf-logout-btn" onclick="showLogoutConfirm()" id="pf-logout-btn">התנתק</button>
     <button class="pf-delete-account-link" onclick="showDeleteAccountConfirm()" id="pf-delete-account-link">מחיקת חשבון</button>
+    <button class="pf-privacy-link" onclick="openPrivacyPolicy()" id="pf-privacy-link">מדיניות פרטיות</button>
 
   </div>
 </div>
@@ -5297,6 +5319,13 @@ function openCheckout() {
     + '?checkout[custom][user_id]=' + encodeURIComponent(currentUser.id)
     + '&checkout[email]=' + encodeURIComponent(currentUser.email || '');
   window.open(url, '_blank');
+}
+
+// Opens the Corpus Privacy Policy in the system browser. Uses plain window.open
+// with target="_blank" — the same pattern as openCheckout above, which Capacitor's
+// iOS WebView correctly routes to system Safari via WKUIDelegate.
+function openPrivacyPolicy() {
+  try { window.open('https://get.corpusapp.io/privacy.html', '_blank'); } catch(e) {}
 }
 
 function showPaywallModal() {
@@ -15002,6 +15031,8 @@ function renderProfile() {
   if (logoutBtn) logoutBtn.textContent = isEn ? 'Sign Out' : 'התנתק';
   const deleteAccountLink = document.getElementById('pf-delete-account-link');
   if (deleteAccountLink) deleteAccountLink.textContent = isEn ? 'Delete account' : 'מחיקת חשבון';
+  const privacyLink = document.getElementById('pf-privacy-link');
+  if (privacyLink) privacyLink.textContent = isEn ? 'Privacy Policy' : 'מדיניות פרטיות';
 
   updateLangUI();
 }
