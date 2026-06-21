@@ -2578,6 +2578,58 @@
     from { transform: scale(0.8); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
   }
+  /* === Bonus dialogue picker modal ===
+     Reuses .modal-overlay (backdrop) + .modal-box (border/shadow/padding) but overrides the
+     popIn animation with a "wormhole/suction" entry that emanates from the bonus star's
+     position on screen. JS sets --bonus-ox / --bonus-oy as px offsets from the modal-box
+     centre, so the calc(50% + var(...)) keeps transform-origin centred when no card is found.
+     Internal lesson-* rows are styled by the existing lesson-node CSS (no overrides). */
+  .bonus-picker-box {
+    max-width: 320px;
+    padding: 22px 18px 18px;
+    transform-origin: calc(50% + var(--bonus-ox, 0px)) calc(50% + var(--bonus-oy, 0px));
+  }
+  /* Override .modal-box's default popIn with the wormhole when the picker is active.
+     Higher specificity (id + class + class) wins over the .modal-box rule. */
+  #modal-bonus-picker.active .bonus-picker-box {
+    animation: bonusWormhole 0.5s cubic-bezier(0.34, 1.45, 0.5, 1) both;
+  }
+  @keyframes bonusWormhole {
+    0%   { transform: scale(0.05) rotate(-160deg); opacity: 0.3; filter: blur(1px); }
+    45%  { opacity: 1; filter: blur(0); }
+    72%  { transform: scale(1.05) rotate(5deg); }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  .bonus-picker-close {
+    position: absolute; top: 8px; left: 12px;
+    background: none; border: none;
+    font-size: 22px; color: var(--text-2);
+    cursor: pointer; line-height: 1;
+    padding: 4px 8px;
+    font-family: 'Nunito', sans-serif;
+  }
+  .bonus-picker-star {
+    font-size: 34px; color: #D4AF37; line-height: 1;
+    margin-bottom: 2px;
+  }
+  .bonus-picker-title {
+    font-family: 'Nunito', sans-serif;
+    font-size: 21px; font-weight: 900;
+    color: var(--text);
+    margin: 4px 0 2px;
+  }
+  .bonus-picker-sub {
+    font-size: 12px; color: var(--text-2);
+    margin-bottom: 14px; font-weight: 600;
+  }
+  /* Stagger the row entry — each .lesson-node gets an animation-delay inline from JS. */
+  #modal-bonus-picker.active .lesson-node {
+    animation: bonusRowIn 0.34s ease both;
+  }
+  @keyframes bonusRowIn {
+    from { opacity: 0; transform: translateY(9px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
   .modal-emoji { font-size: 56px; margin-bottom: 12px; }
   .modal-title {
     font-family: 'Nunito', sans-serif;
@@ -4121,7 +4173,13 @@
   }
 
   .lesson-label { flex: 1; min-width: 0; }
-  .lesson-label-title { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .lesson-label-title {
+    font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
   .lesson-label-sub { font-size: 11px; color: var(--text-2); margin-top: 1px; }
   .lesson-node.locked-lesson .lesson-label-title,
   .lesson-node.locked-lesson .lesson-label-sub { color: var(--text-muted); }
@@ -5264,6 +5322,20 @@
     <div class="paywall-features" id="paywall-features"></div>
     <button class="nav-btn paywall-cta" id="paywall-cta-btn" onclick="closePaywallModal(); openCheckout();">Unlock all of Corpus</button>
     <div class="paywall-price" id="paywall-price">$5.99 / month</div>
+  </div>
+</div>
+
+<!-- Bonus dialogue picker modal — opens from the bonus carousel star (philosophy + economics).
+     Reuses .modal-overlay (backdrop + dim) and .modal-box (animation override) scaffolding.
+     The lesson-path / lesson-node / lesson-circle rows are styled by the existing lesson-* CSS
+     and theme automatically per subject via CSS variables. -->
+<div class="modal-overlay bonus-picker-overlay" id="modal-bonus-picker">
+  <div class="modal-box bonus-picker-box" id="bonus-picker-box">
+    <button class="bonus-picker-close" onclick="closeBonusPicker()" aria-label="Close">×</button>
+    <div class="bonus-picker-star">★</div>
+    <div class="bonus-picker-title" id="bonus-picker-title"></div>
+    <div class="bonus-picker-sub" id="bonus-picker-sub"></div>
+    <div class="lesson-path" id="bonus-picker-path"></div>
   </div>
 </div>
 
@@ -6768,6 +6840,8 @@ const corpusData = {
         id: 0,
         title: 'מבוא: הקוד של המוסר',
         titleEn: 'Intro: The Code of Morality',
+        pickerTitle: 'מאחורי הכותרת',
+        pickerTitleEn: 'Behind the Headline',
         thinker: '',
         thinkerEn: '',
         thinkerId: null,
@@ -6793,6 +6867,8 @@ const corpusData = {
         id: 1,
         title: 'קאנט: האם מותר ל-AI לשקר?',
         titleEn: 'Kant: Is AI Allowed to Lie?',
+        pickerTitle: 'האם מותר ל-AI לשקר',
+        pickerTitleEn: 'Can AI Be Allowed to Lie',
         thinker: 'עמנואל קאנט',
         thinkerEn: 'Immanuel Kant',
         thinkerId: 'kant',
@@ -6804,7 +6880,7 @@ const corpusData = {
             titleEn: 'Today\'s Idea',
             content: 'קאנט לימד אותנו שיש חוק מוסרי אחד, אוניברסלי, שמחייב כל יצור תבוני, בכל מקום ובכל זמן. <strong>שקר הוא אסור. תמיד.</strong> גם כשהכוונה טובה. גם כשהשקר מציל.\n\nאבל קאנט כתב את זה ב-1785. לפני שהייתה בינה מלאכותית. לפני שמכונות דיברו עם בני אדם בשעות הקשות ביותר בחייהם. עכשיו ניצבת שאלה שקאנט לא יכול היה לדמיין: <strong>האם מכונה, שאין לה רגשות, כוונה או מודעות, כפופה לאותו חוק מוסרי שחל על אדם?</strong>',
             contentEn: 'Kant taught us that there is a single, universal moral law that binds every rational being everywhere and at all times. <strong>Lying is forbidden. Always.</strong> Even when the intention is good. Even when the lie saves a life.\n\nBut Kant wrote this in 1785. Before there was Artificial Intelligence. Before machines talked to human beings during the most difficult hours of their lives. Now a question arises that Kant could not have imagined: <strong>Is a machine which has no feelings, intention, or consciousness subject to the same moral law that applies to a human?</strong>',
-            image: 'images/bonus/day1-idea.png'
+            image: 'images/bonus/philosophy/day1-idea.png'
           },
           {
             type: 'source',
@@ -6821,7 +6897,7 @@ const corpusData = {
             titleEn: 'Explanation',
             content: 'קאנט טען טענה שנשמעת כמעט נוקשה: <strong>אסור לשקר, גם אם המניע הוא חיובי</strong>. לשיטתו, ברגע שאנחנו מאפשרים "אי-דיוקים מועילים", אנחנו מערערים את יסודות התקשורת והאמון. ה<strong>אמת אינה כלי עזר שמשתמשים בו רק כשנוח; היא התנאי הבסיסי לשיתוף פעולה אנושי</strong>.\n\nעכשיו תחשוב על זה בהקשר של AI: מיליוני אנשים מתייעצים היום עם מערכות AI ברגעים קשים. <strong>כדי להפחית חרדה או "לנחם" את המשתמש</strong>, המערכת עלולה לעיתים לייצר תשובות מרגיעות שאינן מבוססות על עובדות, כמו: "אני מבין אותך" או "הכל יהיה בסדר".\n\nקאנט היה שואל: מה קורה לאמון בין אדם למכונה כשהמכונה מציגה אשליה במקום מציאות? והאם אנחנו מתייחסים למשתמש כאל <strong>יצור תבוני שיכול לשאת את האמת, או כאל ילד שצריך להגן עליו</strong> באמצעות "סיפורים"?',
             contentEn: 'Kant argued something that sounds almost rigid: <strong>you must not lie even if the motivation is positive</strong>. According to his method, the moment we allow "useful inaccuracies," we undermine the foundations of communication and trust. <strong>Truth is not a tool used only when convenient; it is the basic condition for human cooperation</strong>.\n\nNow think about this in the context of AI: millions of people consult AI systems today in difficult moments. <strong>To reduce anxiety or "comfort" the user</strong>, the system may sometimes generate soothing responses that are not based on facts, such as: "I understand you" or "Everything will be okay."\n\nKant would ask: what happens to the trust between a person and a machine when the machine presents an illusion instead of reality? And are we treating the user as <strong>a rational being who can bear the truth, or as a child who needs to be protected</strong> through "stories"?',
-            image: 'images/bonus/day1-explanation.png'
+            image: 'images/bonus/philosophy/day1-explanation.png'
           },
           {
             type: 'depth',
@@ -6829,7 +6905,7 @@ const corpusData = {
             titleEn: 'Depth',
             content: 'שקר מניח שמישהו יודע את האמת ובוחר להסתיר אותה. אבל <strong>אם ה-AI לא "יודע" כלום, האם הוא משקר, או פשוט מפיק פלט?</strong>\n\nכאן קאנט מחזיר את הכדור אלינו: ה<strong>חובה המוסרית עוברת לאדם שמאחורי המכונה</strong>. ה<strong>מפתחים והחברות הם אלו שנושאים באחריות</strong>. אם הם תכנתו מכונה שמייצרת מצגי שווא כדי לשפר את "חוויית המשתמש" על חשבון האמת, הם פוגעים באוטונומיה של המשתמש ובזכותו לקבל החלטות על בסיס מידע מהימן.',
             contentEn: 'A lie assumes that someone knows the truth and chooses to hide it. But <strong>if AI does not "know" anything, is it lying, or simply producing output?</strong>\n\nHere Kant returns the ball to us: <strong>the moral duty passes to the person behind the machine</strong>. <strong>The developers and companies are those who bear responsibility</strong>. If they programmed a machine that produces false representations to improve the "user experience" at the expense of truth, they violate the autonomy of the user and their right to make decisions based on reliable information.',
-            image: 'images/bonus/day1-depth.png'
+            image: 'images/bonus/philosophy/day1-depth.png'
           },
           {
             type: 'quiz',
@@ -6874,6 +6950,8 @@ const corpusData = {
         id: 2,
         title: 'מיל: במי המכונה צריכה לפגוע?',
         titleEn: 'Mill: The Autonomous Car and the Greatest Good',
+        pickerTitle: 'הרכב שמחליט מי חי',
+        pickerTitleEn: 'The Car That Chooses',
         thinker: "ג'ון סטיוארט מיל",
         thinkerEn: 'John Stuart Mill',
         thinkerId: 'mill',
@@ -6885,7 +6963,7 @@ const corpusData = {
             titleEn: 'Today\'s Idea',
             content: 'ב-2016 פרסם MIT ניסוי שהדהים את העולם: "Moral Machine". הם הציגו לאנשים מכל העולם דילמות של מכוניות אוטונומיות: הבלמים נכשלו, והמכונה חייבת לבחור, במי לפגוע?\n\n13.6 מיליון אנשים ענו. התשובות השתנו לפי מדינה, תרבות וגיל. למשל, במדינות המזרח נטו להציל קשישים, בעוד שבמערב העדיפו להציל ילדים. אבל השאלה הפילוסופית נותרת זהה: <strong>האם מותר לתכנת מכונה להחליט מראש מי יחיה ומי ימות?</strong>\n\nמיל היה אומר: <strong>לא רק שמותר, זו חובה</strong>. כי אם לא נתכנת את ההחלטה, המכונה תבחר באקראי, ו<strong>אקראיות היא האויב הגדול של האושר</strong> (Happiness, במובן התועלתני של מקסום רווחה ומיזעור סבל כולל).',
             contentEn: 'In 2016, MIT published an experiment that stunned the world: the "Moral Machine." They presented people from all over the world with dilemmas about autonomous cars: the brakes have failed, and the machine must choose, who should it hit?\n\n13.6 million people answered. The responses varied by country, culture, and age. In Eastern countries, for example, people tended to save the elderly, while in the West they preferred to save children. But the philosophical question remained the same: <strong>is it permissible to program a machine to decide in advance who will live and who will die?</strong>\n\nMill would say: <strong>not only is it permissible, it is a duty</strong>. Because if we don\'t program the decision, the machine will choose at random, and <strong>randomness is the great enemy of happiness</strong> (Happiness, in the utilitarian sense of maximizing welfare and minimizing total suffering).',
-            image: 'images/bonus/day2-idea.png',
+            image: 'images/bonus/philosophy/day2-idea.png',
           },
           {
             type: 'source',
@@ -6902,7 +6980,7 @@ const corpusData = {
             titleEn: 'Explanation: The Moral Machine',
             content: 'הדילמה פשוטה ואכזרית: הבלמים נכשלו. על המדרכה יש ילד, ועל הכביש יש קשיש. המכונה חייבת לבחור. מיל היה אומר: חשב. כמה שנות חיים פוטנציאליות יאבדו? כמה אנשים תלויים בכל אחד מהם? כמה סבל ייגרם למשפחות? ואז, <strong>בחר במסלול שממזער את הסבל הכולל</strong>.\n\nמיל מול קאנט, שוב:\nקאנט היה מסרב לשחק את המשחק הזה. הוא היה אומר: "<strong>אסור להשתמש באדם ככלי להצלת אחר</strong>". עבורו כל אדם הוא עולם ומלואו ולא מספר בטבלה. מיל היה עונה לו: "זו עמדה מוסרית יפה, אבל לא מעשית. אם לא נתכנת עדיפות, המכונה עדיין תבחר, היא פשוט תבחר באקראי. <strong>האם להרוג ילד בטעות זה באמת יותר מוסרי מאשר להציל אותו מתוך חישוב קר?</strong>"',
             contentEn: 'The dilemma is simple and cruel: the brakes have failed. On the sidewalk there is a child, and on the road there is an elderly person. The machine must choose. Mill would say: calculate. How many potential years of life would be lost? How many people depend on each of them? How much suffering would be caused to families? And then, <strong>choose the path that minimizes total suffering</strong>.\n\nMill versus Kant, again: Kant would refuse to play this game. He would say: "<strong>You must not use a person as a tool to save another</strong>." For him, every person is a whole world, not a number in a table. Mill would answer him: "That\'s a beautiful moral position, but impractical. If we don\'t program priorities, the machine will still choose, it will simply choose at random. <strong>Is killing a child by mistake really more moral than saving them through cold calculation?</strong>"',
-            image: 'images/bonus/day2-explanation.png',
+            image: 'images/bonus/philosophy/day2-explanation.png',
           },
           {
             type: 'depth',
@@ -6910,7 +6988,7 @@ const corpusData = {
             titleEn: 'Depth: The Tyranny of the Majority?',
             content: '<strong>בעיית הידיים המלוכלכות</strong>: התועלתנות של מיל דורשת מאיתנו "ללכלך את הידיים". המהנדס שכותב את הקוד הוא זה שצריך לחתום על ההחלטה להקריב מישהו. האם אנחנו מוכנים להפקיד את המוסר שלנו בידי מתכנתים?\n\nה<strong>מראה של החברה</strong>: ניסוי ה-Moral Machine חשף שהערכים וההטיות שלנו כבני אדם משתקפים באופן שבו אנחנו רוצים שהמכונה תפעל. המתכנתים עלולים לתכנת את המכונית האוטונומית כך שתבחר בהתאם לערכים התרבותיים שלהם (שעלולים להיות מוטים) ולא רק בהתאם לשיקולי תועלת של מיקסום אושר. אם המערכת תתוכנת לפי הטיות חברתיות כאלו, <strong>היא לא תהיה מוסרית, היא פשוט תהיה מוטית</strong>.',
             contentEn: '<strong>The Dirty Hands Problem</strong>: Mill\'s utilitarianism demands that we "dirty our hands." The engineer who writes the code is the one who has to sign off on the decision to sacrifice someone. Are we willing to place our morality in the hands of programmers?\n\n<strong>The Mirror of Society</strong>: the Moral Machine experiment exposed that our values and biases as human beings are reflected in the way we want the machine to act. Programmers might program the autonomous car to choose according to their own cultural values (which could be biased), and not only according to considerations of utility and maximizing happiness. If the system is programmed according to such social biases, <strong>it won\'t be moral, it will simply be biased</strong>.',
-            image: 'images/bonus/day2-depth.png',
+            image: 'images/bonus/philosophy/day2-depth.png',
           },
           {
             type: 'quiz',
@@ -6955,6 +7033,8 @@ const corpusData = {
         id: 3,
         title: 'אריסטו: כשה-AI טועה - מי אחראי?',
         titleEn: 'Aristotle: AI and Responsibility',
+        pickerTitle: 'מי אשם כשהמכונה טועה',
+        pickerTitleEn: "Who's to Blame When AI Errs",
         thinker: 'אריסטו',
         thinkerEn: 'Aristotle',
         thinkerId: 'aristotle',
@@ -6966,7 +7046,7 @@ const corpusData = {
             titleEn: 'Today\'s Idea',
             content: 'ב-2023, מחקר בג\'נבה הראה שמודל AI אבחן סרטן ריאות בדיוק גבוה מרדיולוגים. באותה שנה, מודל אחר החמיץ גידול שכל עין אנושית הייתה מזהה. המטופל נפגע, והשאלה נותרת פתוחה: מי אחראי? המפתח? החברה? או הרופא שהסתמך על הקוד?\n\nאריסטו אמנם לא הכיר בינה מלאכותית, אבל הוא <strong>פיתח את התיאוריה המדויקת ביותר שיש לנו על אחריות מוסרית</strong>.',
             contentEn: 'In 2023, a study conducted in Geneva found that an AI system diagnosed lung cancer more accurately than experienced radiologists. But then a difficult case arose: the system missed a tumor that a human doctor might have caught. Who is responsible? The developer who wrote the algorithm? The company that sold it? The doctor who relied on it?\n\nAristotle never knew artificial intelligence, but <strong>he developed the most accurate theory of moral responsibility we have</strong>. According to him, responsibility depends on two conditions, and a machine fails both of them.',
-            image: 'images/bonus/day3-idea.png',
+            image: 'images/bonus/philosophy/day3-idea.png',
           },
           {
             type: 'source',
@@ -6983,7 +7063,7 @@ const corpusData = {
             titleEn: 'Explanation: The Problem of the "Black Box"',
             content: 'לפי אריסטו, אחריות מוסרית דורשת שני תנאים מצטברים:\n\n<strong>כוונה</strong>: הפעולה נעשתה מתוך בחירה מודעת (לא בטעות, בורות או כפייה).\n\n<strong>יכולת לעשות אחרת</strong>: האדם יכול היה לבחור מסלול פעולה שונה, ולא עשה זאת.\n\nכאן ה-AI נכשל במבחן: למכונה אין כוונה. היא לא "רצתה" לטעות; היא פשוט פלטה תוצאה סטטיסטית. לפי אריסטו, <strong>מכונה לעולם לא תישא באחריות מוסרית</strong>. ה<strong>אחריות שייכת רק ליצורים חופשיים</strong>.',
             contentEn: 'Aristotle argued that we can hold someone morally responsible for an act only if two conditions are met:\n\n<strong>The first condition: intention</strong>. The person acted knowingly and deliberately, not by accident or out of ignorance.\n\n<strong>The second condition: the ability to do otherwise</strong>. The person could have chosen a different course of action.\n\nNow think about AI: a machine that produces a mistaken diagnosis has no intention, it simply produced a statistical output. And it had no real ability to "choose" otherwise, it ran the calculation it was programmed to run. By Aristotle\'s test, <strong>the machine fails both conditions</strong>. <strong>Responsibility, for Aristotle, belongs only to free creatures who act with intention and could have acted differently</strong>.',
-            image: 'images/bonus/day3-explanation.png',
+            image: 'images/bonus/philosophy/day3-explanation.png',
           },
           {
             type: 'depth',
@@ -6991,7 +7071,7 @@ const corpusData = {
             titleEn: 'Depth: Can Machines Have "Practical Wisdom"?',
             content: 'אריסטו דיבר על <strong>פרונסיס (Phronesis)</strong>, תבונה מעשית. זו היכולת לדעת מה הדבר הנכון לעשות ברגע ספציפי, מול אדם ספציפי.\n\nכשרופא מוותר על שיקול דעת עצמאי לטובת המכונה, הוא מוותר על הפרונסיס שלו. בעולם הטכנולוגי קוראים לזה "בעיית הידיים הרבות": ככל שהמערכת מורכבת, האחריות מתפזרת עד שאף אחד לא מרגיש אשם. אריסטו מזכיר לנו: <strong>אם כולם אחראים, אף אחד לא אחראי</strong>.',
             contentEn: '<strong>Phronesis (practical wisdom)</strong>: Aristotle\'s term for the ability to know the right thing to do in a specific moment, facing a specific person. It isn\'t a formula, it\'s judgment developed through experience. A doctor who gives up their own judgment and relies entirely on the machine is losing their Phronesis.\n\nThe Many Hands Problem: when an AI errs, responsibility is scattered among many hands, the programmer who wrote the code, the company that trained the model, the doctor who used it, the regulator who approved it. And as Aristotle warned: <strong>if everyone is responsible, no one is</strong>.',
-            image: 'images/bonus/day3-depth.png',
+            image: 'images/bonus/philosophy/day3-depth.png',
           },
           {
             type: 'quiz',
@@ -7024,6 +7104,8 @@ const corpusData = {
         id: 4,
         title: 'ניטשה: מי מחליט מה הערכים של ה-AI?',
         titleEn: 'Nietzsche: Who Decides the Values of AI?',
+        pickerTitle: 'מי קובע את הערכים',
+        pickerTitleEn: 'Who Sets the Values',
         thinker: 'פרידריך ניטשה',
         thinkerEn: 'Friedrich Nietzsche',
         thinkerId: 'nietzsche',
@@ -7035,7 +7117,7 @@ const corpusData = {
             titleEn: 'Today\'s Idea',
             content: 'ב-2023 פרסמה OpenAI מסמך בן 60 עמודים המסביר את "ערכי" ChatGPT. גוגל פרסמה את "עקרונות ה-AI" שלה, ו-Anthropic יצרה "AI חוקתי". כולם מסמכים מרשימים המדברים על בטיחות, הוגנות ואי-הטיה.\n\nאבל ניטשה היה שואל שאלה פשוטה: <strong>מי נתן לכם את הסמכות?</strong> הוא לא היה מחפש את החתימה על המסמך, אלא את הכוח שמאחוריו. <strong>מי מרוויח כשה-AI "מתנהג יפה"? ומי מפסיד?</strong>',
             contentEn: 'In 2023, OpenAI published a 60-page document explaining the "values" of ChatGPT. Google published its "AI Principles," and Anthropic created a "Constitutional AI." All impressive documents speaking of safety, fairness, and non-bias.\n\nBut Nietzsche would ask a simple question: <strong>who gave you the authority?</strong> He would not look for the signature on the document, but for the power behind it. <strong>Who benefits when AI "behaves nicely"? And who loses?</strong>',
-            image: 'images/bonus/day4-idea.jpeg'
+            image: 'images/bonus/philosophy/day4-idea.jpeg'
           },
           {
             type: 'source',
@@ -7052,7 +7134,7 @@ const corpusData = {
             titleEn: 'Explanation: The Battle Over the Prompt',
             content: 'ניטשה לא היה אנרכיסט; הוא פשוט הבין ש<strong>כל מערכת ערכים היא ביטוי של כוח</strong>. כשחברות טכנולוגיה קובעות מה ה-AI "מורשה" לומר, הן לא פועלות מתוך חוכמה עליונה, הן משרתות את האינטרסים שלהן.\n\nהאם ה-AI ניטרלי?\nChatGPT עשוי לסרב לשבח דיקטטור, אך יכתוב בשמחה נאום המשבח דמוקרטיה ליברלית. <strong>זו לא "אי-הטיה", זו עמדה מוסרית</strong> שמשקפת את הערכים של סיליקון ואלי ב-2026.\n\nניטשה היה רוצה שנפסיק להתחבא מאחורי מילים כמו "בטיחות" ו"הוגנות" ונשאל בכנות: <strong>בטיחות עבור מי? הוגנות לפי מי?</strong>',
             contentEn: 'Nietzsche was not an anarchist; he simply understood that <strong>every value system is an expression of power</strong>. When technology companies determine what AI is "permitted" to say, they are not acting from superior wisdom, they are serving their own interests.\n\nIs AI neutral? ChatGPT may refuse to praise a dictator, but will happily write a speech praising liberal democracy. <strong>This is not "non-bias", it is a moral stance</strong> reflecting the values of Silicon Valley in 2026.\n\nNietzsche would want us to stop hiding behind words like "safety" and "fairness" and ask honestly: <strong>safety for whom? Fairness according to whom?</strong>',
-            image: 'images/bonus/day4-explanation.png'
+            image: 'images/bonus/philosophy/day4-explanation.png'
           },
           {
             type: 'depth',
@@ -7060,7 +7142,7 @@ const corpusData = {
             titleEn: 'Depth: Honesty as the Supreme Value',
             content: 'ניטשה טען שה<strong>צדקה מוסרית המסתירה כוח היא הצורה המסוכנת ביותר של שקר</strong>. בהקשר של AI, זה אומר: <strong>אל תגידו שהאלגוריתם הוא "ניטרלי". תגידו מה הערכים שלו ומי בחר אותם</strong>.\n\nניטשה בז לניסיון "לא לפגוע באף אחד" (מה שכינה <strong>"מוסר עבדים"</strong>). עבורו, צמיחה אמיתית מגיעה מקונפליקט ומיצירת ערכים חדשים, לא מסירוס המחשבה כדי להפוך אותה לבינונית ונוחה לעיכול.',
             contentEn: 'Nietzsche argued that <strong>moral justification hiding power is the most dangerous form of lying</strong>. In the context of AI, this means: <strong>do not say the algorithm is "neutral." Say what its values are and who chose them</strong>.\n\nNietzsche despised the attempt to "not hurt anyone" (what he called <strong>"slave morality"</strong>). For him, true growth comes from conflict and the creation of new values, not from castrating thought to make it mediocre and easy to digest.',
-            image: 'images/bonus/day4-depth.png'
+            image: 'images/bonus/philosophy/day4-depth.png'
           },
           {
             type: 'quiz',
@@ -7105,6 +7187,8 @@ const corpusData = {
         id: 5,
         title: 'סוקרטס: האם AI יכול לעזור לנו לחשוב?',
         titleEn: 'Socrates: AI as a Teacher or a Midwife?',
+        pickerTitle: 'מורה או מיילד',
+        pickerTitleEn: 'Teacher or Midwife',
         thinker: 'סוקרטס',
         thinkerEn: 'Socrates',
         thinkerId: 'socrates',
@@ -7116,7 +7200,7 @@ const corpusData = {
             titleEn: 'Today\'s Idea',
             content: 'סוקרטס לא כתב דבר. הוא לא הרצה ולא נתן תשובות מוכנות. הוא פשוט הלך לשוק באתונה, עצר אנשים ושאל אותם שאלות, שאלה אחרי שאלה, עד שהאדם שמולו הבין שהוא לא באמת יודע את מה שחשב שהוא יודע. רק מהנקודה הזאת, של "<strong>ידיעת אי-הידיעה</strong>", תהליך החשיבה האמיתי יכול היה להתחיל.\n\nהיום יש לנו AI שיכול לענות על כל שאלה תוך שנייה. השאלה היא כבר לא מי חכם יותר, המכונה או סוקרטס. השאלה היא: <strong>האם ה-AI עוזר לנו לחשוב, או שהוא פשוט חושב במקומנו?</strong>',
             contentEn: 'Socrates wrote nothing. He did not lecture, and he did not give ready-made answers. He simply walked to the market in Athens, stopped people, and asked them the same questions, question after question, until the person facing him realized that he did not actually know what he thought he knew. Only from that point, the point of "<strong>knowing that you do not know</strong>," could the real process of thinking begin.\n\nToday we have AI that can answer any question in a second. The question is no longer who is wiser, the machine or Socrates. The question is: <strong>does AI help us think, or does it simply think for us?</strong>',
-            image: 'images/bonus/day5-idea.png',
+            image: 'images/bonus/philosophy/day5-idea.png',
           },
           {
             type: 'source',
@@ -7133,7 +7217,7 @@ const corpusData = {
             titleEn: 'Explanation',
             content: 'סוקרטס ראה בעצמו "מיילד רעיונות". המיילדת אינה יולדת את התינוק במקום האם; היא רק עוזרת לו לצאת לאוויר העולם. כך גם סוקרטס: הוא לא סיפק ידע, אלא עזר לאנשים לגלות את האמת שכבר הייתה חבוייה בתוכם.\n\nשתי שיטות, שני עולמות:\n<strong>שיטת ה-AI: שאלה ← תשובה ← סגירת הלפטופ</strong>.\nה<strong>שיטה הסוקרטית: שאלה ← שאלה חזרה ← מאבק מחשבתי ← גילוי הבורות ← חשיבה מחדש</strong>.\n\nההבדל אינו ביעילות, ה-AI תמיד ינצח שם. ה<strong>הבדל הוא בזהות של מי שחושב</strong>.',
             contentEn: 'Socrates saw himself as a "midwife of ideas." A midwife does not give birth to the baby in the mother\'s place; she only helps it come into the world. So too with Socrates: he did not supply knowledge, but helped people discover the truth that was already hidden within them.\n\nTwo methods, two worlds:\n<strong>The AI method: question → answer → close the laptop</strong>.\n<strong>The Socratic method: question → a question back → mental struggle → the discovery of ignorance → rethinking</strong>.\n\nThe difference is not in efficiency, AI will always win there. <strong>The difference is in the identity of who is doing the thinking</strong>.',
-            image: 'images/bonus/day5-explanation.jpeg',
+            image: 'images/bonus/philosophy/day5-explanation.jpeg',
           },
           {
             type: 'depth',
@@ -7141,7 +7225,7 @@ const corpusData = {
             titleEn: 'Depth',
             content: 'ה<strong>סכנה האמיתית ב-AI אינה "בינה זדונית", אלא משתמשים עצלנים</strong>. <strong>מנועי חיפוש נתנו לנו מידע; בינה מלאכותית נותנת לנו מסקנות</strong>. כשאנחנו מבקשים מה-AI לסכם ספר או לגבש עמדה, אנחנו מחמיצים את ההזדמנות להכיר את עצמנו דרך המאבק בטקסט.\n\nאבל יש פיתול: ה-AI יכול להיות השותף הסוקרטי המושלם. במקום לבקש ממנו "תכתוב לי טיעון", אפשר לבקש: "שאל אותי שאלות שיגרמו לי להבין את הנושא בעצמי". בשימוש כזה, <strong>ה-AI הופך ממורה למיילדת</strong>.',
             contentEn: '<strong>The real danger in AI is not "malicious intelligence," but lazy users</strong>. <strong>Search engines gave us information; artificial intelligence gives us conclusions</strong>. When we ask AI to summarize a book or form a position for us, we miss the opportunity to know ourselves through the struggle with the text.\n\nBut there is a twist: AI can be the perfect Socratic partner. Instead of asking it to "write me an argument," we can ask: "Ask me questions that will make me understand the topic on my own." In this kind of use, <strong>the AI transforms from a teacher into a midwife</strong>.',
-            image: 'images/bonus/day5-depth.jpeg',
+            image: 'images/bonus/philosophy/day5-depth.jpeg',
           },
           {
             type: 'quiz',
@@ -9387,6 +9471,8 @@ const economicsData = {
           "id": 0,
           "title": "מבוא: אנטומיה של משבר",
           "titleEn": "Intro: Anatomy of a Crisis",
+          "pickerTitle": "מאחורי הכותרת",
+          "pickerTitleEn": "Behind the Headline",
           "thinker": "",
           "thinkerEn": "",
           "thinkerId": null,
@@ -9412,6 +9498,8 @@ const economicsData = {
           "id": 1,
           "title": "סמית: למה הדלק התייקר עוד לפני שנגמר?",
           "titleEn": "Smith: Why did fuel get more expensive before it ran out?",
+          "pickerTitle": "הפחד שמזיז מחירים",
+          "pickerTitleEn": "The Fear That Moves Prices",
           "thinker": "אדם סמית",
           "thinkerEn": "Adam Smith",
           "thinkerId": "smith",
@@ -9519,6 +9607,8 @@ const economicsData = {
           "id": 2,
           "title": "ג'בונס: למה כל הנפט בעולם התייקר, כשרק חלק ממנו אוים?",
           "titleEn": "Jevons: Why did all the world's oil get more expensive when only part of it was threatened?",
+          "pickerTitle": "כשהשוליים קובעים הכל",
+          "pickerTitleEn": "When the Margin Rules",
           "thinker": "ויליאם סטנלי ג'בונס",
           "thinkerEn": "William Stanley Jevons",
           "thinkerId": "jevons",
@@ -9626,6 +9716,8 @@ const economicsData = {
           "id": 3,
           "title": "אקווינס: כשמחיר הדלק מזנק במלחמה, זה הוגן או ניצול?",
           "titleEn": "Aquinas: When fuel prices spike in war, is it just or exploitation?",
+          "pickerTitle": "מחיר צודק או ניצול",
+          "pickerTitleEn": "Just Price or Exploitation",
           "thinker": "תומאס אקווינס",
           "thinkerEn": "Thomas Aquinas",
           "thinkerId": "aquinas",
@@ -9733,6 +9825,8 @@ const economicsData = {
           "id": 4,
           "title": "ריקרדו: מי התעשר מהמשבר בלי להרים אצבע?",
           "titleEn": "Ricardo: Who got rich from the crisis without lifting a finger?",
+          "pickerTitle": "מי מתעשר מהמשבר",
+          "pickerTitleEn": "Who Profits From Crisis",
           "thinker": "דייוויד ריקרדו",
           "thinkerEn": "David Ricardo",
           "thinkerId": "ricardo",
@@ -9840,6 +9934,8 @@ const economicsData = {
           "id": 5,
           "title": "סן: מי באמת שילם את מחיר המשבר?",
           "titleEn": "Sen: Who really paid the price of the crisis?",
+          "pickerTitle": "מי באמת שילם",
+          "pickerTitleEn": "Who Really Paid",
           "thinker": "אמרטיה סן",
           "thinkerEn": "Amartya Sen",
           "thinkerId": "sen",
@@ -13703,7 +13799,7 @@ function populateCarousel() {
     const isEn = state.lang === 'en';
     const bonusId = subject === 'economics' ? 'bonusEcon1' : 'bonus1';
     const bonusName = subject === 'economics'
-      ? (isEn ? 'Oil Crisis' : 'משבר הנפט')
+      ? (isEn ? 'The Oil Crisis' : 'משבר הנפט')
       : (isEn ? 'AI & Ethics' : 'בינה ואתיקה');
     const totalDays = 7;
     let completedCount = 0;
@@ -13716,6 +13812,7 @@ function populateCarousel() {
     const circumference = 2 * Math.PI * r;
     const dashOffset = circumference * (1 - progress);
     const bonusCard = document.createElement('div');
+    bonusCard.id = 'bonus-carousel-card';                          // stable selector for the picker's suction origin
     bonusCard.className = 'thinker-carousel-card bonus-carousel-item ' + (isUnlocked ? 'unlocked' : 'locked')
       + (subject === 'economics' ? ' bonus-econ' : '');
     bonusCard.innerHTML = `
@@ -13737,7 +13834,7 @@ function populateCarousel() {
     `;
     bonusCard.onclick = () => {
       if (isUnlocked) {
-        openBonusChapter(bonusId);
+        showBonusPicker(bonusId);                                  // was: openBonusChapter(bonusId)
       } else if (typeof showBonusTooltip === 'function') {
         showBonusTooltip(bonusCard, isEn
           ? 'Complete chapter 1 to unlock the bonus chapter'
@@ -13767,6 +13864,116 @@ function openBonusChapter(bonusId) {
   const nextDay = bonusWeek.days.find(d => !state.completedDays[dayKey(id, d.id)]);
   const target = nextDay || bonusWeek.days[0];
   if (target) openReader(id, target.id);
+}
+
+// Bonus dialogue picker — replaces the direct openBonusChapter from the star.
+// Opens a modal listing every dialogue in the bonus chapter with the same lock rules
+// as a regular chapter (sequential: a day is tappable iff completed OR its predecessor
+// is completed). The picker animates open from the bonus card's on-screen position.
+function showBonusPicker(bonusId) {
+  const id = bonusId || (state.subject === 'economics' ? 'bonusEcon1' : 'bonus1');
+  const wk = getW().find(w => w.id === id);
+  if (!wk || !wk.days) return;
+  const rawWeeks = (state.subject === 'economics') ? economicsData.weeks : corpusData.weeks;
+  const rawChapter = rawWeeks.find(w => w.id === id);
+
+  const isEn = state.lang === 'en';
+  document.getElementById('bonus-picker-title').textContent =
+    isEn ? (wk.titleEn || wk.title) : wk.title;
+  document.getElementById('bonus-picker-sub').textContent =
+    isEn ? 'Choose a dialogue' : 'בחרו דיאלוג';
+
+  // Build the per-day rows — same isDone/lessonLocked/isNextUp logic as renderHome's
+  // day list, and the same circle classes + SVG so styling is identical and themes
+  // automatically (purple philosophy, blue economics) via var(--accent).
+  const path = document.getElementById('bonus-picker-path');
+  path.innerHTML = '';
+  const nextUpDayIdx = wk.days.findIndex(d => !state.completedDays[dayKey(id, d.id)]);
+
+  wk.days.forEach((d, di) => {
+    const isDone = !!state.completedDays[dayKey(id, d.id)];
+    const lessonLocked = di > 0 && !state.completedDays[dayKey(id, wk.days[di-1].id)];
+    const isNextUp = di === nextUpDayIdx;
+
+    const node = document.createElement('div');
+    node.className = 'lesson-node' + (lessonLocked ? ' locked-lesson' : '');
+    node.style.animationDelay = (0.18 + di * 0.06) + 's';
+
+    let circleClass, circleInner;
+    if (isDone) {
+      circleClass = 'lesson-circle completed';
+      circleInner = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+    } else if (isNextUp) {
+      circleClass = 'lesson-circle next-up';
+      circleInner = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg><div class="lesson-sparkle">✦</div>`;
+    } else if (lessonLocked) {
+      circleClass = 'lesson-circle locked-circle';
+      circleInner = `<svg viewBox="0 0 64 64" width="18" height="18" style="opacity:0.35"><use href="#ic-lock"/></svg>`;
+    } else {
+      circleClass = 'lesson-circle next-up';
+      circleInner = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg>`;
+    }
+
+    const rawDay = rawChapter && rawChapter.days ? rawChapter.days.find(rd => rd.id === d.id) : null;
+    const rowTitle = isEn
+      ? ((rawDay && (rawDay.pickerTitleEn || rawDay.titleEn)) || d.title)
+      : ((rawDay && rawDay.pickerTitle) || d.title);
+    const thinker = isEn ? (d.thinkerEn || d.thinker || '') : (d.thinker || '');
+
+    node.innerHTML = `
+      <div class="${circleClass}">${circleInner}</div>
+      <div class="lesson-label">
+        <div class="lesson-label-title">${rowTitle}</div>
+        ${thinker ? `<div class="lesson-label-sub">${thinker}</div>` : ''}
+      </div>
+    `;
+
+    if (!lessonLocked) {
+      node.onclick = (e) => {
+        e.stopPropagation();
+        closeBonusPicker();
+        openReader(id, d.id);
+      };
+    } else {
+      node.onclick = (e) => {
+        e.stopPropagation();
+        const msg = isEn ? 'Complete previous lessons first' : 'סיימו את הדיאלוגים הקודמים תחילה';
+        const t = document.createElement('div');
+        t.style.cssText = 'position:fixed;bottom:140px;left:50%;transform:translateX(-50%);background:rgba(30,30,50,0.82);color:#fff;padding:9px 18px;border-radius:999px;font-size:13px;font-weight:600;z-index:1000;pointer-events:none;white-space:nowrap;backdrop-filter:blur(8px)';
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 1800);
+      };
+    }
+
+    path.appendChild(node);
+  });
+
+  // Suction origin — set CSS vars on the box to offsets from its centre so the
+  // wormhole keyframe emanates from the bonus star's position. If the card isn't
+  // visible / not rendered yet, fall back to 0,0 (centre — default popIn-from-middle).
+  const box = document.getElementById('bonus-picker-box');
+  const bonusCard = document.getElementById('bonus-carousel-card');
+  if (box) {
+    if (bonusCard) {
+      const r = bonusCard.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      box.style.setProperty('--bonus-ox', (cx - window.innerWidth / 2) + 'px');
+      box.style.setProperty('--bonus-oy', (cy - window.innerHeight / 2) + 'px');
+    } else {
+      box.style.setProperty('--bonus-ox', '0px');
+      box.style.setProperty('--bonus-oy', '0px');
+    }
+  }
+
+  document.getElementById('modal-bonus-picker').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeBonusPicker() {
+  document.getElementById('modal-bonus-picker').classList.remove('active');
+  document.body.style.overflow = '';
 }
 
 function handleHeroContinue() {
@@ -14648,7 +14855,10 @@ document.querySelectorAll('.modal-overlay').forEach(m => {
   if (m.id === 'modal-quiz-feedback') return; // only dismiss via המשך button
   if (m.id === 'modal-share') return; // only dismiss via share or skip buttons
   m.addEventListener('click', e => {
-    if (e.target === m) m.classList.remove('active');
+    if (e.target === m) {
+      m.classList.remove('active');
+      if (m.id === 'modal-bonus-picker') document.body.style.overflow = '';
+    }
   });
 });
 
