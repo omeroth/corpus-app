@@ -2408,14 +2408,24 @@
   .quiz-summary--good .quiz-summary-msg { background: var(--surface-2); color: var(--accent); }
   .quiz-summary--review .quiz-summary-msg { color: var(--text-2); font-weight: 400; }
 
-  /* Tier 3: review lesson link */
+  /* Tier 3: review lesson — outlined pill button (mirrors .btn-reader-back) */
   .qs-review-lesson {
-    display: block; margin: 12px auto 0; background: none; border: none;
-    color: var(--accent); font-size: 14px; font-weight: 700; font-family: inherit;
-    cursor: pointer; padding: 6px 0;
-    text-decoration: underline; text-underline-offset: 3px;
+    display: block;
+    width: fit-content;
+    margin: 14px auto 0;
+    padding: 12px 22px;
+    background: none;
+    border: 1.5px solid rgba(var(--accent-rgb), 0.4);
+    border-radius: 999px;
+    color: var(--accent);
+    font-size: 14px; font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
     -webkit-tap-highlight-color: transparent;
   }
+  .qs-review-lesson:hover { background: var(--accent-glow); }
+  .qs-review-lesson:active { transform: scale(0.97); background: var(--accent-glow); }
 
 
   /* Confetti (Tier 1 only) */
@@ -5736,7 +5746,7 @@ async function authLogout() {
     xp: 0, streak: 0, dailyStreak: 0, correctInRow: 0,
     completedDays: {}, unlockedThinkers: [],
     lang, currentScreen: 'home', currentWeek: null, currentDay: null,
-    currentSection: 0, readerXP: 0, quizAnswered: {}, quizCorrect: false,
+    currentSection: 0, readerXP: 0, quizAnswered: {}, quizAttempts: {}, quizCorrect: false,
     userEmail: '', userMeta: {}, activeDays: {}, todayCompleted: 0,
     activeDates: [], lastActiveDate: '', lastStreakShownDate: '', streakHistory: {}, chapterCompleteShown: {}, chapterXPByWeek: {}, subject: 'philosophy'
   };
@@ -5775,7 +5785,7 @@ async function deleteAccount() {
       xp: 0, streak: 0, dailyStreak: 0, correctInRow: 0,
       completedDays: {}, unlockedThinkers: [],
       lang, currentScreen: 'home', currentWeek: null, currentDay: null,
-      currentSection: 0, readerXP: 0, quizAnswered: {}, quizCorrect: false,
+      currentSection: 0, readerXP: 0, quizAnswered: {}, quizAttempts: {}, quizCorrect: false,
       userEmail: '', userMeta: {}, activeDays: {}, todayCompleted: 0,
       activeDates: [], lastActiveDate: '', lastStreakShownDate: '', streakHistory: {}, chapterCompleteShown: {}, chapterXPByWeek: {}, subject: 'philosophy'
     };
@@ -12704,7 +12714,7 @@ const UI = {
   he: {
     streak:'רצף', level:'רמה', thinkers:'הוגים שנאספו', chapters:'פרקים',
     comingSoon:'בקרוב', maxLevel:'רמה מקסימלית!', backArrow:'→',
-    nextBtn:'המשך ←', finishBtn:'סיום היום ✓',
+    nextBtn:'המשך ←', finishBtn:'סיום הדיאלוג ✓',
     labels:{ idea:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-idea"/></svg> רעיון', source:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-source"/></svg> מקור', explanation:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-explain"/></svg> הסבר', depth:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-depth"/></svg> עומק', quiz:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-question"/></svg> שאלת הבנה', reflection:'✦ לחשוב' },
     reflectPrompt:'קח רגע עם השאלות האלה:',
     quizLetters:['א','ב','ג'],
@@ -12712,7 +12722,7 @@ const UI = {
     streakToast:'🔥 רצף נכונות! +10 XP',
     correct:(xp) => `✓ נכון! +${xp} XP`,
     wrong:(xp) => `✗ לא בדיוק - +${xp} XP`,
-    dayCompleted:(id) => `יום ${id} הושלם!`,
+    dayCompleted:(id) => `הדיאלוג הושלם!`,
     levelBadge:(n) => `רמה ${n}`,
     xpProgress:(cur,needed) => `${cur} / ${needed} XP לרמה הבאה`,
     dayLabel:(id,thinker) => `יום ${id} - ${thinker}`,
@@ -12728,7 +12738,7 @@ const UI = {
   en: {
     streak:'Streak', level:'Level', thinkers:'Collected Thinkers', chapters:'Chapters',
     comingSoon:'Coming soon', maxLevel:'Maximum level!', backArrow:'←',
-    nextBtn:'Continue →', finishBtn:'Complete Day ✓',
+    nextBtn:'Continue →', finishBtn:'Complete Dialogue ✓',
     labels:{ idea:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-idea"/></svg> Idea', source:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-source"/></svg> Source', explanation:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-explain"/></svg> Explanation', depth:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-depth"/></svg> Deeper', quiz:'<svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-question"/></svg> Comprehension', reflection:'✦ Reflect' },
     reflectPrompt:'Take a moment with these questions:',
     quizLetters:['A','B','C'],
@@ -12736,7 +12746,7 @@ const UI = {
     streakToast:'🔥 Answer streak! +10 XP',
     correct:(xp) => `✓ Correct! +${xp} XP`,
     wrong:(xp) => `✗ Not quite - +${xp} XP`,
-    dayCompleted:(id) => `Day ${id} Complete!`,
+    dayCompleted:(id) => `Dialogue Complete!`,
     levelBadge:(n) => `Level ${n}`,
     xpProgress:(cur,needed) => `${cur} / ${needed} XP to next level`,
     dayLabel:(id,thinker) => `Day ${id} - ${thinker}`,
@@ -12913,6 +12923,7 @@ let state = {
   currentSection: 0,
   readerXP: 0,
   quizAnswered: {},
+  quizAttempts: {},
   quizCorrect: false,
   activeDays: {},
   todayCompleted: 0,
@@ -13049,6 +13060,7 @@ function readerGoBack() {
   if (state.currentSection > 0) {
     state.currentSection--;
     state.quizAnswered = {};
+    state.quizAttempts = {};
     renderReader();
     const scrollArea = document.getElementById('reader-content');
     if (scrollArea) {
@@ -13987,6 +13999,7 @@ function handleHeroContinue() {
       state.currentSection = ls.section;
       state.readerXP = 0;
       state.quizAnswered = {};
+      state.quizAttempts = {};
       state.dayQuizResults = {};
       renderReader();
       showScreen('reader');
@@ -14017,6 +14030,7 @@ function openReader(weekId, dayId) {
   state.currentSection = 0;
   state.readerXP = 0;
   state.quizAnswered = {};
+  state.quizAttempts = {};
   state.dayQuizResults = {};
   renderReader();
   showScreen('reader');
@@ -14249,7 +14263,7 @@ function renderReader() {
     }</div>` : '';
 
     const scoreElId = 'qs-score-' + Date.now();
-    const reviewHtml = tier === 'review' ? `<button class="qs-review-lesson" onclick="state.currentSection=0;renderReader()">${isEn ? 'Review the lesson →' : 'חזור על השיעור ←'}</button>` : '';
+    const reviewHtml = `<button class="qs-review-lesson" onclick="state.currentSection=0;renderReader()">${isEn ? 'Try again →' : 'נסה שוב ←'}</button>`;
 
     card.innerHTML = `
       <div class="section-type-label"><svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-summary"/></svg> ${sectionLabel}</div>
@@ -14322,6 +14336,7 @@ function nextSection() {
     state.lastSection = { chapter: state.currentWeek, day: state.currentDay, section: state.currentSection };
     saveStateLocal();
     state.quizAnswered = {};
+    state.quizAttempts = {};
     renderReader();
     const scrollArea = document.getElementById('reader-content');
     if (scrollArea) {
@@ -14335,15 +14350,33 @@ function nextSection() {
 
 function handleQuiz(chosen, correctIdx, explanation, btn, questionIdx, isSingleQ = true) {
   if (!state.quizAnswered || typeof state.quizAnswered !== 'object') state.quizAnswered = {};
+  if (!state.quizAttempts || typeof state.quizAttempts !== 'object') state.quizAttempts = {};
   if (state.quizAnswered[questionIdx]) return;
-  state.quizAnswered[questionIdx] = true;
 
-  // Scope option disabling to this question's block
   const block = btn.closest('.quiz-block');
   const opts = block ? block.querySelectorAll('.quiz-option') : document.querySelectorAll('.quiz-option');
-  opts.forEach(o => o.disabled = true);
 
   const isCorrect = chosen === correctIdx;
+  const attemptsSoFar = state.quizAttempts[questionIdx] || 0;
+  const isFinished = isCorrect || attemptsSoFar >= 1;
+
+  if (!isFinished) {
+    // First-try wrong → mark red, keep options enabled, allow one retry
+    state.quizAttempts[questionIdx] = 1;
+    opts.forEach(o => o.classList.remove('option-wrong', 'option-correct', 'option-faded'));
+    if (opts[chosen]) opts[chosen].classList.add('option-wrong');
+    return;
+  }
+
+  // Finished — lock + reveal + score (correct on 1st, correct on 2nd, or wrong on 2nd)
+  state.quizAnswered[questionIdx] = true;
+  state.quizAttempts[questionIdx] = attemptsSoFar + 1;
+  const actualAttempts = state.quizAttempts[questionIdx];
+
+  opts.forEach(o => {
+    o.disabled = true;
+    o.classList.remove('option-wrong', 'option-correct', 'option-faded');
+  });
   opts.forEach((o, i) => {
     if (i === chosen) {
       o.classList.add(isCorrect ? 'option-correct' : 'option-wrong');
@@ -14354,13 +14387,14 @@ function handleQuiz(chosen, correctIdx, explanation, btn, questionIdx, isSingleQ
     }
   });
 
-  const earnedXP = isCorrect ? 15 : 0;
+  // XP: 15 for first-try correct, 7 for second-try correct, 0 for failed both
+  const earnedXP = isCorrect ? (actualAttempts === 1 ? 15 : 7) : 0;
   state.readerXP += earnedXP;
   const xpEl2 = document.getElementById('reader-xp-display');
   if (xpEl2) xpEl2.textContent = state.readerXP;
 
   const ui = u();
-  if (isCorrect) {
+  if (isCorrect && actualAttempts === 1) {
     state.correctInRow = (state.correctInRow || 0) + 1;
     if (state.correctInRow === 3) {
       state.readerXP += 10;
@@ -14379,7 +14413,7 @@ function handleQuiz(chosen, correctIdx, explanation, btn, questionIdx, isSingleQ
   if (!state.dayQuizResults[_dqKey]) state.dayQuizResults[_dqKey] = {};
   state.dayQuizResults[_dqKey][questionIdx] = isCorrect;
 
-  try { posthog.capture('question_answered', { correct: isCorrect, chapter: state.currentWeek, day: state.currentDay }); } catch(e) {}
+  try { posthog.capture('question_answered', { correct: isCorrect, attempts: actualAttempts, chapter: state.currentWeek, day: state.currentDay }); } catch(e) {}
 
   if (isSingleQ) {
     // Legacy single-question: show Continue → explanation modal (unchanged behavior)
