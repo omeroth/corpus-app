@@ -20,10 +20,14 @@
   },
   "homepage": "https://github.com/omeroth/corpus#readme",
   "dependencies": {
+    "@capacitor/android": "^8.4.1",
     "@capacitor/cli": "^8.3.4",
     "@capacitor/core": "^8.3.4",
     "@capacitor/ios": "^8.3.4",
     "@capacitor/status-bar": "^8.0.2",
     "@capgo/capacitor-social-login": "^8.3.22"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5"
   }
 }
