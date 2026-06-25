@@ -20,6 +20,47 @@
   });
   console.log("PostHog ready");
 </script>
+<script>
+  // Android: position:fixed anchors to the LAYOUT viewport. With viewport-fit=cover the
+  // layout viewport extends 30-50 CSS px past the visual viewport (the gesture-bar
+  // overlay area), so position:fixed bottom:0 falls into that hidden band.
+  // window.visualViewport.height gives us the real visible height; the diff is the
+  // padding the reader bar needs. The gap typically doesn't exist on first render —
+  // it appears after the layout viewport grows. So we re-check aggressively.
+  if (/Android/i.test(navigator.userAgent)) {
+    document.documentElement.style.setProperty('--android-safe-bottom', '24px');
+    // innerHeight FLUCTUATES on Android — sometimes 838 (matches visual VP), sometimes
+    // 887 (extends past visual VP with gesture overlay). If we ever wrote `0px` after
+    // a `>0px` write, the button bar lost its padding. Lock in the largest diff ever
+    // seen so transient `0` readings can't clobber a good value.
+    var _maxDiffSeen = 24;  // start at our 24px fallback
+    var _updateAndroidSafeBottom = function() {
+      var vvH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      var diff = Math.round(window.innerHeight - vvH);
+      if (diff > _maxDiffSeen) {
+        _maxDiffSeen = diff;
+        document.documentElement.style.setProperty('--android-safe-bottom', diff + 'px');
+      }
+    };
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', _updateAndroidSafeBottom);
+      window.visualViewport.addEventListener('scroll', _updateAndroidSafeBottom);
+    }
+    window.addEventListener('resize', _updateAndroidSafeBottom);
+    window.addEventListener('load', _updateAndroidSafeBottom);
+    document.addEventListener('DOMContentLoaded', _updateAndroidSafeBottom);
+    setTimeout(_updateAndroidSafeBottom, 100);
+    setTimeout(_updateAndroidSafeBottom, 300);
+    setTimeout(_updateAndroidSafeBottom, 600);
+    setTimeout(_updateAndroidSafeBottom, 1000);
+    // Run forever at 500ms — trivial cost (one function call), but catches the layout
+    // viewport growing whenever it happens (which can be MUCH later than initial load,
+    // e.g. when entering the reader screen that hides the bottom-nav). The _maxDiffSeen
+    // lock ensures we only ever ratchet UP and never get clobbered by transient 0s.
+    setInterval(_updateAndroidSafeBottom, 500);
+    _updateAndroidSafeBottom();
+  }
+</script>
 <style>
   :root {
     --safe-top: env(safe-area-inset-top, 0px);
@@ -1873,7 +1914,7 @@
     min-height: 0;
     flex: 1;
     overflow-y: auto;
-    padding: 12px 12px calc(80px + env(safe-area-inset-bottom));
+    padding: 12px 12px calc(80px + max(env(safe-area-inset-bottom), var(--android-safe-bottom, 0px)));
     -webkit-overflow-scrolling: touch;
   }
   .reader-btn-bar {
@@ -1888,7 +1929,7 @@
     border-top: 1px solid rgba(var(--accent-rgb), 0.12);
     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
     padding: 12px 16px;
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    padding-bottom: max(12px, env(safe-area-inset-bottom), var(--android-safe-bottom, 0px));
     display: flex;
     gap: 10px;
     align-items: center;
@@ -15314,7 +15355,11 @@ function openDrawer() {
   const subj = document.getElementById('screen-subject');
   const toggle = document.getElementById('drawer-toggle-btn');
 
-  // Position subject-select above viewport, ready to slide down over home
+  // Position subject-select above viewport, ready to slide down over home.
+  // Disable transition first so the initial offscreen transform snaps without animating
+  // (otherwise the CSS rule on #screen-subject transitions FROM identity, producing a
+  // visible diagonal slide on Android WebView before the real slide-down begins).
+  subj.style.transition = 'none';
   subj.style.display = 'flex';
   subj.style.position = 'fixed';
   subj.style.top = '0';
@@ -15324,6 +15369,7 @@ function openDrawer() {
   subj.style.height = '100dvh';
   subj.style.zIndex = '20';
   subj.style.transform = 'translateX(-50%) translateY(-100%)';
+  void subj.offsetHeight;
   subj.style.transition = 'transform 450ms cubic-bezier(0.4, 0, 0.2, 1)';
 
   // Hide home chrome (topbar, stats, bottom-nav) that would show above the drawer
@@ -15344,12 +15390,9 @@ function openDrawer() {
   _subjUpdateUI(idx);
   _initSubjCarousel();
 
-  // Double rAF so initial transform is committed before the transition fires
   requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      subj.style.transform = 'translateX(-50%) translateY(0)';
-      setTimeout(() => { _drawerAnimating = false; }, 450);
-    });
+    subj.style.transform = 'translateX(-50%) translateY(0)';
+    setTimeout(() => { _drawerAnimating = false; }, 450);
   });
 }
 
