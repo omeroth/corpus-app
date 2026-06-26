@@ -1,5 +1,13 @@
 {
   "appId": "com.corpusapp.corpus",
   "appName": "Corpus",
-  "webDir": "www"
+  "webDir": "www",
+  "plugins": {
+    "SystemBars": { "insetsHandling": "disable" },
+    "EdgeToEdge": {
+      "backgroundColor": "#FFFFFF",
+      "statusBarColor": "#FFFFFF",
+      "navigationBarColor": "#FFFFFF"
+    }
+  }
 }

@@ -22,8 +22,11 @@
 </script>
 <style>
   :root {
-    --safe-top: env(safe-area-inset-top, 0px);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    /* iOS uses env() natively; Android Capacitor WebView doesn't populate it, so
+       initApp injects --android-safe-{top,bottom,left,right} from EdgeToEdge.getInsets().
+       iOS leaves --android-safe-* undefined so var() falls through to env(). */
+    --safe-top: var(--android-safe-top, env(safe-area-inset-top, 0px));
+    --safe-bottom: var(--android-safe-bottom, env(safe-area-inset-bottom, 0px));
     --bottom-nav-height: 54px;
     --bg: #F8F5FF;
     --surface: #FFFFFF;
@@ -193,7 +196,7 @@
     align-items: center;
     background: var(--bg);
     padding: 12px 16px;
-    padding-top: calc(12px + env(safe-area-inset-top));
+    padding-top: calc(12px + var(--safe-top));
     position: fixed;
     top: 0;
     left: 50%;
@@ -1736,8 +1739,8 @@
     background: #fff;
     border-top: 1px solid #ECE3F8;
     padding: 6px 14px 10px;
-    padding-bottom: calc(10px + env(safe-area-inset-bottom));
-    height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+    padding-bottom: calc(10px + var(--safe-bottom));
+    height: calc(var(--bottom-nav-height) + var(--safe-bottom));
     direction: ltr;
     position: fixed;
     bottom: 0;
@@ -1873,7 +1876,7 @@
     min-height: 0;
     flex: 1;
     overflow-y: auto;
-    padding: 12px 12px calc(80px + env(safe-area-inset-bottom));
+    padding: 12px 12px calc(80px + var(--safe-bottom));
     -webkit-overflow-scrolling: touch;
   }
   .reader-btn-bar {
@@ -1888,7 +1891,7 @@
     border-top: 1px solid rgba(var(--accent-rgb), 0.12);
     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
     padding: 12px 16px;
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    padding-bottom: max(12px, var(--safe-bottom));
     display: flex;
     gap: 10px;
     align-items: center;
@@ -1943,7 +1946,7 @@
     background: var(--bg);
     display: flex;
     flex-direction: column;
-    padding-top: env(safe-area-inset-top);
+    padding-top: var(--safe-top);
   }
   .reader-topbar .topbar-logo-wrap {
     font-size: 14px;
@@ -3639,7 +3642,7 @@
     width: 100%;
     max-width: 360px;
     margin: 0 auto;
-    padding-bottom: env(safe-area-inset-bottom, 8px);
+    padding-bottom: max(8px, var(--safe-bottom));
     opacity: 0;
     transform: translateY(20px);
     animation: dc-fade-up 0.5s ease-out 1.3s forwards;
@@ -4199,7 +4202,7 @@
   #practice-card {
     position: fixed;
     bottom: var(--bottom-nav-height);
-    bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+    bottom: calc(var(--bottom-nav-height) + var(--safe-bottom));
     left: 50%; transform: translateX(-50%);
     width: calc(100% - 32px); max-width: calc(480px - 32px);
     z-index: 99; display: none; pointer-events: none;
@@ -4300,7 +4303,7 @@
   /* Drawer toggle */
   #drawer-toggle-btn {
     position: fixed;
-    top: env(safe-area-inset-top);
+    top: var(--safe-top);
     left: max(0px, calc(50vw - 240px));
     z-index: 201;
     width: 44px; height: 44px;
@@ -15663,6 +15666,44 @@ function initUI() {
       // Native Google Sign-In (Capgo plugin). No-op on web.
       const _isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
       if (_isNative) {
+        // Android edge-to-edge: draw under status/navigation bars; chrome elements
+        // self-position via CSS env(safe-area-inset-*). No-op on iOS (which already
+        // does this natively via viewport-fit=cover + Info.plist).
+        if (window.Capacitor.getPlatform() === 'android' && window.Capacitor.Plugins.EdgeToEdge) {
+          try {
+            await window.Capacitor.Plugins.EdgeToEdge.enable();
+            console.log('[EdgeToEdge] enabled (Android)');
+            // The plugin's enable() sizes the WebView edge-to-edge but does NOT
+            // populate CSS env(safe-area-inset-*) in Capacitor's Android WebView.
+            // Bridge it manually: read the plugin's insets (device pixels), convert
+            // to CSS pixels via devicePixelRatio, set as --android-safe-* on
+            // documentElement. CSS then prefers var(--android-safe-X, env(...)) so
+            // iOS (no var set) falls through to its native env() — identical behavior.
+            const _applyAndroidInsets = async () => {
+              try {
+                const insets = await window.Capacitor.Plugins.EdgeToEdge.getInsets();
+                const dpr = window.devicePixelRatio || 1;
+                const t = (insets.top    || 0) / dpr;
+                const b = (insets.bottom || 0) / dpr;
+                const l = (insets.left   || 0) / dpr;
+                const r = (insets.right  || 0) / dpr;
+                document.documentElement.style.setProperty('--android-safe-top',    t + 'px');
+                document.documentElement.style.setProperty('--android-safe-bottom', b + 'px');
+                document.documentElement.style.setProperty('--android-safe-left',   l + 'px');
+                document.documentElement.style.setProperty('--android-safe-right',  r + 'px');
+                console.log('[EdgeToEdge] insets device-px:', JSON.stringify(insets),
+                            'dpr:', dpr, 'CSS-px: t=' + t + ' b=' + b + ' l=' + l + ' r=' + r);
+              } catch(e) {
+                console.error('[EdgeToEdge] getInsets failed:', e);
+              }
+            };
+            await _applyAndroidInsets();
+            // Re-apply on resize (orientation change, keyboard, system bar visibility).
+            window.addEventListener('resize', _applyAndroidInsets);
+          } catch(e) {
+            console.error('[EdgeToEdge] enable failed:', e);
+          }
+        }
         try {
           const socialConfig = {
             google: {
