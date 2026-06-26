@@ -26,3 +26,6 @@ ios/App/App.xcodeproj/project.xcworkspace/xcuserdata/
 *.keystore
 keystore.properties
 android/keystore/
+
+# Image-optimization backup (created before mass WebP conversion). Not part of the app.
+images.original-backup/
