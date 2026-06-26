@@ -20,47 +20,6 @@
   });
   console.log("PostHog ready");
 </script>
-<script>
-  // Android: position:fixed anchors to the LAYOUT viewport. With viewport-fit=cover the
-  // layout viewport extends 30-50 CSS px past the visual viewport (the gesture-bar
-  // overlay area), so position:fixed bottom:0 falls into that hidden band.
-  // window.visualViewport.height gives us the real visible height; the diff is the
-  // padding the reader bar needs. The gap typically doesn't exist on first render —
-  // it appears after the layout viewport grows. So we re-check aggressively.
-  if (/Android/i.test(navigator.userAgent)) {
-    document.documentElement.style.setProperty('--android-safe-bottom', '24px');
-    // innerHeight FLUCTUATES on Android — sometimes 838 (matches visual VP), sometimes
-    // 887 (extends past visual VP with gesture overlay). If we ever wrote `0px` after
-    // a `>0px` write, the button bar lost its padding. Lock in the largest diff ever
-    // seen so transient `0` readings can't clobber a good value.
-    var _maxDiffSeen = 24;  // start at our 24px fallback
-    var _updateAndroidSafeBottom = function() {
-      var vvH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-      var diff = Math.round(window.innerHeight - vvH);
-      if (diff > _maxDiffSeen) {
-        _maxDiffSeen = diff;
-        document.documentElement.style.setProperty('--android-safe-bottom', diff + 'px');
-      }
-    };
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', _updateAndroidSafeBottom);
-      window.visualViewport.addEventListener('scroll', _updateAndroidSafeBottom);
-    }
-    window.addEventListener('resize', _updateAndroidSafeBottom);
-    window.addEventListener('load', _updateAndroidSafeBottom);
-    document.addEventListener('DOMContentLoaded', _updateAndroidSafeBottom);
-    setTimeout(_updateAndroidSafeBottom, 100);
-    setTimeout(_updateAndroidSafeBottom, 300);
-    setTimeout(_updateAndroidSafeBottom, 600);
-    setTimeout(_updateAndroidSafeBottom, 1000);
-    // Run forever at 500ms — trivial cost (one function call), but catches the layout
-    // viewport growing whenever it happens (which can be MUCH later than initial load,
-    // e.g. when entering the reader screen that hides the bottom-nav). The _maxDiffSeen
-    // lock ensures we only ever ratchet UP and never get clobbered by transient 0s.
-    setInterval(_updateAndroidSafeBottom, 500);
-    _updateAndroidSafeBottom();
-  }
-</script>
 <style>
   :root {
     --safe-top: env(safe-area-inset-top, 0px);
@@ -1914,7 +1873,7 @@
     min-height: 0;
     flex: 1;
     overflow-y: auto;
-    padding: 12px 12px calc(80px + max(env(safe-area-inset-bottom), var(--android-safe-bottom, 0px)));
+    padding: 12px 12px calc(80px + env(safe-area-inset-bottom));
     -webkit-overflow-scrolling: touch;
   }
   .reader-btn-bar {
@@ -1929,7 +1888,7 @@
     border-top: 1px solid rgba(var(--accent-rgb), 0.12);
     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
     padding: 12px 16px;
-    padding-bottom: max(12px, env(safe-area-inset-bottom), var(--android-safe-bottom, 0px));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
     display: flex;
     gap: 10px;
     align-items: center;
@@ -5620,10 +5579,15 @@ async function authWithGoogle() {
       // Log out of the plugin's cached Google session first so the account
       // picker always appears (otherwise iOS silently reuses the last account).
       try { await window.Capacitor.Plugins.SocialLogin.logout({ provider: 'google' }); } catch(e) {}
-      const res = await window.Capacitor.Plugins.SocialLogin.login({
-        provider: 'google',
-        options: { scopes: ['email', 'profile'] }
-      });
+      // Android: the Capgo plugin throws if `options.scopes` is passed without a
+      // matching MainActivity modification. The default scopes (email + profile)
+      // come from the Web Client ID config, which is all we need. iOS still
+      // accepts scopes, so pass them there for parity with the existing behavior.
+      const loginArgs = { provider: 'google' };
+      if (window.Capacitor.getPlatform() === 'ios') {
+        loginArgs.options = { scopes: ['email', 'profile'] };
+      }
+      const res = await window.Capacitor.Plugins.SocialLogin.login(loginArgs);
       const idToken = res && res.result && res.result.idToken;
       if (!idToken) throw new Error('No idToken from Google');
       const { error } = await sb.auth.signInWithIdToken({ provider: 'google', token: idToken });
@@ -13094,7 +13058,7 @@ function goHome() {
 
 function goBack() {
   goHome();
-  animateScreen(document.getElementById('screen-home'), 'anim-slide-back');
+  animateScreen(document.getElementById('screen-home'), 'anim-fade');
 }
 
 function readerGoBack() {
@@ -14075,7 +14039,7 @@ function openReader(weekId, dayId) {
   state.dayQuizResults = {};
   renderReader();
   showScreen('reader');
-  animateScreen(document.getElementById('screen-reader'), 'anim-slide-in');
+  animateScreen(document.getElementById('screen-reader'), 'anim-fade');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -15356,9 +15320,11 @@ function openDrawer() {
   const toggle = document.getElementById('drawer-toggle-btn');
 
   // Position subject-select above viewport, ready to slide down over home.
-  // Disable transition first so the initial offscreen transform snaps without animating
-  // (otherwise the CSS rule on #screen-subject transitions FROM identity, producing a
-  // visible diagonal slide on Android WebView before the real slide-down begins).
+  // Disable transition first so the initial offscreen transform snaps without animating.
+  // Android WebView (Blink) doesn't reliably commit a transform through synchronous
+  // reflow (void offsetHeight), so we use a double-rAF: first frame paints the offscreen
+  // position with transitions still 'none', second frame re-enables the transition and
+  // sets the final transform. This guarantees Blink animates only translateY.
   subj.style.transition = 'none';
   subj.style.display = 'flex';
   subj.style.position = 'fixed';
@@ -15369,8 +15335,6 @@ function openDrawer() {
   subj.style.height = '100dvh';
   subj.style.zIndex = '20';
   subj.style.transform = 'translateX(-50%) translateY(-100%)';
-  void subj.offsetHeight;
-  subj.style.transition = 'transform 450ms cubic-bezier(0.4, 0, 0.2, 1)';
 
   // Hide home chrome (topbar, stats, bottom-nav) that would show above the drawer
   document.body.classList.add('drawer-open');
@@ -15391,8 +15355,13 @@ function openDrawer() {
   _initSubjCarousel();
 
   requestAnimationFrame(() => {
-    subj.style.transform = 'translateX(-50%) translateY(0)';
-    setTimeout(() => { _drawerAnimating = false; }, 450);
+    // First frame: offscreen transform is committed, transitions still 'none'.
+    requestAnimationFrame(() => {
+      // Second frame: enable transition + set final transform. Blink interpolates ONLY Y.
+      subj.style.transition = 'transform 450ms cubic-bezier(0.4, 0, 0.2, 1)';
+      subj.style.transform = 'translateX(-50%) translateY(0)';
+      setTimeout(() => { _drawerAnimating = false; }, 450);
+    });
   });
 }
 
@@ -15554,7 +15523,7 @@ function subjConfirm() {
       document.body.classList.remove('on-subject-screen');
       showScreen('home');
       renderHome();
-      animateScreen(document.getElementById('screen-home'), 'anim-fade-up');
+      animateScreen(document.getElementById('screen-home'), 'anim-fade');
       setTimeout(startOnboarding, 600);
     }
   }, 450);
@@ -15575,7 +15544,7 @@ function showSubjectSelect() {
     try { carousel.scrollTo({ left: idx * 216, behavior: 'instant' }); } catch(e) {}
   }
   previewSubjectTheme(state.subject);
-  animateScreen(document.getElementById('screen-subject'), 'anim-fade-up');
+  animateScreen(document.getElementById('screen-subject'), 'anim-fade');
   _subjUpdateUI(idx);
   _initSubjCarousel();
 }
@@ -15695,14 +15664,23 @@ function initUI() {
       const _isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
       if (_isNative) {
         try {
-          await window.Capacitor.Plugins.SocialLogin.initialize({
+          const socialConfig = {
             google: {
               iOSClientId: '1010803138404-cs8f3t5vvcqjv0rgldlpm25o07sir1i7.apps.googleusercontent.com',
               webClientId: '1010803138404-1s69nn3b8voc2ip3klgbrfugeu945bdp.apps.googleusercontent.com',
               mode: 'online'
-            },
-            apple: { scopes: ['name', 'email'] }
-          });
+            }
+          };
+          // Apple native sign-in is iOS-only. The Capgo plugin's Android path rejects
+          // the apple block unless redirectUrl is set (requires server-side OAuth
+          // callback infra). Omitting apple on Android until that's stood up.
+          if (window.Capacitor.getPlatform() === 'ios') {
+            socialConfig.apple = { scopes: ['name', 'email'] };
+          } else if (window.Capacitor.getPlatform() === 'android') {
+            // Hide Apple sign-in buttons on Android since the flow isn't wired up.
+            document.querySelectorAll('.auth-btn-apple').forEach(b => b.style.display = 'none');
+          }
+          await window.Capacitor.Plugins.SocialLogin.initialize(socialConfig);
           console.log('[Auth] SocialLogin initialized (native)');
         } catch(e) {
           console.error('[Auth] SocialLogin init failed:', e);
@@ -15871,7 +15849,7 @@ function showPantheonScreen() {
       pantheonStats.style.width = '100%';
     }
   });
-  animateScreen(document.getElementById('screen-pantheon'), 'anim-fade-up');
+  animateScreen(document.getElementById('screen-pantheon'), 'anim-fade');
 }
 
 function renderProfile() {
@@ -16032,7 +16010,7 @@ function showProfileScreen() {
   updateBottomNav('profile');
   showScreen('profile');
   renderProfile();
-  animateScreen(document.getElementById('screen-profile'), 'anim-fade-up');
+  animateScreen(document.getElementById('screen-profile'), 'anim-fade');
 }
 
 // === Level Journey screen ===
