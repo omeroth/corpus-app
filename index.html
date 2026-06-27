@@ -864,6 +864,62 @@
   }
   #pf-lang-current { color: var(--accent-muted); }
   .pf-lang-btn svg:last-child { color: var(--accent-muted); }
+
+  /* Daily Reminder row — matches the language row visually */
+  .pf-reminder-section { margin: 12px 16px 0; }
+  .pf-reminder-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #FFFFFF;
+    border: 1.5px solid rgba(var(--accent-rgb), 0.18);
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-dark);
+  }
+  #pf-reminder-time {
+    font: inherit;
+    color: var(--accent-dark);
+    background: rgba(var(--accent-rgb), 0.06);
+    border: 1px solid rgba(var(--accent-rgb), 0.12);
+    border-radius: 8px;
+    padding: 4px 8px;
+    flex-shrink: 0;
+  }
+  #pf-reminder-time:disabled { opacity: 0.5; }
+  .pf-reminder-toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 26px;
+    flex-shrink: 0;
+  }
+  .pf-reminder-toggle input { opacity: 0; width: 0; height: 0; }
+  .pf-reminder-toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: rgba(var(--accent-rgb), 0.18);
+    border-radius: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .pf-reminder-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 20px; height: 20px;
+    inset-inline-start: 3px;
+    top: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+  }
+  .pf-reminder-toggle input:checked + .pf-reminder-toggle-slider { background: var(--accent); }
+  .pf-reminder-toggle input:checked + .pf-reminder-toggle-slider::before { transform: translateX(18px); }
+  [dir="rtl"] .pf-reminder-toggle input:checked + .pf-reminder-toggle-slider::before { transform: translateX(-18px); }
+
   .pf-logout-btn {
     display: block;
     margin: 16px 16px 8px;
@@ -5122,6 +5178,19 @@
       </div>
     </div>
 
+    <!-- Daily Reminder -->
+    <div class="pf-reminder-section">
+      <div class="pf-reminder-row">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent);flex-shrink:0"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <span id="pf-reminder-label" style="flex:1">תזכורת יומית</span>
+        <input type="time" id="pf-reminder-time" value="19:00" oninput="_onReminderTimeChange(event)">
+        <label class="pf-reminder-toggle">
+          <input type="checkbox" id="pf-reminder-toggle" onchange="_onReminderToggle(event)">
+          <span class="pf-reminder-toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
     <button class="pf-logout-btn" onclick="showLogoutConfirm()" id="pf-logout-btn">התנתק</button>
     <button class="pf-delete-account-link" onclick="showDeleteAccountConfirm()" id="pf-delete-account-link">מחיקת חשבון</button>
     <button class="pf-privacy-link" onclick="openPrivacyPolicy()" id="pf-privacy-link">מדיניות פרטיות</button>
@@ -5397,6 +5466,14 @@ async function syncProgressToSupabase() {
       onboarding_done: !!localStorage.getItem('corpus_onboarding_done'),
     }, { onConflict: 'user_id' });
   } catch(e) {}
+  try {
+    // Separate upsert so a missing `daily_reminder` column doesn't break the main sync.
+    // Requires Supabase column: daily_reminder jsonb on user_progress.
+    await sb.from('user_progress').upsert({
+      user_id: currentUser.id,
+      daily_reminder: state.dailyReminder,
+    }, { onConflict: 'user_id' });
+  } catch(e) {}
 }
 
 async function loadProgressFromSupabase() {
@@ -5418,6 +5495,13 @@ async function loadProgressFromSupabase() {
     // device / fresh install / cleared browser data. Defensive on missing column.
     if (data.onboarding_done === true) {
       try { localStorage.setItem('corpus_onboarding_done', '1'); } catch(e) {}
+    }
+    // Restore daily-reminder preference from cloud (cross-device). Defensive on missing column.
+    if (data.daily_reminder && typeof data.daily_reminder === 'object') {
+      state.dailyReminder = Object.assign(
+        { enabled: true, time: '19:00', permissionAsked: false },
+        data.daily_reminder
+      );
     }
     migrateCompletedDaysKeys();
     saveStateLocal();
@@ -5756,7 +5840,8 @@ async function authLogout() {
     lang, currentScreen: 'home', currentWeek: null, currentDay: null,
     currentSection: 0, readerXP: 0, quizAnswered: {}, quizAttempts: {}, quizCorrect: false,
     userEmail: '', userMeta: {}, activeDays: {}, todayCompleted: 0,
-    activeDates: [], lastActiveDate: '', lastStreakShownDate: '', streakHistory: {}, chapterCompleteShown: {}, chapterXPByWeek: {}, subject: 'philosophy'
+    activeDates: [], lastActiveDate: '', lastStreakShownDate: '', streakHistory: {}, chapterCompleteShown: {}, chapterXPByWeek: {}, subject: 'philosophy',
+    dailyReminder: { enabled: true, time: '19:00', permissionAsked: false }
   };
   try { localStorage.removeItem('corpus_state'); } catch(e) {}
   showAuthScreen();
@@ -12946,6 +13031,11 @@ let state = {
   isPaid: false,   // manual flag for now; later driven by subscription
 
   subject: 'philosophy',
+
+  // Daily reminder local-notification settings. Default ON; OS permission is requested
+  // after the user finishes their first lesson (not during onboarding). Until permission
+  // is granted, the toggle reflects intent but no notification is actually scheduled.
+  dailyReminder: { enabled: true, time: '19:00', permissionAsked: false },
 };
 
 function saveStateLocal() {
@@ -12974,6 +13064,12 @@ function loadState() {
     state.bonusUnlockShown.philosophy = !!state.bonusUnlockShown.philosophy;
     state.bonusUnlockShown.economics = !!state.bonusUnlockShown.economics;
   }
+  // Normalize state.dailyReminder for existing users whose persisted state predates this field.
+  // Shape: { enabled: true, time: '19:00', permissionAsked: false }.
+  state.dailyReminder = Object.assign(
+    { enabled: true, time: '19:00', permissionAsked: false },
+    state.dailyReminder || {}
+  );
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -13271,6 +13367,145 @@ function recalculateStreak() {
   state.lastActiveDate = lastActive;
   saveStateLocal();
 }
+
+// === Daily reminder (local notification) ===
+// Model:
+//   - One notification at a time, id=1.
+//   - On every "app open" (initApp + visibilitychange→visible), cancel id=1 and
+//     reschedule it for the user's chosen time on the NEXT calendar day.
+//   - Result: a notification only ever fires on a day the user has NOT opened the app.
+//   - Permission is requested AFTER the user finishes their first lesson (see finishDay).
+
+const REMINDER_NOTIF_ID = 1;
+
+function _reminderCopy() {
+  const isEn = state.lang === 'en';
+  return {
+    title: isEn ? "Time for today's idea" : 'הגיע הזמן לרעיון של היום',
+    body:  isEn ? '5 minutes with a great thinker.' : '5 דקות עם הוגה דעות גדול.'
+  };
+}
+
+function _isNotifPluginAvailable() {
+  return !!(window.Capacitor &&
+            window.Capacitor.isNativePlatform &&
+            window.Capacitor.isNativePlatform() &&
+            window.Capacitor.Plugins &&
+            window.Capacitor.Plugins.LocalNotifications);
+}
+
+// Returns 'granted' | 'denied' | 'prompt' | 'unavailable'.
+async function _checkNotifPermission() {
+  if (!_isNotifPluginAvailable()) return 'unavailable';
+  try {
+    const r = await window.Capacitor.Plugins.LocalNotifications.checkPermissions();
+    return r && r.display ? r.display : 'unavailable';
+  } catch(e) { return 'unavailable'; }
+}
+
+async function _requestNotifPermission() {
+  if (!_isNotifPluginAvailable()) return 'unavailable';
+  try {
+    const r = await window.Capacitor.Plugins.LocalNotifications.requestPermissions();
+    return r && r.display ? r.display : 'unavailable';
+  } catch(e) { return 'unavailable'; }
+}
+
+function _nextScheduledDate(timeHHMM) {
+  // Returns a Date object for tomorrow at HH:MM in local time.
+  const [hh, mm] = (timeHHMM || '19:00').split(':').map(n => parseInt(n, 10) || 0);
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  d.setHours(hh, mm, 0, 0);
+  return d;
+}
+
+async function _cancelReminder() {
+  if (!_isNotifPluginAvailable()) return;
+  try {
+    await window.Capacitor.Plugins.LocalNotifications.cancel({
+      notifications: [{ id: REMINDER_NOTIF_ID }]
+    });
+  } catch(e) {}
+}
+
+async function _scheduleReminderFor(date) {
+  if (!_isNotifPluginAvailable()) return;
+  const copy = _reminderCopy();
+  try {
+    await window.Capacitor.Plugins.LocalNotifications.schedule({
+      notifications: [{
+        id:       REMINDER_NOTIF_ID,
+        title:    copy.title,
+        body:     copy.body,
+        schedule: { at: date, allowWhileIdle: true }
+      }]
+    });
+  } catch(e) { console.warn('[Reminder] schedule failed:', e && e.message); }
+}
+
+// Called on every app open / foreground. Always pushes the next notification to
+// tomorrow at the chosen time — so if the user is here today, no notification fires today.
+async function rescheduleReminderFromToday() {
+  if (!_isNotifPluginAvailable()) return;
+  const r = state.dailyReminder || {};
+  if (!r.enabled) { await _cancelReminder(); return; }
+  const perm = await _checkNotifPermission();
+  if (perm !== 'granted') { await _cancelReminder(); return; }
+  await _cancelReminder();
+  await _scheduleReminderFor(_nextScheduledDate(r.time));
+}
+
+// Used by the profile toggle/time-picker. Persists, requests permission if needed,
+// then ensures the schedule reflects the new state.
+async function setReminder(patch) {
+  state.dailyReminder = Object.assign(
+    { enabled: true, time: '19:00', permissionAsked: false },
+    state.dailyReminder || {},
+    patch || {}
+  );
+  saveState();
+  if (!_isNotifPluginAvailable()) return state.dailyReminder;
+  if (state.dailyReminder.enabled) {
+    let perm = await _checkNotifPermission();
+    if (perm === 'prompt' || perm === 'prompt-with-rationale') {
+      perm = await _requestNotifPermission();
+      state.dailyReminder.permissionAsked = true;
+      saveState();
+    }
+    if (perm === 'granted') {
+      await _cancelReminder();
+      await _scheduleReminderFor(_nextScheduledDate(state.dailyReminder.time));
+    } else {
+      // User declined OS permission → flip the intent off so UI reflects reality.
+      state.dailyReminder.enabled = false;
+      saveState();
+      await _cancelReminder();
+    }
+  } else {
+    await _cancelReminder();
+  }
+  return state.dailyReminder;
+}
+
+// Called once after the user finishes their first lesson. Requests OS permission
+// (we deliberately don't ask during onboarding to avoid scaring people off).
+async function maybeRequestReminderPermission() {
+  if (!_isNotifPluginAvailable()) return;
+  const r = state.dailyReminder || {};
+  if (!r.enabled || r.permissionAsked) return;
+  const perm = await _requestNotifPermission();
+  state.dailyReminder.permissionAsked = true;
+  if (perm === 'granted') {
+    await _cancelReminder();
+    await _scheduleReminderFor(_nextScheduledDate(state.dailyReminder.time));
+  } else {
+    // Permission denied → reflect in state so the Profile toggle shows OFF.
+    state.dailyReminder.enabled = false;
+  }
+  saveState();
+}
+// === End daily reminder ===
 
 function isWeekCompleted(weekId) {
   const chapter = getW().find(w => w.id === weekId);
@@ -14676,6 +14911,10 @@ function finishDay() {
 
   const newLevel = getLevel(state.xp);
   try { saveState(); } catch(e) { saveStateLocal(); }
+  // After the user finishes their first real lesson, request OS notification permission
+  // (no-op if already asked, plugin unavailable, or reminder disabled). Fire-and-forget;
+  // the day-complete UI continues to render without waiting.
+  maybeRequestReminderPermission();
 
   try {
     posthog.capture('day_completed', { chapter: state.currentWeek, day: state.currentDay });
@@ -15760,12 +15999,24 @@ function initUI() {
         if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') && session) {
           initialEventReceived = true;
           await enterApp(session.user);
+          // Reschedule daily reminder now that state.dailyReminder is loaded.
+          rescheduleReminderFromToday();
         } else if (event === 'INITIAL_SESSION' && !session) {
           initialEventReceived = true;
           console.log('[Auth] No session - showing auth screen');
           showAuthFlow();
+          // Guest mode: reschedule from local state (no Supabase round-trip).
+          rescheduleReminderFromToday();
         } else if (event === 'SIGNED_OUT') {
           appStarted = false;
+        }
+      });
+
+      // Background → foreground also counts as "user opened the app today" — reschedule
+      // pushes the next notification to tomorrow so today's nudge is suppressed.
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          rescheduleReminderFromToday();
         }
       });
 
@@ -16061,6 +16312,30 @@ function updateLangUI() {
   const checkEn = document.getElementById('pf-lang-check-en');
   if (checkHe) checkHe.textContent = isEn ? '' : '✓';
   if (checkEn) checkEn.textContent = isEn ? '✓' : '';
+  updateReminderUI();
+}
+
+function updateReminderUI() {
+  const isEn = state.lang === 'en';
+  const r = state.dailyReminder || { enabled: true, time: '19:00' };
+  const label = document.getElementById('pf-reminder-label');
+  if (label) label.textContent = isEn ? 'Daily reminder' : 'תזכורת יומית';
+  const time = document.getElementById('pf-reminder-time');
+  if (time) {
+    time.value = r.time || '19:00';
+    time.disabled = !r.enabled;
+  }
+  const toggle = document.getElementById('pf-reminder-toggle');
+  if (toggle) toggle.checked = !!r.enabled;
+}
+
+function _onReminderToggle(ev) {
+  setReminder({ enabled: !!ev.target.checked }).then(updateReminderUI);
+}
+
+function _onReminderTimeChange(ev) {
+  const t = ev.target.value || '19:00';
+  setReminder({ time: t }).then(updateReminderUI);
 }
 
 function showProfileScreen() {
