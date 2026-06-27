@@ -15251,6 +15251,13 @@ function nextOnboardingStep() {
     // survives on other devices / after a reinstall. Fire-and-forget (saveState
     // calls syncProgressToSupabase without awaiting); never break onboarding on error.
     try { saveState(); } catch(e) {}
+    // Drop the new user straight into their first lesson. (Defense-in-depth: normally
+    // the user exits via finishOnboardingWithLang on the language-pick step; this path
+    // only fires if the language step is skipped or the steps array is ever shortened.)
+    const weeks = getW();
+    if (weeks && weeks[0] && weeks[0].days && weeks[0].days.length) {
+      openReader(weeks[0].id, weeks[0].days[0].id);
+    }
     return;
   }
   renderOnboardingStep();
@@ -15264,7 +15271,16 @@ function finishOnboardingWithLang(lang) {
   // Push the onboarding-done flag to Supabase so this device's choice
   // survives on other devices / after a reinstall. Fire-and-forget; never break onboarding on error.
   try { saveState(); } catch(e) {}
-  setTimeout(() => setAppLang(lang), 50);
+  setTimeout(() => {
+    setAppLang(lang);
+    // Drop the new user straight into the first lesson once onboarding completes.
+    // setAppLang ran first so getW() returns correct-language strings. Defensive in case
+    // the active subject's data has no first day populated.
+    const weeks = getW();
+    if (weeks && weeks[0] && weeks[0].days && weeks[0].days.length) {
+      openReader(weeks[0].id, weeks[0].days[0].id);
+    }
+  }, 50);
 }
 
 document.querySelectorAll('.onboarding-lang-btn').forEach(btn => {
