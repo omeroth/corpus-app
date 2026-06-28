@@ -8352,6 +8352,30 @@ const corpusData = {
       },
     ],
   },
+  {
+    id: 5,
+    title: 'חופש הבחירה', titleEn: 'Free Will',
+    comingSoon: true,
+    days: [],
+  },
+  {
+    id: 6,
+    title: 'פילוסופיה פוליטית', titleEn: 'Political Philosophy',
+    comingSoon: true,
+    days: [],
+  },
+  {
+    id: 7,
+    title: 'פילוסופיה של הדת', titleEn: 'Philosophy of Religion',
+    comingSoon: true,
+    days: [],
+  },
+  {
+    id: 8,
+    title: 'פילוסופיה של המדע', titleEn: 'Philosophy of Science',
+    comingSoon: true,
+    days: [],
+  },
   ],
 };
 // ──────────────────────────────────────────────────────────────────────────────
@@ -11270,6 +11294,34 @@ const economicsData = {
         ] },
       ],
     },
+    {
+      id: 5,
+      title: 'צמיחה ופיתוח',
+      titleEn: 'Growth and Development',
+      comingSoon: true,
+      days: [],
+    },
+    {
+      id: 6,
+      title: 'כסף ומשברים',
+      titleEn: 'Money and Crises',
+      comingSoon: true,
+      days: [],
+    },
+    {
+      id: 7,
+      title: 'כלכלה התנהגותית',
+      titleEn: 'Behavioral Economics',
+      comingSoon: true,
+      days: [],
+    },
+    {
+      id: 8,
+      title: 'כלכלה ועתיד',
+      titleEn: 'Economics and the Future',
+      comingSoon: true,
+      days: [],
+    },
   ],
 };
 // ──────────────────────────────────────────────────────────────────────────────
@@ -12915,6 +12967,7 @@ function getW() {
         title: lang === 'en' ? w.titleEn : w.title,
         subtitle: lang === 'en' ? w.subtitleEn : w.subtitle,
         isBonus: w.isBonus,
+        comingSoon: w.comingSoon,
         days: w.days.map(function(d) { return deriveDay(d); }),
       };
     });
@@ -12999,7 +13052,23 @@ function getW() {
     isBonus: true,
     days: cdBonus1.days.map(function(d) { return deriveDay(d); }),
   } : null;
-  return [week1, week2].concat(bonusWeek1 ? [bonusWeek1] : []).concat([week3, week4]).concat(oldWeeks.slice(4));
+  // Coming-soon placeholders live directly in corpusData.weeks with empty days arrays;
+  // they bypass the deriveDay pipeline above (which assumes a fixed day count).
+  const comingSoonChapters = corpusData.weeks
+    .filter(function(w) { return w.comingSoon; })
+    .map(function(w) {
+      return {
+        id: w.id,
+        title: lang === 'en' ? w.titleEn : w.title,
+        comingSoon: true,
+        days: [],
+      };
+    });
+  return [week1, week2]
+    .concat(bonusWeek1 ? [bonusWeek1] : [])
+    .concat([week3, week4])
+    .concat(oldWeeks.slice(4))
+    .concat(comingSoonChapters);
 }
 function getT() { return state.lang === 'en' ? THINKERS_EN : THINKERS; }
 function getLvls() { return state.lang === 'en' ? LEVELS_EN : LEVELS; }
@@ -13531,7 +13600,7 @@ async function maybeRequestReminderPermission() {
 
 function isWeekCompleted(weekId) {
   const chapter = getW().find(w => w.id === weekId);
-  if (!chapter) return false;
+  if (!chapter || !chapter.days || chapter.days.length === 0) return false;
   return chapter.days.every(d => state.completedDays[dayKey(weekId, d.id)]);
 }
 
@@ -13852,7 +13921,7 @@ function renderHome() {
     let nextUpWeekId = null, nextUpDayId = null;
     for (const w of chapters) {
       const wkUnlocked = weekLockMap[w.id] !== undefined ? weekLockMap[w.id] : true;
-      if (w.locked || !wkUnlocked || !w.days) continue;
+      if (w.locked || w.comingSoon || !wkUnlocked || !w.days) continue;
       for (let di = 0; di < w.days.length; di++) {
         const d = w.days[di];
         const lessonLocked = di > 0 && !state.completedDays[dayKey(w.id, w.days[di-1].id)];
@@ -13888,14 +13957,16 @@ function renderHome() {
       // Bonus chapters are shown in the home thinker carousel (see populateCarousel), not in the level-card list
       if (w.isBonus) return;
       const wkUnlocked = weekLockMap[w.id] !== undefined ? weekLockMap[w.id] : true;
-      const wkLocked = w.locked || !wkUnlocked || !canAccessChapter(w.id);
+      const wkLocked = w.locked || w.comingSoon || !wkUnlocked || !canAccessChapter(w.id);
       const isBonus = !!w.isBonus;
       if (!isBonus) levelNum++;
 
       const weekTitle = isEn ? (w.titleEn || w.title) : w.title;
       const eyebrow = isBonus
         ? (isEn ? 'BONUS CHAPTER' : 'פרק בונוס')
-        : (isEn ? `LEVEL ${levelNum}` : `שלב ${levelNum}`);
+        : w.comingSoon
+          ? (isEn ? 'COMING SOON' : 'בקרוב')
+          : (isEn ? `LEVEL ${levelNum}` : `שלב ${levelNum}`);
       const numDisplay = isBonus ? '★' : levelNum;
       const isExpanded = !wkLocked && (_homeExpandedWeekId === w.id);
 
@@ -13906,6 +13977,16 @@ function renderHome() {
       card.id = 'level-card-' + w.id;
       if (!wkLocked) {
         card.onclick = () => toggleLevel(w.id);
+      } else if (w.comingSoon) {
+        // Coming-soon placeholder — toast feedback so a curious tap isn't silent
+        card.onclick = () => {
+          const msg = isEn ? 'Coming soon' : 'בקרוב';
+          const t = document.createElement('div');
+          t.style.cssText = 'position:fixed;bottom:140px;left:50%;transform:translateX(-50%);background:rgba(30,30,50,0.82);color:#fff;padding:9px 18px;border-radius:999px;font-size:13px;font-weight:600;z-index:1000;pointer-events:none;white-space:nowrap;backdrop-filter:blur(8px)';
+          t.textContent = msg;
+          document.body.appendChild(t);
+          setTimeout(() => t.remove(), 1800);
+        };
       } else if (!canAccessChapter(w.id)) {
         // Locked specifically by the paywall (not by progress) — show upgrade modal
         card.onclick = () => showPaywallModal();
