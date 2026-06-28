@@ -13378,11 +13378,31 @@ function recalculateStreak() {
 
 const REMINDER_NOTIF_ID = 1;
 
+// Rotating body messages. The title stays "Corpus" so the notification's source is
+// always clear; the body varies on every reschedule to keep nudges from feeling
+// repetitive. English only (per product decision; body localization not needed).
+const REMINDER_MESSAGES = [
+  "Socrates knew nothing and got famous. Imagine what 5 minutes does for you.",
+  "Marcus Aurelius ran an empire and still journaled daily. You can spare 5 minutes.",
+  "Plato says you're staring at shadows on a wall. Bold words from a guy in a toga.",
+  "I think, therefore I am. You haven't opened Corpus, therefore... concerning.",
+  "Keynes said in the long run we're all dead. Cool, that's settled. One quick idea?",
+  "Kant: act as if your choice were universal law. If everyone skipped today: chaos.",
+  "Adam Smith's invisible hand is currently holding your phone. Let it do its work.",
+  "Your daily idea is waiting. Five minutes, that's it.",
+  "One dialogue today keeps your streak alive.",
+  "A great thinker has something to say. Got five minutes?",
+  "Your streak misses you. Don't let it slip.",
+  "Today's idea is ready when you are.",
+  "Five minutes. One big idea. Let's go.",
+  "Quick brain workout? Your daily dialogue is waiting.",
+  "Keep the streak going. One idea is all it takes."
+];
+
 function _reminderCopy() {
-  const isEn = state.lang === 'en';
   return {
-    title: isEn ? "Time for today's idea" : 'הגיע הזמן לרעיון של היום',
-    body:  isEn ? '5 minutes with a great thinker.' : '5 דקות עם הוגה דעות גדול.'
+    title: 'Corpus',
+    body:  REMINDER_MESSAGES[Math.floor(Math.random() * REMINDER_MESSAGES.length)]
   };
 }
 
