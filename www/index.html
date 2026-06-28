@@ -14526,7 +14526,7 @@ function renderReader() {
     }</div>` : '';
 
     const scoreElId = 'qs-score-' + Date.now();
-    const reviewHtml = `<button class="qs-review-lesson" onclick="state.currentSection=0;renderReader()">${isEn ? 'Try again →' : 'נסה שוב ←'}</button>`;
+    const reviewHtml = tier === 'perfect' ? '' : `<button class="qs-review-lesson" onclick="state.currentSection=0;renderReader()">${isEn ? 'Try again →' : 'נסה שוב ←'}</button>`;
 
     card.innerHTML = `
       <div class="section-type-label"><svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-summary"/></svg> ${sectionLabel}</div>
