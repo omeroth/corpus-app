@@ -14440,6 +14440,21 @@ function closeLibraryModal() {
 }
 
 function openReader(weekId, dayId) {
+  // If the onboarding overlay is still visible, this open is the spotlight
+  // shortcut on step 3 (user tapped the highlighted lesson node directly
+  // instead of the "I'm ready!" button). Treat it as completing the tour —
+  // mirror the exit done by finishOnboardingWithLang/nextOnboardingStep —
+  // so the overlay doesn't linger behind subsequent modals (this collided
+  // with the guest sign-in prompt on first completion). Trade-off: the
+  // shortcut skips the language-pick step; default EN stays, and users can
+  // toggle later from the profile screen.
+  const _onbOverlay = document.getElementById('onboarding-overlay');
+  if (_onbOverlay && _onbOverlay.style.display !== 'none') {
+    _onbOverlay.style.display = 'none';
+    try { localStorage.setItem('corpus_onboarding_done', '1'); } catch(e) {}
+    try { saveState(); } catch(e) {}  // sync the flag to Supabase if signed in (no-op for guests)
+  }
+
   const _week = getW().find(function(w) { return w.id === weekId; });
   const _day = _week && _week.days.find(function(d) { return d.id === dayId; });
   if (!_day || !_day.sections || !_day.sections.length) {
@@ -15176,6 +15191,11 @@ function closeCompleteModal() {
 // dismissals. Signed-in users never see it.
 function _shouldShowGuestPrompt() {
   if (currentUser) return false;
+  // Never interrupt the new-user onboarding tour. The flag is set by ALL
+  // legitimate onboarding-exit paths (the "I'm ready!" → language-pick
+  // sequence, AND the spotlight-shortcut tap on the first lesson — see the
+  // openReader guard that ends onboarding when the overlay is still up).
+  if (!localStorage.getItem('corpus_onboarding_done')) return false;
   if (state.guestPrompt.permanentlyDismissed) return false;
   if (state.guestPrompt.dismissCount >= 3) return false;
   const today = new Date().toISOString().split('T')[0];
