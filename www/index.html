@@ -5356,7 +5356,7 @@
       <span class="auth-social-icon"><svg width="14" height="17" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg></span> Continue with Apple
     </button>
     <button class="nav-btn" id="guest-signup-email-btn" onclick="closeGuestSignupPrompt(); setAuthMode('signup'); showAuthScreen();" style="margin-top:10px;">Sign up with email</button>
-    <div class="share-modal-skip" id="guest-signup-skip" onclick="closeGuestSignupPrompt();">Maybe later</div>
+    <div class="share-modal-skip" id="guest-signup-skip" onclick="dismissGuestSignupPrompt();">Maybe later</div>
   </div>
 </div>
 
@@ -13098,7 +13098,9 @@ let state = {
   activeDates: [],
   streakHistory: {},
   chapterCompleteShown: {}, // { weekId: true } — fires the chapter-complete overlay once per chapter
-  guestSignupPromptShown: false,
+  guestSignupPromptShown: false,  // legacy single-shot flag — kept for back-compat; migrated into guestPrompt below on load
+  // Guest sign-in prompt cadence. Local-only (never uploaded to Supabase — gated by guest mode).
+  guestPrompt: { totalShown: 0, lastShownDate: '', dismissCount: 0, permanentlyDismissed: false },
   isPaid: false,   // manual flag for now; later driven by subscription
 
   subject: 'philosophy',
@@ -13141,6 +13143,24 @@ function loadState() {
     { enabled: true, time: '19:00', permissionAsked: false },
     state.dailyReminder || {}
   );
+  // Normalize state.guestPrompt for users whose persisted state predates the cadence object.
+  // Also migrate from the legacy single-shot guestSignupPromptShown boolean so a returning
+  // guest who already saw the v1 prompt counts as totalShown=1 (and won't immediately re-prompt today).
+  state.guestPrompt = Object.assign(
+    { totalShown: 0, lastShownDate: '', dismissCount: 0, permanentlyDismissed: false },
+    state.guestPrompt || {}
+  );
+  if (state.guestSignupPromptShown) {
+    // Ensure totalShown reflects "they've seen the welcome prompt before" so
+    // first_completion doesn't re-fire. Leave lastShownDate EMPTY — the legacy
+    // prompt could have been weeks ago, so the once-per-day gate must not
+    // pre-block today's first milestone. This also repairs users hit by the
+    // v1 migration that incorrectly stamped lastShownDate = today on load —
+    // safe because the new prompt system was deployed today and no legitimate
+    // new-system prompt could have a "this was real" lastShownDate yet.
+    if (state.guestPrompt.totalShown === 0) state.guestPrompt.totalShown = 1;
+    state.guestPrompt.lastShownDate = '';
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -13764,6 +13784,11 @@ function showChapterCompleteOverlay(chapter) {
     closeChapterCompleteOverlay();
     document.getElementById('modal-complete').classList.remove('active');
     goHome();
+    // Guest sign-in nudge AFTER navigating home so the prompt lands on the
+    // home screen, not on top of the chapter-complete celebration. Cadence is
+    // gated by maybeShowGuestPrompt. Continue-to-next-chapter intentionally
+    // does NOT prompt — that path means the user is in flow, don't interrupt.
+    setTimeout(() => maybeShowGuestPrompt(null, 'chapter_complete'), 400);
   };
 
   overlay.style.display = 'flex';
@@ -15067,46 +15092,117 @@ function closeCompleteModal() {
   const shouldShowShare = state.currentWeek === 1 && state.currentDay === 7;
 
   const isFirstGuestCompletion = !currentUser
-    && !state.guestSignupPromptShown
+    && state.guestPrompt.totalShown === 0
     && Object.keys(state.completedDays).filter(k => !k.endsWith('-0')).length === 1;
 
   if (isFirstGuestCompletion) {
     // Show the soft signup prompt as the user leaves the completion flow,
     // AFTER they've seen the thinker card. Defer goHome until the prompt closes.
-    showGuestSignupPrompt(() => {
+    // Routed via maybeShowGuestPrompt so the cadence rules still apply.
+    maybeShowGuestPrompt(() => {
       goHome();
       if (shouldShowShare) setTimeout(showSharePrompt, 400);
-    });
+    }, 'first_completion');
     return;
   }
 
   goHome();
   if (shouldShowShare) setTimeout(showSharePrompt, 400);
+
+  // Streak milestone hook — fires only on milestone-value days (3/7/30). The
+  // once-per-day cap inside maybeShowGuestPrompt makes this safe to call on
+  // every dialogue dismissal during a milestone day (only the first attempt
+  // actually shows the prompt). Delayed so it doesn't immediately overlap with
+  // any other celebration overlay still settling.
+  if ([3, 7, 30].includes(state.dailyStreak)) {
+    setTimeout(() => maybeShowGuestPrompt(null, 'streak_milestone'), 400);
+  }
+}
+
+// Gates the guest sign-in prompt so it can fire at multiple milestones (first
+// completion, chapter complete, level up, streak milestone) without ever
+// pestering the user more than once per day, and stops asking after 3
+// dismissals. Signed-in users never see it.
+function _shouldShowGuestPrompt() {
+  if (currentUser) return false;
+  if (state.guestPrompt.permanentlyDismissed) return false;
+  if (state.guestPrompt.dismissCount >= 3) return false;
+  const today = new Date().toISOString().split('T')[0];
+  if (state.guestPrompt.lastShownDate === today) return false;
+  return true;
+}
+
+// Use this from any milestone hook — it respects the gate and calls back the
+// continuation regardless of whether the prompt actually shows.
+function maybeShowGuestPrompt(callback, trigger) {
+  if (!_shouldShowGuestPrompt()) {
+    if (typeof callback === 'function') callback();
+    return;
+  }
+  showGuestSignupPrompt(callback, trigger);
 }
 
 let _guestSignupPendingFn = null;
-function showGuestSignupPrompt(originalFn) {
+function showGuestSignupPrompt(originalFn, trigger) {
   _guestSignupPendingFn = originalFn || null;
   // Close the day-complete screen so the prompt isn't hidden behind it
   const completeModal = document.getElementById('modal-complete');
   if (completeModal) completeModal.classList.remove('active');
-  state.guestSignupPromptShown = true;
+  // Track cadence so we don't re-prompt today / after too many dismissals.
+  const today = new Date().toISOString().split('T')[0];
+  state.guestPrompt.totalShown += 1;
+  state.guestPrompt.lastShownDate = today;
+  state.guestSignupPromptShown = true; // legacy back-compat
   saveStateLocal();
   document.getElementById('modal-guest-signup').classList.add('active');
-  // localize
+  // localize — title is constant; body varies with the trigger so the prompt
+  // lands on the moment that earned it ("you just leveled up", etc).
   const isEn = state.lang === 'en';
+  const BODIES = {
+    first_completion: {
+      en: 'Nice start. Create a free account so your progress is always here.',
+      he: 'התחלה יפה. צרו חשבון חינם כדי שההתקדמות תמיד תחכה לכם.'
+    },
+    chapter_complete: {
+      en: "You completed a chapter. Sign in so your progress is always safe.",
+      he: 'סיימת פרק. התחבר כדי שההתקדמות תישמר.'
+    },
+    level_up: {
+      en: "You just leveled up. Sign in so you don't lose your progress.",
+      he: 'עלית רמה. התחבר כדי לא לאבד את ההתקדמות.'
+    },
+    streak_milestone: {
+      en: "You're on a streak. Sign in to keep it safe across devices.",
+      he: 'יש לך רצף יפה. התחבר כדי לשמור עליו בכל מכשיר.'
+    },
+    _default: {
+      en: 'Sign in to save your progress.',
+      he: 'התחבר כדי לשמור על ההתקדמות שלך.'
+    }
+  };
+  const copy = BODIES[trigger] || BODIES._default;
   document.getElementById('guest-signup-title').textContent = isEn ? 'Save your progress' : 'שמרו על ההתקדמות';
-  document.getElementById('guest-signup-body').textContent = isEn ? 'Nice start. Create a free account so your progress is always here.' : 'התחלה יפה. צרו חשבון חינם כדי שההתקדמות תמיד תחכה לכם.';
+  document.getElementById('guest-signup-body').textContent = isEn ? copy.en : copy.he;
   const emailBtn = document.getElementById('guest-signup-email-btn');
   if (emailBtn) emailBtn.textContent = isEn ? 'Sign up with email' : 'הרשמה עם אימייל';
   const skip = document.getElementById('guest-signup-skip');
   if (skip) skip.textContent = isEn ? 'Maybe later' : 'אולי אחר כך';
+  try { posthog.capture('guest_prompt_shown', { trigger: trigger || 'unknown', total_shown: state.guestPrompt.totalShown }); } catch(e) {}
 }
 function closeGuestSignupPrompt() {
   document.getElementById('modal-guest-signup').classList.remove('active');
   const fn = _guestSignupPendingFn;
   _guestSignupPendingFn = null;
   if (typeof fn === 'function') fn();   // continue the original post-dialogue flow
+}
+// Tap-handler for the "Maybe later" link — distinct from the sign-in paths so
+// only an explicit dismiss increments the dismiss counter (sign-in paths route
+// through closeGuestSignupPrompt() WITHOUT counting against the user).
+function dismissGuestSignupPrompt() {
+  state.guestPrompt.dismissCount += 1;
+  saveStateLocal();
+  try { posthog.capture('guest_prompt_dismissed', { dismiss_count: state.guestPrompt.dismissCount }); } catch(e) {}
+  closeGuestSignupPrompt();
 }
 
 function showLogoutConfirm() {
@@ -16656,6 +16752,10 @@ function hideLevelUp() {
   const reveal = document.getElementById('levelup-reveal');
   if (reveal) reveal.classList.remove('active');
   currentLevelUpData = null;
+  // Guest sign-in nudge AFTER the celebration closes. Cadence is gated by
+  // maybeShowGuestPrompt — if a chapter_complete prompt already fired today,
+  // this is a silent no-op.
+  setTimeout(() => maybeShowGuestPrompt(null, 'level_up'), 400);
 }
 
 function addXP(amount) {
