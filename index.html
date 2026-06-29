@@ -2799,7 +2799,11 @@
   .levelup-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
+    /* Nearly-opaque dark + backdrop blur so the home screen behind the overlay
+       does NOT show through. Solid color first, blur is progressive enhancement. */
+    background: rgba(15, 12, 28, 0.95);
+    -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2892,27 +2896,73 @@
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
   }
+  /* Final composition: a centered fixed card with [badge, name, quote, author,
+     Continue] stacked vertically. Always rendered (so badge can animate via
+     transform); pointer-events:none until the user can interact with Continue.
+     Sits above the chest (z-index 10000 vs the chest's default). */
   .levelup-reveal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
     align-items: center;
-    opacity: 0;
-    transform: scale(0.5);
-    transition: opacity 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 100%;
+    max-width: 360px;
+    padding: 0 24px;
+    box-sizing: border-box;
     pointer-events: none;
-    position: absolute;
+    z-index: 10000;
   }
-  .levelup-reveal.active {
-    opacity: 1;
-    transform: scale(1);
-    pointer-events: auto;
-  }
+  /* Badge: top of the final centered column. Its IN-FLOW resting position
+     IS the final spot. The emerge animation overlays a transform that starts
+     down (visually at the chest's location) and ends at translateY(0). */
   .levelup-badge {
     width: 180px;
     height: 180px;
-    margin-bottom: 24px;
-    filter: drop-shadow(0 0 30px rgba(255, 230, 140, 0.6));
+    margin: 0 0 24px;
     object-fit: contain;
+    filter: drop-shadow(0 0 30px rgba(255, 230, 140, 0.6));
+    opacity: 0;
+    transform: translateY(130px) scale(0.25);
+  }
+  .levelup-badge.emerging {
+    animation: badgeEmerge 1200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  /* Arc: starts INSIDE the chest (chest center sits ~130px below the badge's
+     natural rest in the card), bursts UP overshooting above rest, settles back
+     to translateY(0) — the natural top of the centered column. */
+  @keyframes badgeEmerge {
+    0%   { opacity: 0; transform: translateY(130px)  scale(0.25); }   /* inside chest, tiny */
+    30%  { opacity: 1; }                                              /* visible during the launch */
+    55%  { opacity: 1; transform: translateY(-150px) scale(1.05); }   /* burst peak, slight overshoot */
+    100% { opacity: 1; transform: translateY(0)      scale(1); }      /* settled, natural rest */
+  }
+  /* Text block under the badge — fades + slides up into place AFTER the badge
+     has finished its arc (JS adds .active to .levelup-reveal when ready). */
+  .levelup-text-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .levelup-reveal.active .levelup-text-stack {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  /* Chest dismiss — fades out + scales down once the badge has emerged so it
+     doesn't clutter the final composition. */
+  .treasure-chest.dismissing {
+    animation: chestDismiss 700ms ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes chestDismiss {
+    0%   { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0.85); }
   }
   .levelup-level-name {
     color: white;
@@ -2947,6 +2997,7 @@
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
     box-shadow: 0 4px 0 0 #1E3A8A;
+    pointer-events: auto;  /* parent .levelup-reveal is pointer-events:none */
   }
   .levelup-overlay[data-subject="economics"] .levelup-continue {
     background: #1D4ED8;
@@ -16713,6 +16764,13 @@ function showLevelUp(newLevelIndex) {
   const levelData = LEVELS[newLevelIndex];
   if (!levelData) return;
 
+  // If a previous hide is still mid-close (its deferred reset hasn't fired),
+  // cancel that pending reset so it can't clobber the state we're about to set.
+  if (_hideLevelUpResetTimer) {
+    clearTimeout(_hideLevelUpResetTimer);
+    _hideLevelUpResetTimer = null;
+  }
+
   currentLevelUpData = { ...levelData, index: newLevelIndex };
 
   const overlay = document.getElementById('levelup-overlay');
@@ -16721,17 +16779,41 @@ function showLevelUp(newLevelIndex) {
   const hint = document.getElementById('chest-hint');
   const reveal = document.getElementById('levelup-reveal');
 
+  // Populate text content UP FRONT so the centered column has its final height
+  // from the moment the overlay opens. The badge's translateY(0) resting spot
+  // (top of the column) is then computed against this stable height, and the
+  // column won't grow + recenter when the text fades in later, which would
+  // otherwise nudge the badge upward. Text stays invisible (opacity 0) until
+  // .levelup-reveal.active fades it in after the arc settles.
+  document.getElementById('levelup-level-name').textContent =
+    'Rank Achieved: ' + currentLevelUpData.name;
+  document.getElementById('levelup-quote').textContent =
+    currentLevelUpData.quote ? '"' + currentLevelUpData.quote + '"' : '';
+  document.getElementById('levelup-author').textContent =
+    currentLevelUpData.quoteAuthor ? '- ' + currentLevelUpData.quoteAuthor : '';
+
   // Reset chest
   chest.dataset.stage = '0';
+  chest.classList.remove('dismissing');   // clear the chest fade-out animation
   chest.style.display = 'block';
   chest.style.opacity = '1';
   chest.style.transform = 'scale(1)';
   chest.style.transition = '';
+  chest.style.filter = '';   // clear the stage-3 brightness dim
 
   // Reset chest images — show stage 0, hide others
   document.querySelectorAll('.chest-img').forEach(img => img.classList.remove('active'));
   const img0 = document.getElementById('chest-img-0');
   if (img0) img0.classList.add('active');
+
+  // Reset emerging badge so a second level-up replays cleanly
+  const badge = document.getElementById('levelup-badge');
+  if (badge) {
+    badge.classList.remove('emerging');
+    badge.src = '';
+    // strip any leftover inline transform/opacity from prior runs or tuner overrides
+    badge.removeAttribute('style');
+  }
 
   // Reset other elements
   hint.style.display = 'block';
@@ -16747,11 +16829,35 @@ function showLevelUp(newLevelIndex) {
   overlay.classList.add('active');
 }
 
+// Holds the deferred internal-reset timer from hideLevelUp so showLevelUp can
+// cancel it if the next level-up arrives during the close window.
+let _hideLevelUpResetTimer = null;
+
 function hideLevelUp() {
+  // 1. Start the overlay's fade-out IMMEDIATELY but do NOT touch any inner
+  //    state yet — otherwise the chest's .dismissing end-state is removed,
+  //    the badge's .emerging settled state is removed, and the reveal's
+  //    .active is removed, all of which would flash the chest visible and
+  //    snap the badge backward during the 300ms fade. Everything inside the
+  //    overlay must stay in its "settled" state until the user can't see it.
   document.getElementById('levelup-overlay').classList.remove('active');
-  const reveal = document.getElementById('levelup-reveal');
-  if (reveal) reveal.classList.remove('active');
   currentLevelUpData = null;
+
+  // 2. Once the overlay's 0.3s opacity transition has fully completed (with a
+  //    small safety buffer), THEN reset internal state so the next level-up
+  //    starts clean. By this point the overlay is fully transparent and the
+  //    user can't see any of this state-shuffling happen.
+  if (_hideLevelUpResetTimer) clearTimeout(_hideLevelUpResetTimer);
+  _hideLevelUpResetTimer = setTimeout(() => {
+    _hideLevelUpResetTimer = null;
+    const reveal = document.getElementById('levelup-reveal');
+    if (reveal) reveal.classList.remove('active');
+    const badge = document.getElementById('levelup-badge');
+    if (badge) badge.classList.remove('emerging');
+    const chest = document.getElementById('treasure-chest');
+    if (chest) chest.classList.remove('dismissing');
+  }, 350);
+
   // Guest sign-in nudge AFTER the celebration closes. Cadence is gated by
   // maybeShowGuestPrompt — if a chapter_complete prompt already fired today,
   // this is a silent no-op.
@@ -16806,26 +16912,35 @@ document.addEventListener('DOMContentLoaded', function() {
         const titleEl2 = document.querySelector('.levelup-title');
         if (titleEl2) titleEl2.style.display = 'none';
 
-        // Wait for user to see fully open chest, then fade out
-        setTimeout(() => {
-          chest.style.transition = 'opacity 0.4s ease-out, transform 0.4s ease-out';
-          chest.style.opacity = '0';
-          chest.style.transform = 'scale(0.8)';
+        // Slight dim on the chest while the badge starts to emerge from it.
+        chest.style.transition = 'filter 0.4s ease-out';
+        chest.style.filter = 'brightness(0.85)';
 
+        setTimeout(() => {
+          if (!currentLevelUpData) return;
+          const badge = document.getElementById('levelup-badge');
+          badge.src = currentLevelUpData.icon || '';
+          // Force reflow so the animation always restarts cleanly even on
+          // repeat level-ups within a single session.
+          badge.classList.remove('emerging');
+          void badge.offsetWidth;
+          badge.classList.add('emerging');
+
+          // Chest dismisses ~200ms into the arc — fades out + scales down so by
+          // the time the badge is descending, the chest is gone and the final
+          // composition (badge + text below) stands alone, cleanly centered.
           setTimeout(() => {
-            chest.style.display = 'none';
-            if (currentLevelUpData) {
-              document.getElementById('levelup-badge').src = currentLevelUpData.icon || '';
-              document.getElementById('levelup-level-name').textContent =
-                'Rank Achieved: ' + currentLevelUpData.name;
-              document.getElementById('levelup-quote').textContent =
-                currentLevelUpData.quote ? '"' + currentLevelUpData.quote + '"' : '';
-              document.getElementById('levelup-author').textContent =
-                currentLevelUpData.quoteAuthor ? '- ' + currentLevelUpData.quoteAuthor : '';
-              reveal.classList.add('active');
-            }
-          }, 400);
-        }, 800);
+            chest.classList.add('dismissing');
+          }, 200);
+
+          // After the arc completes, fade in the text block. Text is already
+          // populated (in showLevelUp) so the column height has been stable
+          // the whole time — only opacity changes here, no layout shift.
+          // 1300ms = 1200ms badgeEmerge + 100ms breathing room.
+          setTimeout(() => {
+            reveal.classList.add('active');
+          }, 1300);
+        }, 300);
       }
     });
   }
@@ -16919,12 +17034,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
   <div class="chest-hint" id="chest-hint">Tap to open</div>
 
+  <!-- Centered final card: badge at top, text + button below. Position-fixed centered. -->
   <div class="levelup-reveal" id="levelup-reveal">
     <img class="levelup-badge" id="levelup-badge" src="" alt="Level badge"/>
-    <div class="levelup-level-name" id="levelup-level-name"></div>
-    <div class="levelup-quote" id="levelup-quote"></div>
-    <div class="levelup-author" id="levelup-author"></div>
-    <button class="levelup-continue" id="levelup-continue">Continue ›</button>
+    <div class="levelup-text-stack">
+      <div class="levelup-level-name" id="levelup-level-name"></div>
+      <div class="levelup-quote" id="levelup-quote"></div>
+      <div class="levelup-author" id="levelup-author"></div>
+      <button class="levelup-continue" id="levelup-continue">Continue ›</button>
+    </div>
   </div>
 </div>
 
