@@ -1197,6 +1197,9 @@
     -webkit-backface-visibility: hidden;
     border-radius: 18px;
     overflow: hidden;
+    /* Tinted backplate — only visible if the portrait img fails to load
+       (onerror hides the img). Cleaner than an empty grey rectangle. */
+    background: var(--surface-2);
   }
   .pantheon-card-back {
     transform: rotateY(180deg);
@@ -16338,7 +16341,7 @@ function renderPantheon() {
         <div class="pantheon-card" onclick="flipThinkerCard(this, '${t.id}')">
           <div class="pantheon-card-inner">
             <div class="pantheon-card-front">
-              <img src="${t.image}" alt="${t.name}" loading="lazy">
+              <img src="${t.image}" alt="${t.name}" onerror="this.style.display='none'">
               <div class="pantheon-card-overlay"></div>
               <div class="pantheon-card-info">
                 <div class="pantheon-card-name">${displayName}</div>
@@ -16357,7 +16360,7 @@ function renderPantheon() {
       <div class="pantheon-card locked">
         <div class="pantheon-card-inner">
           <div class="pantheon-card-front">
-            <img src="${t.image}" alt="${t.name}" loading="lazy">
+            <img src="${t.image}" alt="${t.name}" onerror="this.style.display='none'">
             <div class="pantheon-card-overlay"></div>
             <div class="pantheon-lock-icon"><svg viewBox="0 0 64 64" width="28" height="28"><use href="#ic-lock"/></svg></div>
           </div>
