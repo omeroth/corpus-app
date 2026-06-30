@@ -3111,6 +3111,11 @@
   [dir="ltr"] .thinker-detail-quote { border-right: none; border-left: 3px solid var(--accent); border-radius: 10px 0 0 10px; }
   [dir="ltr"] .section-type-label::after { display: none; }
   [dir="ltr"] .section-type-label::before { content: ''; flex: 1; height: 1px; background: var(--border); }
+  /* Push the icon to the end of the flex row in LTR so all standard section
+     headers (IDEA, SOURCE, EXPLANATION, DEPTH, REFLECTION, SUMMARY) read as
+     [━━━━ label icon] like CHECK YOURSELF. RTL/Hebrew unaffected — selector is
+     gated by [dir="ltr"]. */
+  [dir="ltr"] .section-type-label svg { order: 1; }
   [dir="ltr"] .quiz-feedback.correct { border-right: none; border-left: 4px solid #4CAF50; }
   [dir="ltr"] .quiz-feedback.wrong { border-right: none; border-left: 4px solid #EF5350; }
   [dir="ltr"] .quiz-intro-v2 { border-right: none; border-left: 3px solid #9B6FE4; padding-right: 0; padding-left: 14px; }

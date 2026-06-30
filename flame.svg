@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Corpus streak flame icon (extracted from index.html <symbol id="icon-streak">).
+     Self-contained: CSS variables resolved to philosophy theme literal hex values:
+       var(--accent)       → #7B4FD4
+     Rendered at default size 512x512 for App Store screenshot resolution. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="512" height="512">
+  <ellipse cx="32" cy="55" rx="14" ry="3" fill="#2A1266" opacity=".25"/>
+  <ellipse cx="32" cy="54" rx="13" ry="2.4" fill="#7B4FD4" stroke="#2A1266" stroke-width="1.6"/>
+  <ellipse cx="32" cy="53.4" rx="9" ry="1.2" fill="#B995F3" opacity=".8"/>
+  <path d="M32 6 C 26 14, 18 22, 18 34 C 18 46, 26 52, 32 52 C 38 52, 46 46, 46 34 C 46 26, 40 24, 38 18 C 36 22, 34 22, 34 18 C 34 14, 33 10, 32 6 Z" fill="#F59E0B" stroke="#2A1266" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M32 16 C 28 22, 24 28, 24 38 C 24 46, 28 50, 32 50 C 36 50, 42 46, 42 38 C 42 30, 38 28, 36 22 C 35 24, 33 24, 33 22 C 33 18, 32 16, 32 16 Z" fill="#FFCF7A"/>
+  <path d="M32 28 C 28 32, 27 38, 30 44 C 32 48, 36 46, 37 42 C 38 36, 35 32, 32 28 Z" fill="#7B4FD4" stroke="#2A1266" stroke-width="1.4" stroke-linejoin="round"/>
+  <path d="M30 34 Q 32 38 30 42" stroke="#D4BFFA" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".9"/>
+  <path d="M32 9 Q 33 14 32 18" stroke="#FFF3D0" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <circle cx="48" cy="14" r="1.8" fill="#F59E0B" stroke="#2A1266" stroke-width="0.8"/>
+  <circle cx="14" cy="20" r="1.4" fill="#FFCF7A"/>
+</svg>
