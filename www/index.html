@@ -5434,35 +5434,8 @@
 </div>
 
 <style>
-  /* Paywall modal — extends the .modal-overlay/.modal-box pattern */
-  .paywall-box { direction: ltr; text-align: start; max-width: 380px; padding: 28px 22px 24px; }
-  .paywall-close {
-    position: absolute; top: 12px;
-    inset-inline-end: 14px;
-    background: none; border: none; font-size: 22px; line-height: 1;
-    color: var(--text-2); cursor: pointer; padding: 4px 8px;
-    font-family: 'Nunito', sans-serif;
-  }
-  .paywall-close:hover { color: var(--text); }
-  .paywall-title { font-family: 'Nunito', sans-serif; font-size: 24px; font-weight: 900; color: var(--text); margin: 4px 0 6px; text-align: center; }
-  .paywall-subtitle { font-size: 14.5px; color: var(--text-2); line-height: 1.55; margin-bottom: 18px; text-align: center; }
-  .paywall-features { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; padding-inline-start: 4px; }
-  .paywall-feature { display: flex; gap: 10px; align-items: flex-start; font-size: 14.5px; color: var(--text); line-height: 1.45; font-family: 'Nunito', sans-serif; font-weight: 600; }
-  .paywall-feature-bullet { color: var(--accent); font-size: 14px; line-height: 1.6; flex-shrink: 0; }
-  .paywall-cta { margin-top: 4px; }
-  .paywall-price { font-size: 13px; color: var(--text-2); font-weight: 600; text-align: center; margin-top: 10px; letter-spacing: 0.2px; }
-</style>
 
-<div class="modal-overlay" id="modal-paywall">
-  <div class="modal-box paywall-box">
-    <button class="paywall-close" id="paywall-close-btn" onclick="closePaywallModal()" aria-label="Close">×</button>
-    <div class="paywall-title" id="paywall-title">Continue the journey.</div>
-    <div class="paywall-subtitle" id="paywall-subtitle">One chapter in. Thousands of years of thinking ahead.</div>
-    <div class="paywall-features" id="paywall-features"></div>
-    <button class="nav-btn paywall-cta" id="paywall-cta-btn" onclick="closePaywallModal(); openCheckout();">Unlock all of Corpus</button>
-    <div class="paywall-price" id="paywall-price">$5.99 / month</div>
-  </div>
-</div>
+</style>
 
 <!-- Bonus dialogue picker modal — opens from the bonus carousel star (philosophy + economics).
      Reuses .modal-overlay (backdrop + dim) and .modal-box (animation override) scaffolding.
@@ -5584,51 +5557,16 @@ async function loadSubscription() {
   }
 }
 
-function openCheckout() {
-  if (!currentUser) {
-    // not logged in — send to auth first
-    try { showAuthScreen(); } catch(e) {}
-    return;
-  }
-  const base = 'https://corpus.lemonsqueezy.com/checkout/buy/c6399480-b152-4f62-97e1-64fcbb596710';
-  const url = base
-    + '?checkout[custom][user_id]=' + encodeURIComponent(currentUser.id)
-    + '&checkout[email]=' + encodeURIComponent(currentUser.email || '');
-  window.open(url, '_blank');
-}
+// (openCheckout / showPaywallModal / closePaywallModal removed prior to App Store
+//  submission to avoid any external-payment references — Apple disallows external
+//  checkout for digital goods. canAccessChapter still returns true; if monetization
+//  is added later it must go through native in-app purchase.)
 
 // Opens the Corpus Privacy Policy in the system browser. Uses plain window.open
-// with target="_blank" — the same pattern as openCheckout above, which Capacitor's
-// iOS WebView correctly routes to system Safari via WKUIDelegate.
+// with target="_blank" — Capacitor's iOS WebView correctly routes such taps to
+// system Safari via WKUIDelegate.
 function openPrivacyPolicy() {
   try { window.open('https://get.corpusapp.io/privacy.html', '_blank'); } catch(e) {}
-}
-
-function showPaywallModal() {
-  const data = {
-    title: 'Continue the journey.',
-    subtitle: 'One chapter in. Thousands of years of thinking ahead.',
-    features: [
-      'Every chapter, in every subject',
-      "Dialogues with history's greatest thinkers",
-      'Bonus chapters on current events',
-      'New content added regularly',
-    ],
-    cta: 'Unlock all of Corpus',
-    price: '$5.99 / month',
-  };
-  document.getElementById('paywall-title').textContent = data.title;
-  document.getElementById('paywall-subtitle').textContent = data.subtitle;
-  const list = document.getElementById('paywall-features');
-  list.innerHTML = data.features.map(f =>
-    `<div class="paywall-feature"><span class="paywall-feature-bullet">✦</span><span>${f}</span></div>`
-  ).join('');
-  document.getElementById('paywall-cta-btn').textContent = data.cta;
-  document.getElementById('paywall-price').textContent = data.price;
-  document.getElementById('modal-paywall').classList.add('active');
-}
-function closePaywallModal() {
-  document.getElementById('modal-paywall').classList.remove('active');
 }
 
 function showAuthScreen() {
@@ -13679,12 +13617,9 @@ function isWeekCompleted(weekId) {
 }
 
 function canAccessChapter(weekId) {
-  // TEMP: paywall disabled while Lemon Squeezy is in test mode — remove this line to re-enable
+  // All chapters currently free. Monetization, if added, must use native IAP
+  // (App Store / Play Billing) — not external checkout.
   return true;
-  // First chapter of each subject is always free
-  if (weekId === 1) return true;
-  // Everything else requires paid access
-  return state.isPaid === true;
 }
 
 function getWeekProgress(weekId) {
@@ -14066,10 +14001,10 @@ function renderHome() {
           document.body.appendChild(t);
           setTimeout(() => t.remove(), 1800);
         };
-      } else if (!canAccessChapter(w.id)) {
-        // Locked specifically by the paywall (not by progress) — show upgrade modal
-        card.onclick = () => showPaywallModal();
       }
+      // (Dead paywall-locked branch removed prior to App Store submission. With
+      // canAccessChapter always returning true, this branch was already unreachable;
+      // removing it lets us safely drop showPaywallModal/openCheckout.)
 
       // Header row
       const header = document.createElement('div');
