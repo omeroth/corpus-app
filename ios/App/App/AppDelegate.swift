@@ -1,5 +1,6 @@
 import UIKit
 import Capacitor
+import WebKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -7,7 +8,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // Re-inject safe-area insets when the device rotates so the layout
+        // adapts (e.g. notch shifts to the side in landscape).
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleOrientationChange),
+            name: UIDevice.orientationDidChangeNotification,
+            object: nil
+        )
         return true
     }
 
@@ -26,7 +34,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
-        // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        // Inject the iOS view.safeAreaInsets into CSS variables that index.html's
+        // --safe-top max() chain reads. Needed because env(safe-area-inset-top)
+        // returns 0 on some iOS 15-16 Capacitor WKWebView builds, putting the
+        // XP/streak/topbar/reader/header content under the Dynamic Island.
+        // Multi-fire because the first call may run before the WebView's
+        // document is parsed; later calls overwrite with the same correct value
+        // once it is.
+        injectSafeAreaInsets()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { self.injectSafeAreaInsets() }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { self.injectSafeAreaInsets() }
+    }
+
+    @objc func handleOrientationChange() {
+        // Defer so view.safeAreaInsets reflects the post-rotation layout.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { self.injectSafeAreaInsets() }
+    }
+
+    private func injectSafeAreaInsets() {
+        guard let bridgeVC = window?.rootViewController as? CAPBridgeViewController,
+              let webView = bridgeVC.webView else { return }
+        let insets = bridgeVC.view.safeAreaInsets
+        let js = "(function(){try{var r=document.documentElement;if(!r)return;" +
+                 "r.style.setProperty('--ios-safe-top','\(insets.top)px');" +
+                 "r.style.setProperty('--ios-safe-bottom','\(insets.bottom)px');" +
+                 "r.style.setProperty('--ios-safe-left','\(insets.left)px');" +
+                 "r.style.setProperty('--ios-safe-right','\(insets.right)px');" +
+                 "}catch(e){}})();"
+        webView.evaluateJavaScript(js, completionHandler: nil)
     }
 
     func applicationWillTerminate(_ application: UIApplication) {

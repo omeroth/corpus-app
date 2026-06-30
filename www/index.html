@@ -22,11 +22,13 @@
 </script>
 <style>
   :root {
-    /* iOS uses env() natively; Android Capacitor WebView doesn't populate it, so
-       initApp injects --android-safe-{top,bottom,left,right} from EdgeToEdge.getInsets().
-       iOS leaves --android-safe-* undefined so var() falls through to env(). */
-    --safe-top: var(--android-safe-top, env(safe-area-inset-top, 0px));
-    --safe-bottom: var(--android-safe-bottom, env(safe-area-inset-bottom, 0px));
+    /* Safe-area insets come from three independent sources, max()'d so the largest wins:
+         var(--android-safe-top) — set by JS from @capawesome EdgeToEdge.getInsets() on Android.
+         var(--ios-safe-top)     — set by Swift (AppDelegate) from view.safeAreaInsets on iOS,
+                                   because env() returns 0 on some iOS 15-16 Capacitor builds.
+         env(safe-area-inset-top) — the standard CSS source (works on web + healthy iOS). */
+    --safe-top: max(var(--android-safe-top, 0px), var(--ios-safe-top, 0px), env(safe-area-inset-top, 0px));
+    --safe-bottom: max(var(--android-safe-bottom, 0px), var(--ios-safe-bottom, 0px), env(safe-area-inset-bottom, 0px));
     --bottom-nav-height: 54px;
     --bg: #F8F5FF;
     --surface: #FFFFFF;
@@ -2355,8 +2357,24 @@
     display: block;
   }
 
-  /* ── Quiz Feedback Modal ── */
-  .qfm-box { text-align: center; padding: 28px 24px; }
+  /* ── Quiz Feedback Modal ──
+     Three-zone fixed-height layout: pinned header (icon + XP), scrolling
+     middle (explanation), pinned footer (Continue button). The box itself
+     is capped to the viewport minus safe areas so the header never goes
+     under the Dynamic Island and the button never falls below the home
+     indicator. Only the explanation scrolls when text is long. */
+  .qfm-box {
+    text-align: center;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    /* 40px = overlay's 20px top + 20px bottom padding (the safe-area parts
+       are already absorbed via --safe-top/--safe-bottom in the overlay
+       padding, so subtracting them here matches the overlay's inner box). */
+    max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 40px);
+  }
+  /* All direct children stay at their natural size by default. */
+  .qfm-box > * { flex-shrink: 0; }
   .qfm-icon { font-size: 52px; margin-bottom: 6px; }
   .qfm-xp {
     font-size: 22px; font-weight: 800;
@@ -2374,6 +2392,13 @@
     padding: 14px 16px;
     margin-bottom: 24px;
     border-bottom: 2px solid var(--border);
+    /* The only scrollable zone. flex: 1 lets it absorb remaining space;
+       min-height: 0 is required so the flex child can shrink below its
+       intrinsic content size (otherwise overflow-y: auto won't engage). */
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .share-modal-box { padding: 36px 28px; }
   .share-modal-text {
@@ -2597,9 +2622,15 @@
     -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
     z-index: 100;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
+    /* Scroll-and-center pattern: when .modal-box fits, `margin: auto` on the box
+       absorbs free space and centers it. When the box is taller than the inner
+       padding box (long quiz explanation), `margin: auto` collapses to 0 and the
+       box sits at the start, with overflow-y: auto letting the user scroll to
+       the bottom. Padding embeds safe-area so the top of the box stays below
+       the Dynamic Island even in the overflow case. */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: calc(20px + var(--safe-top)) 20px calc(20px + var(--safe-bottom));
   }
   .modal-overlay.active { display: flex; }
 
@@ -2648,6 +2679,11 @@
     animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     position: relative;
     overflow: hidden;
+    /* Centers vertically when there is free space in the scrollable overlay;
+       collapses to 0 when the box is taller than the overlay so the box sits
+       at the start (top, below safe-area padding) and the overlay scrolls. */
+    margin: auto;
+    flex-shrink: 0;
   }
   @keyframes popIn {
     from { transform: scale(0.8); opacity: 0; }
@@ -3022,7 +3058,7 @@
   /* ── Streak indicator ── */
   .streak-toast {
     position: fixed;
-    top: 80px;
+    top: calc(80px + var(--safe-top));
     left: 50%;
     transform: translateX(-50%);
     background: linear-gradient(135deg, var(--gold), #8B6914);
@@ -3039,8 +3075,8 @@
     border-bottom: 3px solid #6B5010;
   }
   @keyframes slideDown {
-    from { top: 60px; opacity: 0; }
-    to { top: 80px; opacity: 1; }
+    from { top: calc(60px + var(--safe-top)); opacity: 0; }
+    to { top: calc(80px + var(--safe-top)); opacity: 1; }
   }
   @keyframes fadeOut {
     to { opacity: 0; }
@@ -3325,7 +3361,7 @@
   }
   .settings-panel {
     position: fixed;
-    top: 56px;
+    top: calc(56px + var(--safe-top));
     right: auto;
     left: auto;
     z-index: 500;
@@ -13824,6 +13860,29 @@ function fixStatsPosition() {
       scrollContent.style.paddingTop = (topbarHeight + statsHeight + 8) + 'px';
     }
   }
+}
+
+// Re-run fixStatsPosition whenever <html>'s inline style changes — i.e. whenever
+// the safe-area insets get (re)injected. On iOS, Swift fires the injection in
+// AppDelegate.applicationDidBecomeActive at t, t+0.4s, t+1.0s — AFTER showScreen's
+// initial fixStatsPosition() runs at boot. Without this observer, the stats bar
+// pins to the stale topbar height (~41-54 px, before safe-area padding) and the
+// XP/streak content sits under the Dynamic Island. The observer catches each
+// inset injection and re-measures so the bar settles at the correct y (~100-113 px).
+// Symmetric: also catches the Android EdgeToEdge.getInsets() injection — harmless
+// there since that already runs before showScreen, but no-cost insurance.
+if (!window._safeAreaObserverInstalled) {
+  window._safeAreaObserverInstalled = true;
+  let _statsRafQueued = false;
+  const _safeAreaObs = new MutationObserver(() => {
+    if (_statsRafQueued) return;
+    _statsRafQueued = true;
+    requestAnimationFrame(() => {
+      _statsRafQueued = false;
+      try { fixStatsPosition(); } catch(e) {}
+    });
+  });
+  _safeAreaObs.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
 }
 
 function renderHome() {
