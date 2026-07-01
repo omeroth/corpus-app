@@ -4396,6 +4396,18 @@
   /* ===== Subject Select ===== */
   #screen-subject { background: var(--bg); direction: ltr; flex-direction: column; overflow: hidden; }
   #screen-subject.active { display: flex; }
+  /* Full-viewport coverage in the ONBOARDING subject-select path only, so the
+     themed background fills the whole screen while previewing subjects on the
+     carousel. Both entry paths add body.on-subject-screen; only the drawer
+     path also adds body.drawer-open, so :not(.drawer-open) excludes the
+     drawer path (whose inline styles in openDrawer() already cover the
+     viewport via transform-based animation). */
+  body.on-subject-screen:not(.drawer-open) #screen-subject.active {
+    position: fixed;
+    inset: 0;
+    height: 100dvh;
+    z-index: 20;
+  }
   .subj-screen { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
   .subj-header { padding: calc(52px + var(--safe-top)) 24px 20px; text-align: center; }
   .subj-logo { font-family: 'Nunito', sans-serif; font-size: 22px; font-weight: 900; letter-spacing: -0.5px; color: var(--accent); margin-bottom: 20px; }
