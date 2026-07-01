@@ -15198,6 +15198,11 @@ function _shouldShowGuestPrompt() {
   // sequence, AND the spotlight-shortcut tap on the first lesson — see the
   // openReader guard that ends onboarding when the overlay is still up).
   if (!localStorage.getItem('corpus_onboarding_done')) return false;
+  // Never interrupt while the user is actively inside a dialogue. The next
+  // natural break (return to home) re-checks and can fire then. Skipping here
+  // doesn't burn the once-per-day cap — lastShownDate is only stamped on
+  // actual display inside showGuestSignupPrompt.
+  if (state.currentScreen === 'reader') return false;
   if (state.guestPrompt.permanentlyDismissed) return false;
   if (state.guestPrompt.dismissCount >= 3) return false;
   const today = new Date().toISOString().split('T')[0];
