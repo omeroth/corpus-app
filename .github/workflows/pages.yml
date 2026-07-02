@@ -1,0 +1,60 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # This workflow lives in both omeroth/corpus (source) and omeroth/corpus-app
+    # (deploy mirror) because we mirror-push origin/main -> app/main. Skip
+    # everywhere except the mirror — where GitHub Pages is enabled — so the
+    # source repo's Actions tab stays quiet and no phantom deploys queue there.
+    if: ${{ github.repository == 'omeroth/corpus-app' }}
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Assemble deployable site
+        run: |
+          # Copy ONLY what corpusapp.io serves at runtime. Everything else in
+          # the repo (Capacitor iOS/Android sources, design PNGs, Supabase
+          # Edge Function code, the www/ mirror, node deps, etc.) is left out
+          # so the artifact stays ~12 MB, well below the 1 GB Pages limit.
+          # CNAME preserves the custom domain across the source-mode switch.
+          mkdir -p _deploy
+          cp index.html            _deploy/
+          cp Onboarding_new.html   _deploy/
+          cp manifest.json         _deploy/
+          cp CNAME                 _deploy/
+          cp -r assets             _deploy/
+          cp -r images             _deploy/
+          echo "--- _deploy summary ---"
+          find _deploy -type f | wc -l
+          du -sh _deploy
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _deploy
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
