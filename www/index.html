@@ -811,6 +811,44 @@
     filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
   }
   /* .pf-badges-section / .pf-badges-row / .pf-badge-item / .pf-badge-name removed — badges row was deleted */
+  /* Profile → Settings collapsible group. Wraps the Language section and the
+     Notifications section so they're hidden until the user taps "הגדרות".
+     Style mirrors .pf-lang-btn / .pf-reminder-row so the collapsed row reads
+     as a single card at rest, matching the Streak and Level cards above it. */
+  .pf-settings-section { margin: 12px 16px 0; }
+  .pf-settings-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px 20px;
+    background: #FFFFFF;
+    border: 1.5px solid rgba(var(--accent-rgb), 0.18);
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    font-family: inherit;
+    text-align: start;
+  }
+  .pf-settings-btn > svg:first-child { color: var(--accent); flex-shrink: 0; }
+  .pf-settings-btn > span { flex: 1; }
+  .pf-settings-chevron {
+    color: var(--accent-muted);
+    flex-shrink: 0;
+    transition: transform 0.25s ease;
+  }
+  .pf-settings-section.expanded .pf-settings-chevron { transform: rotate(180deg); }
+  .pf-settings-content { display: none; margin-top: 10px; }
+  .pf-settings-section.expanded .pf-settings-content { display: block; }
+  /* Nested language + reminder sections lose their own outer horizontal margin
+     (parent .pf-settings-section already provides it) but keep their internal
+     styles unchanged. Small gap between them when both are visible. */
+  .pf-settings-content .pf-lang-section,
+  .pf-settings-content .pf-reminder-section { margin-inline: 0; }
+  .pf-settings-content .pf-lang-section { margin-top: 0; }
+  .pf-settings-content .pf-reminder-section { margin-top: 8px; }
   .pf-lang-section {
     margin: 12px 16px 0;
   }
@@ -5267,36 +5305,54 @@
       <div class="pf-week-row" id="pf-week-row"></div>
     </div>
 
-    <!-- Language Selector -->
-    <div class="pf-lang-section">
-      <button class="pf-lang-btn" id="pf-lang-btn" onclick="toggleLangDropdown()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-        <span id="pf-lang-label">שפה</span>
-        <span id="pf-lang-current" style="margin-inline-end:auto;font-size:12px"></span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    <!-- Settings (הגדרות) — collapsible group holding Language + Notifications.
+         The inner .pf-lang-section and .pf-reminder-section are byte-for-byte
+         the same as before this refactor; only their parent wrapper is new,
+         so every existing handler / ID / behavior is unchanged. -->
+    <div class="pf-settings-section" id="pf-settings-section">
+      <button class="pf-settings-btn" id="pf-settings-btn" onclick="toggleSettingsSection()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <span id="pf-settings-label">הגדרות</span>
+        <svg class="pf-settings-chevron" id="pf-settings-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
       </button>
-      <div class="pf-lang-dropdown" id="pf-lang-dropdown" style="display:none">
-        <button class="pf-lang-option" id="pf-lang-he" onclick="setAppLang('he')">
-          <span>עברית</span>
-          <span class="pf-lang-check" id="pf-lang-check-he">✓</span>
-        </button>
-        <button class="pf-lang-option" id="pf-lang-en" onclick="setAppLang('en')">
-          <span>English</span>
-          <span class="pf-lang-check" id="pf-lang-check-en"></span>
-        </button>
-      </div>
-    </div>
+      <div class="pf-settings-content" id="pf-settings-content">
+        <!-- Language Selector -->
+        <div class="pf-lang-section">
+          <button class="pf-lang-btn" id="pf-lang-btn" onclick="toggleLangDropdown()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <span id="pf-lang-label">שפה</span>
+            <span id="pf-lang-current" style="margin-inline-end:auto;font-size:12px"></span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="pf-lang-dropdown" id="pf-lang-dropdown" style="display:none">
+            <button class="pf-lang-option" id="pf-lang-he" onclick="setAppLang('he')">
+              <span>עברית</span>
+              <span class="pf-lang-check" id="pf-lang-check-he">✓</span>
+            </button>
+            <button class="pf-lang-option" id="pf-lang-en" onclick="setAppLang('en')">
+              <span>English</span>
+              <span class="pf-lang-check" id="pf-lang-check-en"></span>
+            </button>
+          </div>
+        </div>
 
-    <!-- Daily Reminder -->
-    <div class="pf-reminder-section">
-      <div class="pf-reminder-row">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent);flex-shrink:0"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-        <span id="pf-reminder-label" style="flex:1">תזכורת יומית</span>
-        <input type="time" id="pf-reminder-time" value="19:00" oninput="_onReminderTimeChange(event)">
-        <label class="pf-reminder-toggle">
-          <input type="checkbox" id="pf-reminder-toggle" onchange="_onReminderToggle(event)">
-          <span class="pf-reminder-toggle-slider"></span>
-        </label>
+        <!-- Daily Reminder -->
+        <div class="pf-reminder-section">
+          <div class="pf-reminder-row">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent);flex-shrink:0"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+            <span id="pf-reminder-label" style="flex:1">תזכורת יומית</span>
+            <input type="time" id="pf-reminder-time" value="19:00" oninput="_onReminderTimeChange(event)">
+            <label class="pf-reminder-toggle">
+              <input type="checkbox" id="pf-reminder-toggle" onchange="_onReminderToggle(event)">
+              <span class="pf-reminder-toggle-slider"></span>
+            </label>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -13156,6 +13212,7 @@ let state = {
   guestSignupPromptShown: false,  // legacy single-shot flag — kept for back-compat; migrated into guestPrompt below on load
   // Guest sign-in prompt cadence. Local-only (never uploaded to Supabase — gated by guest mode).
   guestPrompt: { totalShown: 0, lastShownDate: '', dismissCount: 0, permanentlyDismissed: false },
+  settingsExpanded: false,   // Profile → Settings collapsible; persisted with the rest of state.
   isPaid: false,   // manual flag for now; later driven by subscription
 
   subject: 'philosophy',
@@ -16578,6 +16635,7 @@ function renderProfile() {
   if (privacyLink) privacyLink.textContent = isEn ? 'Privacy Policy' : 'מדיניות פרטיות';
 
   updateLangUI();
+  updateSettingsSectionUI();
 }
 
 function showStreakTooltip(el, streakVal, dateStr) {
@@ -16603,6 +16661,27 @@ function showStreakTooltip(el, streakVal, dateStr) {
 function toggleLangDropdown() {
   const dd = document.getElementById('pf-lang-dropdown');
   if (dd) dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+
+// Profile → Settings collapsible section. Wraps the Language + Notifications
+// blocks so they're hidden until the user taps "הגדרות". Persistence piggybacks
+// on the existing state save (settingsExpanded is a boolean on state).
+function toggleSettingsSection() {
+  state.settingsExpanded = !state.settingsExpanded;
+  saveStateLocal();
+  updateSettingsSectionUI();
+}
+
+// Applies the current state.settingsExpanded to the DOM. Idempotent — safe to
+// call from renderProfile() on every profile mount, and from toggleSettingsSection
+// on every user tap. Treats undefined as false so any state-reset path (which
+// doesn't set the field) still lands in the collapsed default.
+function updateSettingsSectionUI() {
+  const section = document.getElementById('pf-settings-section');
+  const label = document.getElementById('pf-settings-label');
+  if (label) label.textContent = (state.lang === 'en') ? 'Settings' : 'הגדרות';
+  const expanded = !!state.settingsExpanded;
+  if (section) section.classList.toggle('expanded', expanded);
 }
 
 function setAppLang(lang) {
