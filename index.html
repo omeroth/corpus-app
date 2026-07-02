@@ -5676,7 +5676,15 @@ async function handleAuthSubmit() {
     appStarted = false; // allow enterApp to run
     await enterApp(data.user);
   } else {
-    const { data, error } = await sb.auth.signUp({ email, password });
+    // emailRedirectTo pins the confirmation redirect to whichever origin the
+    // user signed up from (https://corpusapp.io/ on prod, http://localhost:*
+    // when testing locally), so the returned session lands in the app instead
+    // of relying on the dashboard's Site URL being correct.
+    const { data, error } = await sb.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: window.location.origin + '/' }
+    });
     if (error) {
       errEl.textContent = error.message;
       btn.disabled = false;
@@ -5888,7 +5896,8 @@ async function authLogout() {
     currentSection: 0, readerXP: 0, quizAnswered: {}, quizAttempts: {}, quizCorrect: false,
     userEmail: '', userMeta: {}, activeDays: {}, todayCompleted: 0,
     activeDates: [], lastActiveDate: '', lastStreakShownDate: '', streakHistory: {}, chapterCompleteShown: {}, chapterXPByWeek: {}, subject: 'philosophy',
-    dailyReminder: { enabled: true, time: '19:00', permissionAsked: false }
+    dailyReminder: { enabled: true, time: '19:00', permissionAsked: false },
+    guestPrompt: { totalShown: 0, lastShownDate: '', dismissCount: 0, permanentlyDismissed: false }
   };
   try { localStorage.removeItem('corpus_state'); } catch(e) {}
   showAuthScreen();
@@ -5927,7 +5936,8 @@ async function deleteAccount() {
       lang, currentScreen: 'home', currentWeek: null, currentDay: null,
       currentSection: 0, readerXP: 0, quizAnswered: {}, quizAttempts: {}, quizCorrect: false,
       userEmail: '', userMeta: {}, activeDays: {}, todayCompleted: 0,
-      activeDates: [], lastActiveDate: '', lastStreakShownDate: '', streakHistory: {}, chapterCompleteShown: {}, chapterXPByWeek: {}, subject: 'philosophy'
+      activeDates: [], lastActiveDate: '', lastStreakShownDate: '', streakHistory: {}, chapterCompleteShown: {}, chapterXPByWeek: {}, subject: 'philosophy',
+      guestPrompt: { totalShown: 0, lastShownDate: '', dismissCount: 0, permanentlyDismissed: false }
     };
     // 7. Close the modal and bring the user to the auth screen.
     closeDeleteAccountConfirm();
@@ -15205,6 +15215,13 @@ function closeCompleteModal() {
 // dismissals. Signed-in users never see it.
 function _shouldShowGuestPrompt() {
   if (currentUser) return false;
+  // Never interrupt an active signup/signin flow. The auth screen is the ONE
+  // moment when a "sign up to save" prompt is worst-timed — the user is
+  // literally already doing that. Covers the race between clicking Submit
+  // and enterApp() setting currentUser, when a stale setTimeout (e.g. from
+  // a pre-signup hideLevelUp) could otherwise fire on top of the auth form.
+  const authEl = document.getElementById('screen-auth');
+  if (authEl && authEl.classList.contains('active')) return false;
   // Never interrupt the new-user onboarding tour. The flag is set by ALL
   // legitimate onboarding-exit paths (the "I'm ready!" → language-pick
   // sequence, AND the spotlight-shortcut tap on the first lesson — see the
@@ -15215,6 +15232,13 @@ function _shouldShowGuestPrompt() {
   // doesn't burn the once-per-day cap — lastShownDate is only stamped on
   // actual display inside showGuestSignupPrompt.
   if (state.currentScreen === 'reader') return false;
+  // Defense in depth: authLogout() and deleteAccount() historically reset
+  // `state` to a bare literal that omitted guestPrompt, leaving downstream
+  // reads on `.permanentlyDismissed` to throw. Both literals now include the
+  // key, but this guard makes any future reset path crash-proof too.
+  if (!state.guestPrompt) {
+    state.guestPrompt = { totalShown: 0, lastShownDate: '', dismissCount: 0, permanentlyDismissed: false };
+  }
   if (state.guestPrompt.permanentlyDismissed) return false;
   if (state.guestPrompt.dismissCount >= 3) return false;
   const today = new Date().toISOString().split('T')[0];
