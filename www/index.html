@@ -5952,16 +5952,8 @@ async function authLogout() {
   currentUser = null;
   appStarted = false;
   const lang = state.lang;
-  state = {
-    xp: 0, streak: 0, dailyStreak: 0, correctInRow: 0,
-    completedDays: {}, unlockedThinkers: [],
-    lang, currentScreen: 'home', currentWeek: null, currentDay: null,
-    currentSection: 0, readerXP: 0, quizAnswered: {}, quizAttempts: {}, quizCorrect: false,
-    userEmail: '', userMeta: {}, activeDays: {}, todayCompleted: 0,
-    activeDates: [], lastActiveDate: '', lastStreakShownDate: '', streakHistory: {}, chapterCompleteShown: {}, chapterXPByWeek: {}, subject: 'philosophy',
-    dailyReminder: { enabled: true, time: '19:00', permissionAsked: false },
-    guestPrompt: { totalShown: 0, lastShownDate: '', dismissCount: 0, permanentlyDismissed: false }
-  };
+  state = defaultState();
+  state.lang = lang;
   try { localStorage.removeItem('corpus_state'); } catch(e) {}
   showAuthScreen();
 }
@@ -5989,19 +5981,12 @@ async function deleteAccount() {
     try { if (typeof posthog !== 'undefined') posthog.reset(true); } catch(e) {}
     // 5. Clear ALL corpus_* localStorage keys (more thorough than authLogout's single-key removal).
     try { Object.keys(localStorage).forEach(k => { if (k.startsWith('corpus_')) localStorage.removeItem(k); }); } catch(e) {}
-    // 6. Reset in-memory state to defaults — exact same shape as authLogout's reset.
+    // 6. Reset in-memory state to defaults — shared factory with authLogout.
     currentUser = null;
     appStarted = false;
     const lang = state.lang;
-    state = {
-      xp: 0, streak: 0, dailyStreak: 0, correctInRow: 0,
-      completedDays: {}, unlockedThinkers: [],
-      lang, currentScreen: 'home', currentWeek: null, currentDay: null,
-      currentSection: 0, readerXP: 0, quizAnswered: {}, quizAttempts: {}, quizCorrect: false,
-      userEmail: '', userMeta: {}, activeDays: {}, todayCompleted: 0,
-      activeDates: [], lastActiveDate: '', lastStreakShownDate: '', streakHistory: {}, chapterCompleteShown: {}, chapterXPByWeek: {}, subject: 'philosophy',
-      guestPrompt: { totalShown: 0, lastShownDate: '', dismissCount: 0, permanentlyDismissed: false }
-    };
+    state = defaultState();
+    state.lang = lang;
     // 7. Close the modal and bring the user to the auth screen.
     closeDeleteAccountConfirm();
     showAuthScreen();
@@ -13191,44 +13176,52 @@ function getW() {
 function getT() { return state.lang === 'en' ? THINKERS_EN : THINKERS; }
 function getLvls() { return state.lang === 'en' ? LEVELS_EN : LEVELS; }
 
-let state = {
-  xp: 0,
-  streak: 0,
-  dailyStreak: 0,
-  correctInRow: 0,
-  completedDays: {}, // { "1-1": true }
-  unlockedThinkers: [],
-  lang: 'en',
-  currentScreen: 'home',
-  currentWeek: null,
-  currentDay: null,
-  currentSection: 0,
-  readerXP: 0,
-  quizAnswered: {},
-  quizAttempts: {},
-  quizCorrect: false,
-  activeDays: {},
-  todayCompleted: 0,
-  userEmail: '',
-  userMeta: {},
-  lastActiveDate: '',
-  lastStreakShownDate: '',
-  activeDates: [],
-  streakHistory: {},
-  chapterCompleteShown: {}, // { weekId: true } — fires the chapter-complete overlay once per chapter
-  guestSignupPromptShown: false,  // legacy single-shot flag — kept for back-compat; migrated into guestPrompt below on load
-  // Guest sign-in prompt cadence. Local-only (never uploaded to Supabase — gated by guest mode).
-  guestPrompt: { totalShown: 0, lastShownDate: '', dismissCount: 0, permanentlyDismissed: false },
-  settingsExpanded: false,   // Profile → Settings collapsible; persisted with the rest of state.
-  isPaid: false,   // manual flag for now; later driven by subscription
-
-  subject: 'philosophy',
-
-  // Daily reminder local-notification settings. Default ON; OS permission is requested
-  // after the user finishes their first lesson (not during onboarding). Until permission
-  // is granted, the toggle reflects intent but no notification is actually scheduled.
-  dailyReminder: { enabled: true, time: '19:00', permissionAsked: false },
-};
+// Single source of truth for the app's default state shape. Called on cold
+// boot (initial declaration), from loadState() to hydrate defaults for any
+// keys the persisted blob is missing, and from every reset path (authLogout
+// and deleteAccount) so no field silently drifts to undefined after a reset.
+// Returns a fresh object each call — never share the same reference between
+// resets or you'll cross-contaminate {} sub-objects.
+function defaultState() {
+  return {
+    xp: 0,
+    streak: 0,
+    dailyStreak: 0,
+    correctInRow: 0,
+    completedDays: {}, // { "1-1": true }
+    unlockedThinkers: [],
+    lang: 'en',
+    currentScreen: 'home',
+    currentWeek: null,
+    currentDay: null,
+    currentSection: 0,
+    readerXP: 0,
+    quizAnswered: {},
+    quizAttempts: {},
+    quizCorrect: false,
+    activeDays: {},
+    todayCompleted: 0,
+    userEmail: '',
+    userMeta: {},
+    lastActiveDate: '',
+    lastStreakShownDate: '',
+    activeDates: [],
+    streakHistory: {},
+    chapterCompleteShown: {}, // { weekId: true } — fires the chapter-complete overlay once per chapter
+    chapterXPByWeek: {},      // XP tallied per chapter for chapter-complete metrics
+    guestSignupPromptShown: false,  // legacy single-shot flag — kept for back-compat; migrated into guestPrompt below on load
+    // Guest sign-in prompt cadence. Local-only (never uploaded to Supabase — gated by guest mode).
+    guestPrompt: { totalShown: 0, lastShownDate: '', dismissCount: 0, permanentlyDismissed: false },
+    settingsExpanded: false,   // Profile → Settings collapsible; persisted with the rest of state.
+    isPaid: false,   // manual flag for now; later driven by subscription
+    subject: 'philosophy',
+    // Daily reminder local-notification settings. Default ON; OS permission is requested
+    // after the user finishes their first lesson (not during onboarding). Until permission
+    // is granted, the toggle reflects intent but no notification is actually scheduled.
+    dailyReminder: { enabled: true, time: '19:00', permissionAsked: false },
+  };
+}
+let state = defaultState();
 
 function saveStateLocal() {
   try { localStorage.setItem('corpus_state', JSON.stringify(state)); } catch(e) {}
@@ -13240,7 +13233,10 @@ function saveState() {
 function loadState() {
   try {
     const s = localStorage.getItem('corpus_state');
-    if (s) state = { ...state, ...JSON.parse(s) };
+    // Start from a fresh defaultState() so any keys the persisted blob is
+    // missing (e.g. fields added after that state was written) are hydrated
+    // to their defaults instead of staying undefined.
+    if (s) state = Object.assign(defaultState(), JSON.parse(s));
   } catch(e) {}
   // corpus_subject is the authoritative key; always sync into state
   state.subject = localStorage.getItem('corpus_subject') || 'philosophy';
