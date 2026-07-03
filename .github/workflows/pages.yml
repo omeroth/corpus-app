@@ -41,6 +41,7 @@ jobs:
           cp Onboarding_new.html   _deploy/
           cp manifest.json         _deploy/
           cp CNAME                 _deploy/
+          cp version.json          _deploy/
           cp -r assets             _deploy/
           cp -r images             _deploy/
           echo "--- _deploy summary ---"

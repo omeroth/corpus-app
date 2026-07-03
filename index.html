@@ -4548,10 +4548,57 @@
     transition: transform 0.08s ease-out;
   }
 
+  /* iOS update banner. Shown only on native iOS when corpusapp.io/version.json
+     reports a newer APP_VERSION than what's baked into the running bundle. */
+  #update-banner {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 3000;
+    background: var(--accent);
+    color: #FFFFFF;
+    padding: calc(10px + var(--safe-top)) 16px 10px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 16px rgba(61,31,122,0.25);
+  }
+  #update-banner.visible { display: flex; }
+  #update-banner .update-banner-text { flex: 1; line-height: 1.35; }
+  #update-banner a.update-banner-link {
+    color: #FFFFFF;
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  #update-banner button.update-banner-dismiss {
+    background: rgba(255,255,255,0.18);
+    border: none;
+    color: #FFFFFF;
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 18px;
+    line-height: 1;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  #update-banner button.update-banner-dismiss:active { transform: scale(0.92); }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.0/dist/umd/supabase.js"></script>
 </head>
 <body>
+<!-- iOS update banner. Populated + toggled by checkForUpdate(). Hidden by default. -->
+<div id="update-banner" role="status" aria-live="polite">
+  <span class="update-banner-text" id="update-banner-text"></span>
+  <a class="update-banner-link" id="update-banner-link" href="https://apps.apple.com/app/id6781227385" target="_blank" rel="noopener"></a>
+  <button class="update-banner-dismiss" id="update-banner-dismiss" aria-label="Dismiss">×</button>
+</div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
     <symbol id="icon-level" viewBox="0 0 64 64">
@@ -5565,6 +5612,12 @@
 // ═══════════════════════════════════════════════════════════
 // SUPABASE AUTH & PROGRESS SYNC
 // ═══════════════════════════════════════════════════════════
+
+// Bumped in lockstep with ios/App/App.xcodeproj MARKETING_VERSION at every
+// App Store release. The iOS-only update-banner checkForUpdate() compares
+// this against corpusapp.io/version.json to decide whether to prompt the
+// user to grab the newest App Store build.
+const APP_VERSION = '1.0.2';
 
 const SUPABASE_URL = 'https://xcoikjoatcrjqxzykwlt.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhjb2lram9hdGNyanF4enlrd2x0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMjc5NjYsImV4cCI6MjA4OTcwMzk2Nn0.5EhOsN9M4_kLYoRKO97dPGof8RN7PteXQrtKyx4CcKI';
@@ -16258,6 +16311,71 @@ async function enterApp(user) {
   }
 }
 
+// Session-scoped flag: once the user dismisses the banner (or the check
+// already succeeded and there's no newer version), don't re-show or re-fetch
+// this session. NOT persisted to localStorage — a fresh app open re-checks.
+let _updateBannerDismissed = false;
+let _updateCheckInFlight = false;
+
+// Semver-lite comparator (returns 1 if a > b, -1 if a < b, 0 if equal).
+// Only handles three numeric parts (major.minor.patch); ignores pre-release
+// tags. Adequate for MARKETING_VERSION which is always a plain triple.
+function _cmpSemver(a, b) {
+  const pa = String(a || '').split('.').map(n => parseInt(n, 10) || 0);
+  const pb = String(b || '').split('.').map(n => parseInt(n, 10) || 0);
+  for (let i = 0; i < 3; i++) {
+    const av = pa[i] || 0, bv = pb[i] || 0;
+    if (av > bv) return 1;
+    if (av < bv) return -1;
+  }
+  return 0;
+}
+
+// Fire-and-forget check for a newer App Store build. Only runs on native iOS;
+// on Android and web this is a no-op (Android has its own Play Store update
+// mechanism; the web app auto-updates on refresh).
+async function checkForUpdate() {
+  if (_updateBannerDismissed || _updateCheckInFlight) return;
+  const _isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  if (!_isNative) return;
+  if (window.Capacitor.getPlatform() !== 'ios') return;
+  _updateCheckInFlight = true;
+  try {
+    // Cache-busting query so a WKWebView cached response doesn't hide a real
+    // deploy. Small file (~20 B), so the cost is negligible.
+    const res = await fetch('https://corpusapp.io/version.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return;
+    const data = await res.json();
+    const remote = data && data.ios;
+    if (!remote) return;
+    if (_cmpSemver(remote, APP_VERSION) > 0) {
+      _showUpdateBanner(remote);
+    }
+  } catch (e) {
+    // Network failures are silent — a stale banner state is worse than none.
+  } finally {
+    _updateCheckInFlight = false;
+  }
+}
+
+function _showUpdateBanner(remoteVersion) {
+  const banner = document.getElementById('update-banner');
+  const textEl = document.getElementById('update-banner-text');
+  const linkEl = document.getElementById('update-banner-link');
+  const dismissEl = document.getElementById('update-banner-dismiss');
+  if (!banner || !textEl || !linkEl || !dismissEl) return;
+  const isEn = state.lang === 'en';
+  textEl.textContent = isEn
+    ? `A new version of Corpus (${remoteVersion}) is available.`
+    : `גרסה חדשה של Corpus (${remoteVersion}) זמינה.`;
+  linkEl.textContent = isEn ? 'Update' : 'עדכון';
+  dismissEl.onclick = function() {
+    _updateBannerDismissed = true;
+    banner.classList.remove('visible');
+  };
+  banner.classList.add('visible');
+}
+
 function initUI() {
   try {
     console.log('[Init] initUI started, corpusData chapters:', corpusData && corpusData.weeks && corpusData.weeks.length);
@@ -16273,6 +16391,8 @@ function initUI() {
         referrer: document.referrer || ''
       });
     } catch(e) {}
+    // Fire-and-forget iOS update check. No-op on Android and web.
+    try { checkForUpdate(); } catch(e) {}
     migrateCompletedDaysKeys();
     migrateDayQuizResults();
     recalculateStreak();
@@ -16390,6 +16510,9 @@ function initUI() {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
           rescheduleReminderFromToday();
+          // Re-check for App Store updates on foreground so a user who left the
+          // app in the background during a release picks up the banner.
+          try { checkForUpdate(); } catch(e) {}
         }
       });
 
