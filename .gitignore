@@ -29,3 +29,31 @@ android/keystore/
 
 # Image-optimization backup (created before mass WebP conversion). Not part of the app.
 images.original-backup/
+
+# Supabase CLI local scratch (linked-project state, poller state, version pins).
+# Rewritten on every `supabase` invocation; noisy in git status and not portable.
+supabase/.temp/
+
+# Source design PNGs (icon + splash originals). Kept on disk for local editing;
+# not shipped to any deploy and not needed for iOS/Android builds.
+design/
+
+# iOS build caches (Xcode-generated, huge, always regeneratable).
+ios/DerivedData/
+ios/build/
+
+# Capacitor auto-generates ios/App/App/public/ on every `cap sync ios` by copying
+# www/. Keeping it out of git means the working tree stays clean between syncs.
+ios/App/App/public/
+
+# Android build caches (Gradle-generated).
+android/app/build/
+android/build/
+android/.gradle/
+
+# Capacitor scratch.
+.capacitor/
+
+# GitHub Actions Pages deploy assembly directory (only exists on the runner,
+# but if you ever invoke the workflow locally it lands here).
+_deploy/
