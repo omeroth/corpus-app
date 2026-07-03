@@ -5732,14 +5732,21 @@ async function handleAuthSubmit() {
     appStarted = false; // allow enterApp to run
     await enterApp(data.user);
   } else {
-    // emailRedirectTo pins the confirmation redirect to whichever origin the
-    // user signed up from (https://corpusapp.io/ on prod, http://localhost:*
-    // when testing locally), so the returned session lands in the app instead
-    // of relying on the dashboard's Site URL being correct.
+    // emailRedirectTo pins the confirmation redirect. Web builds send it back
+    // to the caller's origin (https://corpusapp.io/ on prod, http://localhost:*
+    // during local test). Capacitor native builds MUST override because
+    // window.location.origin evaluates to capacitor://localhost — a private
+    // app scheme that no external browser can open — so we hardcode the
+    // production web URL. The user completes confirmation in Safari and then
+    // returns to the app to sign in with their (now-confirmed) credentials;
+    // Universal-Link / deep-link plumbing for a seamless in-app return isn't
+    // wired up yet.
+    const _isNativeSignup = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+    const _confirmRedirectTo = _isNativeSignup ? 'https://corpusapp.io/' : (window.location.origin + '/');
     const { data, error } = await sb.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: window.location.origin + '/' }
+      options: { emailRedirectTo: _confirmRedirectTo }
     });
     if (error) {
       errEl.textContent = error.message;
