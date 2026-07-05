@@ -2697,6 +2697,17 @@
     padding: calc(20px + var(--safe-top)) 20px calc(20px + var(--safe-bottom));
   }
   .modal-overlay.active { display: flex; }
+  /* Android WebView: kill backdrop-filter blur — it's GPU-heavy on Chromium
+     compositor, causes main-thread jank around composited frames, and holds
+     input events on the queue (users tap Continue on the quiz-feedback modal
+     and it doesn't respond for a beat). Compensate the missing blur with a
+     darker semi-opaque scrim so the underlying content is still masked. iOS
+     WebKit handles the blur fine and keeps the polished look. */
+  html.platform-android .modal-overlay {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(61, 31, 122, 0.72);
+  }
 
   /* Chapter-complete overlay — reuses .dc-screen/.dc-stats-screen styling; only positioning here */
   #chapter-complete-overlay.dc-stats-screen {
@@ -15557,6 +15568,9 @@ function handleQuiz(chosen, correctIdx, explanation, btn, questionIdx, isSingleQ
 }
 
 function showQuizExplanation(earnedXP, isCorrect, explanation) {
+  // Fresh open — clear the touchend/click double-run guard so the next
+  // Continue tap will actually close this instance.
+  _qfmClosing = false;
   document.getElementById('qfm-icon').textContent = isCorrect ? '✓' : '✗';
   document.getElementById('qfm-icon').style.color = isCorrect ? '#2E7D32' : '#C62828';
   const xpEl = document.getElementById('qfm-xp');
@@ -15568,15 +15582,38 @@ function showQuizExplanation(earnedXP, isCorrect, explanation) {
   document.getElementById('modal-quiz-feedback').classList.add('active');
 }
 
+// Guards a double-close from the touchend+click pair on Android — see the
+// touchend handler wired up in initUI. Reset each time the modal reopens.
+let _qfmClosing = false;
 function closeQuizFeedbackModal() {
+  if (_qfmClosing) return;
+  _qfmClosing = true;
   document.getElementById('modal-quiz-feedback').classList.remove('active');
-  const chapter = getW().find(w => w.id === state.currentWeek);
-  const day = chapter.days.find(d => d.id === state.currentDay);
-  if (state.currentSection >= day.sections.length - 1) {
-    finishDay();
-  } else {
-    nextSection();
-  }
+  // Input lock: swallow any residual touchend/synthetic-click that Android
+  // WebView dispatches after the Continue tap. Without this, the next
+  // question's .quiz-option buttons paint at the same screen coord and the
+  // stray click hits one of them ("ghost tap" bug reported on Android beta).
+  // iOS doesn't exhibit this but the lock is harmless — it releases before
+  // the next screen is even rendered.
+  document.body.style.pointerEvents = 'none';
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      try {
+        document.body.style.pointerEvents = '';
+        const chapter = getW().find(w => w.id === state.currentWeek);
+        const day = chapter.days.find(d => d.id === state.currentDay);
+        if (state.currentSection >= day.sections.length - 1) {
+          finishDay();
+        } else {
+          nextSection();
+        }
+      } finally {
+        // Belt-and-suspenders: if finishDay/nextSection throws, we still
+        // never leave the page in a pointer-events: none state.
+        document.body.style.pointerEvents = '';
+      }
+    }, 120);
+  });
 }
 
 function getNextLessonInfo() {
@@ -17118,6 +17155,31 @@ function initUI() {
   try {
     console.log('[Init] initUI started, corpusData chapters:', corpusData && corpusData.weeks && corpusData.weeks.length);
     console.log('[Init] THINKERS length:', THINKERS && THINKERS.length);
+    // Platform detect — CSS scopes performance-sensitive treatments (e.g. the
+    // modal backdrop-filter blur, which janks Android WebView main-thread and
+    // delays input processing) off Android without touching iOS.
+    try {
+      if (window.Capacitor && window.Capacitor.getPlatform && window.Capacitor.getPlatform() === 'android') {
+        document.documentElement.classList.add('platform-android');
+      }
+    } catch(e) {}
+    // Quiz feedback Continue: bind touchend + preventDefault so Android WebView
+    // doesn't ALSO dispatch a synthetic click after the touch pipeline finishes.
+    // Without this, the click fires after nextSection() has rendered the next
+    // question and lands on one of its .quiz-option buttons — the reported
+    // ghost-tap answering the next question wrong. The _qfmClosing flag
+    // (reset in showQuizExplanation) protects against touchend + click
+    // double-firing on WebView versions where preventDefault doesn't suppress
+    // the click.
+    try {
+      const _qfmBtn = document.getElementById('qfm-continue-btn');
+      if (_qfmBtn) {
+        _qfmBtn.addEventListener('touchend', function(e) {
+          e.preventDefault();
+          closeQuizFeedbackModal();
+        }, { passive: false });
+      }
+    } catch(e) {}
     loadState();
     // Fires once per page load, for EVERYONE (guests + logged-in). The referrer property
     // is the linchpin for the landing→app funnel — when a user arrives from get.corpusapp.io,
