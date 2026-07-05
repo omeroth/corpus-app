@@ -44,6 +44,10 @@
     --lilac: #B995F3;
     --gold: #B8860B;
     --gold-light: rgba(184,134,11,0.1);
+    /* Mystery-mark defaults — overridden per theme class (philosophy/economics/
+       psychology) to introduce a subtle accent nuance in the gold gradient. */
+    --mystery-top: #EBD2AE;
+    --mystery-bottom: #BC7425;
     --amber: #F59E0B;
     --pink: #FF6FA8;
     --accent: #7B4FD4;
@@ -93,6 +97,11 @@
     --card-back-bg-start: #F8F5FF;
     --card-back-bg-end: #EDE0FF;
     --card-back-text: #4B2D8A;
+    /* Mystery-mark gold gradient tinted 15% toward --accent (violet nuance).
+       Pre-computed hex avoids the SVG-stop-color-with-var+color-mix combo,
+       which is fragile on older WKWebView versions. */
+    --mystery-top: #EBD2AE;
+    --mystery-bottom: #BC7425;
   }
 
   html.theme-economics,
@@ -123,6 +132,9 @@
     --card-back-bg-start: #F0F6FF;
     --card-back-bg-end: #DBEAFE;
     --card-back-text: #1E3A8A;
+    /* Mystery-mark gold gradient tinted 15% toward --accent (blue nuance). */
+    --mystery-top: #DED5B2;
+    --mystery-bottom: #B07628;
   }
 
   html.theme-psychology,
@@ -153,6 +165,9 @@
     --card-back-bg-start: #FFF7ED;
     --card-back-bg-end: #FED7AA;
     --card-back-text: #92400E;
+    /* Mystery-mark gold gradient tinted 15% toward --accent (amber nuance). */
+    --mystery-top: #FDDD90;
+    --mystery-bottom: #CE7F07;
   }
 
   html {
@@ -353,10 +368,13 @@
   #screen-home .scroll-content { padding-top: 110px; } /* topbar + stats-subheader */
   #screen-pantheon .scroll-content,
   #screen-profile .scroll-content { padding-top: 0; } /* topbar is sticky/in-flow, no compensation needed */
-  /* Profile content doesn't have a .scroll-content wrapper; bottom padding directly on the screen
-     so the logout button can be scrolled into view above the practice-card + bottom-nav */
+  /* Bottom padding matches #screen-home (line 4221) so the last content row
+     clears the fixed practice-card + bottom-nav stack (~140–160px from the
+     bottom edge, plus a comfortable gap). Single source of truth — the
+     inline padding-bottom:80px on both .scroll-content wrappers was removed. */
+  #screen-pantheon .scroll-content,
+  #screen-profile .scroll-content { padding-bottom: 180px; }
   #screen-profile {
-    padding-bottom: 150px;
     overflow-y: auto;
   }
 
@@ -1215,7 +1233,8 @@
     text-shadow: 0 1px 3px rgba(0,0,0,0.5);
   }
   .pantheon-card.locked {
-    cursor: default;
+    /* Locked cards now open a teaser modal via openThinkerModal(id, {locked: true}). */
+    cursor: pointer;
   }
   .pantheon-card.locked img {
     filter: grayscale(100%) brightness(0.4);
@@ -2659,14 +2678,21 @@
     background: rgba(61,31,122,0.45);
     -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
-    z-index: 100;
+    /* Above .bottom-nav (200) and #drawer-toggle-btn (201) so taps on those
+       don't leak through the backdrop to underlying buttons. Anything meant
+       to appear on top of a modal (level-up overlay, chapter-complete overlay,
+       confetti, toasts, settings-panel, update banner) already lives above 300. */
+    z-index: 300;
     /* Scroll-and-center pattern: when .modal-box fits, `margin: auto` on the box
        absorbs free space and centers it. When the box is taller than the inner
        padding box (long quiz explanation), `margin: auto` collapses to 0 and the
        box sits at the start, with overflow-y: auto letting the user scroll to
        the bottom. Padding embeds safe-area so the top of the box stays below
-       the Dynamic Island even in the overflow case. */
+       the Dynamic Island even in the overflow case. overscroll-behavior: contain
+       stops iOS scroll chaining from bubbling to <body> and rubber-banding the
+       screen behind the modal. */
     overflow-y: auto;
+    overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     padding: calc(20px + var(--safe-top)) 20px calc(20px + var(--safe-bottom));
   }
@@ -3120,9 +3146,266 @@
     to { opacity: 0; }
   }
 
+  /* ── Thinker intro overlay ── */
+  /* Full-viewport intro shown by _showThinkerIntroIfNeeded on fresh entry, and
+     reopenable at any time via .thinker-intro-reopen-btn in the reader header.
+     z-index 400 sits above modal-overlay (300); below level-up (9999) and
+     update banner (3000). Subject theming via existing tokens. The mystery
+     visual borrows the bonus-unlock language (gold palette + halo rings +
+     p3-* animations) so "who's next" feels like a treasure reveal. RTL-safe
+     via margin-inline-* and text-align: start. */
+  #thinker-intro {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 400;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--surface-2) 100%);
+    padding: calc(24px + var(--safe-top)) 20px calc(24px + var(--safe-bottom));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    /* Belt-and-suspenders: even if .active accidentally sticks past a
+       navigation, taps still land on what's beneath instead of getting
+       swallowed by this overlay. */
+    pointer-events: none;
+  }
+  #thinker-intro.active { display: flex; align-items: center; justify-content: center; pointer-events: auto; }
+  .thinker-intro-inner {
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    padding: 8px 0;
+  }
+  .thinker-intro-eyebrow {
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    margin-bottom: 28px;
+    animation: p3-rise 0.6s ease-out both;
+  }
+  /* Shared halo container. Rings + sparkles orbit whichever visual sits
+     inside (portrait when unlocked, mystery coin when not). */
+  .thinker-intro-visual {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    margin: 0 auto 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .thinker-intro-visual .unlock-pulse {
+    width: 190px;
+    height: 190px;
+    border-color: #FFD982;
+    opacity: 0.9;
+  }
+  .thinker-intro-visual .unlock-pulse.p2 {
+    width: 250px;
+    height: 250px;
+  }
+  .thinker-intro-visual .unlock-star {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    color: #FFD982;
+    filter: drop-shadow(0 0 6px rgba(255, 217, 130, 0.9));
+  }
+  /* Decorative stars — use physical top/left/right/bottom (not logical) so they
+     stay in the same visual corners in RTL. Nulling left/right on the opposite
+     side keeps the base .unlock-star.s1–s4 physical positions from bleeding in. */
+  .thinker-intro-visual .unlock-star.s1 { top: 6px; left: 18px; right: auto; }
+  .thinker-intro-visual .unlock-star.s2 { top: 14px; right: 12px; left: auto; animation-delay: 0.45s; }
+  .thinker-intro-visual .unlock-star.s3 { bottom: 22px; left: 6px; right: auto; animation-delay: 0.9s; }
+  .thinker-intro-visual .unlock-star.s4 { bottom: 8px; right: 24px; left: auto; animation-delay: 1.35s; }
+  /* Subject-tinted gold "?" inside a circle. The disc uses --surface-2 (which
+     is already accent-tinted per theme) with a thin gold rim so it stays in
+     the treasure family. The glyph (#ic-mystery-q) reads --mystery-top and
+     --mystery-bottom, both set per theme with a 15% accent mix — philosophy
+     reads warm-gold-violet, economics warm-gold-blue. Halo drop-shadow +
+     p3-pop entry + p3-float idle preserved. */
+  .thinker-intro-mystery {
+    position: relative;
+    z-index: 1;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 2.5px solid #C7892C;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+      inset 0 3px 8px rgba(255, 255, 255, 0.55),
+      inset 0 -6px 12px rgba(199, 137, 44, 0.18);
+    filter: drop-shadow(0 0 28px rgba(255, 217, 130, 0.85));
+    animation: p3-pop 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both,
+               p3-float 3s ease-in-out 1.05s infinite;
+  }
+  .thinker-intro-mystery svg { width: 62%; height: 62%; display: block; }
+  /* Portrait variant when unlocked — subject-themed halo, same size + animation
+     as the mystery coin so the layout doesn't jump between states. */
+  .thinker-intro-portrait {
+    position: relative;
+    z-index: 1;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid var(--accent);
+    box-shadow: 0 8px 32px var(--accent-glow), 0 0 24px rgba(255, 217, 130, 0.35);
+    animation: p3-pop 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both,
+               p3-float 3s ease-in-out 1s infinite;
+  }
+  .thinker-intro-portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 20%;
+    display: block;
+  }
+  .thinker-intro-name {
+    font-family: 'Nunito', sans-serif;
+    font-size: 30px;
+    font-weight: 900;
+    color: var(--ink);
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+    animation: p3-rise 0.6s ease-out 0.35s both;
+  }
+  .thinker-intro-era {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    animation: p3-rise 0.6s ease-out 0.45s both;
+  }
+  /* Bio blends into the gradient — no card, no border. Editorial reading feel. */
+  .thinker-intro-bio {
+    font-size: 16px;
+    line-height: 1.75;
+    color: var(--text-2);
+    text-align: start;
+    padding: 0 4px;
+    margin-bottom: 32px;
+    animation: p3-rise 0.6s ease-out 0.55s both;
+  }
+  .thinker-intro-btn {
+    background: var(--accent);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 999px;
+    padding: 15px 40px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 2px 0 var(--accent-dark), 0 8px 20px var(--accent-glow);
+    min-width: 200px;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: p3-rise 0.6s ease-out 0.7s both;
+  }
+  .thinker-intro-btn:active { transform: scale(0.97); }
+
+  /* Reopen button in the reader topbar. Hidden by default; JS toggles .active
+     when the current day has a thinkerId. Shows the portrait when unlocked,
+     the same gold mystery coin (in miniature) when not — so the header hint
+     matches whatever visual the intro overlay would open.
+     Absolute positioning next to the back button avoids disturbing the
+     topbar's space-between flex layout (which centers the logo). */
+  .thinker-intro-reopen-btn {
+    display: none;
+    position: absolute;
+    top: 50%;
+    /* 68px = back button end (52) + 16px gap, well clear of finger-fat mis-taps. */
+    inset-inline-start: 68px;
+    transform: translateY(-50%);
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .thinker-intro-reopen-btn.active { display: inline-flex; }
+  .thinker-intro-reopen-btn:active { transform: translateY(-50%) scale(0.9); }
+  .thinker-intro-reopen-btn .rt-portrait {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--accent);
+    background: var(--surface);
+    box-shadow: 0 2px 6px var(--accent-glow);
+  }
+  .thinker-intro-reopen-btn .rt-portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 20%;
+    display: block;
+  }
+  /* Mini disc for the reader-header locked state — same subject-tinted gold
+     glyph as the intro, scaled down. Thin gold rim + tinted disc keeps the
+     family resemblance; small halo shadow keeps it legible on the topbar. */
+  .thinker-intro-reopen-btn .rt-mystery {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 1.5px solid #C7892C;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+      inset 0 1px 2px rgba(255, 255, 255, 0.55),
+      0 2px 8px rgba(255, 217, 130, 0.45);
+  }
+  .thinker-intro-reopen-btn .rt-mystery svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+  }
+
   /* ── Thinker detail modal ── */
   .thinker-detail .modal-box { text-align: start; overflow: hidden; }
   .thinker-detail .modal-box.has-portrait { padding-top: 0; }
+  /* Locked-teaser variant: opened from a locked pantheon or home-carousel card
+     via openThinkerModal(id, { locked: true }). Shows name (with lock glyph),
+     era, and the full bio just like the unlocked variant. The quote is hidden
+     and the portrait/emoji block isn't rendered at all — the actual reveal is
+     kept for when the user unlocks the thinker. A small "Unlocks in Chapter X"
+     line renders under the bio via .thinker-detail-lock-line. Muted styling
+     reuses existing tokens — no new colors. */
+  .thinker-detail .modal-box.locked {
+    background: var(--surface-2);
+    border-color: var(--border-deep);
+  }
+  .thinker-modal-lock-glyph {
+    color: var(--text-muted);
+    opacity: 0.7;
+    vertical-align: middle;
+    margin-inline-start: 6px;
+  }
+  .thinker-detail-lock-line {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 4px;
+    letter-spacing: 0.01em;
+  }
   .thinker-modal-portrait-full {
     width: calc(100% + 48px);
     height: 300px;
@@ -3167,7 +3450,9 @@
     height: 10px;
     border-radius: 2px;
     animation: confettiFall linear forwards;
-    z-index: 300;
+    /* Was 300 — bumped to 350 to stay above the modal-overlay (now 300) so
+       celebration confetti still renders on top of any active modal. */
+    z-index: 350;
     pointer-events: none;
   }
   @keyframes confettiFall {
@@ -3461,7 +3746,11 @@
      text renders correctly. Gold border + gold arrow to pair with the bonus card. */
   .bonus-tooltip { width: max-content; border: 2px solid #D4AF37; white-space: normal; max-width: 200px; text-align: center; direction: inherit; pointer-events: none; opacity: 0; transition: opacity 0.25s; }
   .bonus-tooltip.show { opacity: 1; }
-  .bonus-tooltip.tail-top::before { border-bottom-color: #D4AF37; }
+  /* The arrow's horizontal position is offset by --tail-offset when
+     showBonusTooltip clamps the tooltip into the viewport, so the arrow
+     still visually points at the card center. Default 0px = arrow at
+     tooltip's horizontal center (unchanged behavior when no clamp). */
+  .bonus-tooltip.tail-top::before { border-bottom-color: #D4AF37; left: calc(50% + var(--tail-offset, 0px)); }
   .onboarding-next-btn { display: block; margin-top: 10px; background: var(--accent); color: white; border: none; border-radius: 50px; padding: 8px 20px; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; }
   #onboarding-lang-buttons { display: flex; }
   .onboarding-lang-btn { flex: 1; max-width: 120px; padding: 8px 16px; background: var(--accent); color: white; border: none; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -4518,6 +4807,10 @@
     -webkit-tap-highlight-color: transparent;
   }
   #drawer-toggle-btn:active { transform: scale(0.92); }
+  /* Chevron flips 180° while the subject drawer is open (openDrawer/closeDrawer
+     toggle body.drawer-open in sync). CSS-only — no JS wiring needed. */
+  #drawer-toggle-btn svg { transition: transform 0.25s ease; }
+  body.drawer-open #drawer-toggle-btn svg { transform: rotate(180deg); }
 
   /* === Spring press: primary action buttons ===
      Base: spring-back easing on release (0.32s, overshoots then settles)
@@ -4848,6 +5141,24 @@
       <path d="M54 24 L 55 26 L 57 27 L 55 28 L 54 30 L 53 28 L 51 27 L 53 26 Z" fill="#FFD982" stroke="#C7892C" stroke-width="0.6" stroke-linejoin="round"/>
       <path d="M50 16 L 50.6 17.4 L 52 18 L 50.6 18.6 L 50 20 L 49.4 18.6 L 48 18 L 49.4 17.4 Z" fill="#FFD982" stroke="#C7892C" stroke-width="0.5" stroke-linejoin="round"/>
       <path d="M12 18 L 12.8 19.6 L 14.4 20 L 12.8 20.5 L 12 22.2 L 11.2 20.5 L 9.6 20 L 11.2 19.6 Z" fill="#FFD982" stroke="#C7892C" stroke-width="0.5" stroke-linejoin="round"/>
+    </symbol>
+    <!-- Friendly rounded question mark drawn as SVG paths (no font dependency —
+         Fredoka avoided in favor of a hand-tuned path so the glyph renders
+         identically offline). Vertical gradient via userSpaceOnUse so hook +
+         dot share one gradient. Stop colors read from --mystery-top and
+         --mystery-bottom CSS variables, which are set per theme with pre-
+         computed 15% accent tints (see the theme-* rule blocks above). Used
+         at ~150px in the thinker intro and ~22px in the reader-topbar reopen
+         button — both inherit the current theme's mystery variables. -->
+    <symbol id="ic-mystery-q" viewBox="0 0 64 64">
+      <defs>
+        <linearGradient id="ic-mystery-q-grad" gradientUnits="userSpaceOnUse" x1="32" y1="4" x2="32" y2="60">
+          <stop offset="0" style="stop-color: var(--mystery-top, #FFE9A8)"/>
+          <stop offset="1" style="stop-color: var(--mystery-bottom, #C87A06)"/>
+        </linearGradient>
+      </defs>
+      <path d="M18 22 Q18 8 32 8 Q46 8 46 22 Q46 30 38 34 Q32 36 32 40" fill="none" stroke="url(#ic-mystery-q-grad)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="32" cy="55" r="4.5" fill="url(#ic-mystery-q-grad)"/>
     </symbol>
   </defs>
 </svg>
@@ -5299,7 +5610,7 @@
   ═══════════════════════════════ -->
   <div id="screen-pantheon" class="screen">
     <!-- (pantheon-header-unit removed — topbar and stats are now global #app-level elements) -->
-    <div class="scroll-content" style="padding-bottom:80px">
+    <div class="scroll-content">
       <div class="pantheon-stats" id="pantheon-stats"></div>
       <div class="pantheon-container" id="pantheon-container"></div>
     </div>
@@ -5310,7 +5621,7 @@
   ═══════════════════════════════ -->
   <div id="screen-profile" class="screen">
     <!-- (profile topbar removed — replaced by the global topbar at #app level) -->
-  <div class="scroll-content" style="padding-bottom:80px">
+  <div class="scroll-content">
 
     <!-- Profile Card -->
     <div class="pf-card pf-user-card">
@@ -5437,6 +5748,7 @@
           <polyline points="9 18 15 12 9 6"/>
         </svg>
       </button>
+      <button class="thinker-intro-reopen-btn" id="thinker-intro-reopen-btn" onclick="_openThinkerIntro()" aria-label="Open thinker intro"></button>
       <div class="topbar-logo-wrap"><div class="topbar-logo">Corpus</div></div>
       <button class="reader-settings-btn" onclick="toggleSettings()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)">
@@ -5530,6 +5842,8 @@
       <div class="thinker-detail-emoji" id="thinker-modal-emoji"></div>
     </div>
     <div class="thinker-detail-bio" id="thinker-modal-bio"></div>
+    <!-- Secondary "Unlocks in Chapter X" line — only shown in the locked-teaser variant. -->
+    <div class="thinker-detail-lock-line" id="thinker-modal-lock-line" style="display:none"></div>
     <div class="thinker-detail-quote" id="thinker-modal-quote"></div>
     <button class="nav-btn" id="modal-close-btn" onclick="closeThinkerModal()" style="margin-top:8px">סגור</button>
   </div>
@@ -5567,6 +5881,31 @@
     </button>
     <button class="nav-btn" id="guest-signup-email-btn" onclick="closeGuestSignupPrompt(); setAuthMode('signup'); showAuthScreen();" style="margin-top:10px;">Sign up with email</button>
     <div class="share-modal-skip" id="guest-signup-skip" onclick="dismissGuestSignupPrompt();">Maybe later</div>
+  </div>
+</div>
+
+<!-- Thinker intro overlay — auto-shown by _showThinkerIntroIfNeeded on fresh
+     entry to an uncompleted lesson whose day has a thinkerId, and reopenable
+     any time via the reader-topbar reopen button (_openThinkerIntro).
+     Mystery variant borrows the bonus-unlock language (rings + sparkles +
+     gold coin) so "who's coming up" reads like a treasure preview. -->
+<div id="thinker-intro" role="dialog" aria-modal="true">
+  <div class="thinker-intro-inner">
+    <div class="thinker-intro-eyebrow" id="thinker-intro-eyebrow"></div>
+    <div class="thinker-intro-visual" id="thinker-intro-visual">
+      <div class="unlock-pulse p2"></div>
+      <div class="unlock-pulse"></div>
+      <svg class="unlock-star s1" viewBox="0 0 64 64"><use href="#ic-star-burst"/></svg>
+      <svg class="unlock-star s2" viewBox="0 0 64 64"><use href="#ic-star-burst"/></svg>
+      <svg class="unlock-star s3" viewBox="0 0 64 64"><use href="#ic-star-burst"/></svg>
+      <svg class="unlock-star s4" viewBox="0 0 64 64"><use href="#ic-star-burst"/></svg>
+      <div class="thinker-intro-mystery" id="thinker-intro-mystery" style="display:none"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#ic-mystery-q"/></svg></div>
+      <div class="thinker-intro-portrait" id="thinker-intro-portrait"></div>
+    </div>
+    <div class="thinker-intro-name" id="thinker-intro-name"></div>
+    <div class="thinker-intro-era" id="thinker-intro-era"></div>
+    <div class="thinker-intro-bio" id="thinker-intro-bio"></div>
+    <button class="thinker-intro-btn" id="thinker-intro-btn" onclick="_closeThinkerIntro()"></button>
   </div>
 </div>
 
@@ -13264,7 +13603,9 @@ function defaultState() {
     chapterXPByWeek: {},      // XP tallied per chapter for chapter-complete metrics
     guestSignupPromptShown: false,  // legacy single-shot flag — kept for back-compat; migrated into guestPrompt below on load
     // Guest sign-in prompt cadence. Local-only (never uploaded to Supabase — gated by guest mode).
-    guestPrompt: { totalShown: 0, lastShownDate: '', dismissCount: 0, permanentlyDismissed: false },
+    // shownTriggers: per-trigger lifetime flag so first_completion / third_completion
+    // fire at most once each. Cadence (lastShownDate, dismissCount) still applies on top.
+    guestPrompt: { totalShown: 0, lastShownDate: '', dismissCount: 0, permanentlyDismissed: false, shownTriggers: {} },
     settingsExpanded: false,   // Profile → Settings collapsible; persisted with the rest of state.
     isPaid: false,   // manual flag for now; later driven by subscription
     subject: 'philosophy',
@@ -13315,9 +13656,15 @@ function loadState() {
   // Also migrate from the legacy single-shot guestSignupPromptShown boolean so a returning
   // guest who already saw the v1 prompt counts as totalShown=1 (and won't immediately re-prompt today).
   state.guestPrompt = Object.assign(
-    { totalShown: 0, lastShownDate: '', dismissCount: 0, permanentlyDismissed: false },
+    { totalShown: 0, lastShownDate: '', dismissCount: 0, permanentlyDismissed: false, shownTriggers: {} },
     state.guestPrompt || {}
   );
+  // Defensive: persisted blobs from before shownTriggers existed will have it as
+  // undefined; ensure it's always an object so property assignment / reads don't
+  // throw further downstream.
+  if (!state.guestPrompt.shownTriggers || typeof state.guestPrompt.shownTriggers !== 'object') {
+    state.guestPrompt.shownTriggers = {};
+  }
   if (state.guestSignupPromptShown) {
     // Ensure totalShown reflects "they've seen the welcome prompt before" so
     // first_completion doesn't re-fire. Leave lastShownDate EMPTY — the legacy
@@ -13327,6 +13674,9 @@ function loadState() {
     // safe because the new prompt system was deployed today and no legitimate
     // new-system prompt could have a "this was real" lastShownDate yet.
     if (state.guestPrompt.totalShown === 0) state.guestPrompt.totalShown = 1;
+    // Legacy back-compat: the pre-shownTriggers world had a single "seen it"
+    // flag, so treat that as first_completion having fired.
+    state.guestPrompt.shownTriggers.first_completion = true;
     state.guestPrompt.lastShownDate = '';
   }
 }
@@ -13361,6 +13711,11 @@ function showScreen(id) {
   if (id !== 'reader') {
     document.getElementById('reader-content').innerHTML = '';
     document.getElementById('reader-btn-bar').innerHTML = '';
+    // Any exit from the reader must close the thinker intro overlay —
+    // otherwise .active can persist (z-index 400) on top of home / profile /
+    // pantheon and swallow all taps. Covers goHome, goBack, level-up dismiss,
+    // completion-flow continuations, and any future nav path.
+    _closeThinkerIntro();
   }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + id).classList.add('active');
@@ -13690,15 +14045,6 @@ async function _requestNotifPermission() {
   } catch(e) { return 'unavailable'; }
 }
 
-function _nextScheduledDate(timeHHMM) {
-  // Returns a Date object for tomorrow at HH:MM in local time.
-  const [hh, mm] = (timeHHMM || '19:00').split(':').map(n => parseInt(n, 10) || 0);
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
-  d.setHours(hh, mm, 0, 0);
-  return d;
-}
-
 async function _cancelReminder() {
   if (!_isNotifPluginAvailable()) return;
   try {
@@ -13708,8 +14054,17 @@ async function _cancelReminder() {
   } catch(e) {}
 }
 
-async function _scheduleReminderFor(date) {
+// Schedules a TRUE daily-repeating notification at the given HH:MM string.
+// Using `schedule.on: { hour, minute }` with `repeats: true` tells iOS to fire
+// at that clock time every day — including today if that time is still in the
+// future, and continuing indefinitely without any user-side re-scheduling.
+// This replaces the earlier one-shot `at: <tomorrow at HH:MM>` design where
+// (a) same-day testing never fired, (b) every foreground re-cancelled and
+// pushed further out, and (c) a user who didn't reopen the app only ever got
+// one nudge before the chain broke.
+async function _scheduleReminderFor(timeHHMM) {
   if (!_isNotifPluginAvailable()) return;
+  const [hh, mm] = String(timeHHMM || '19:00').split(':').map(n => parseInt(n, 10) || 0);
   const copy = _reminderCopy();
   try {
     await window.Capacitor.Plugins.LocalNotifications.schedule({
@@ -13717,14 +14072,27 @@ async function _scheduleReminderFor(date) {
         id:       REMINDER_NOTIF_ID,
         title:    copy.title,
         body:     copy.body,
-        schedule: { at: date, allowWhileIdle: true }
+        schedule: {
+          on:      { hour: hh, minute: mm },
+          repeats: true,
+          allowWhileIdle: true,
+        }
       }]
     });
+    // Log the pending list for debug visibility so silent schedule failures
+    // become obvious in the WebInspector console during future troubleshooting.
+    try {
+      const pending = await window.Capacitor.Plugins.LocalNotifications.getPending();
+      console.log('[Reminder] scheduled daily at ' + hh + ':' + String(mm).padStart(2, '0') + '; pending:',
+        pending && pending.notifications ? pending.notifications : pending);
+    } catch(e) {}
   } catch(e) { console.warn('[Reminder] schedule failed:', e && e.message); }
 }
 
-// Called on every app open / foreground. Always pushes the next notification to
-// tomorrow at the chosen time — so if the user is here today, no notification fires today.
+// Called on every app open / foreground. Cancel-then-reschedule keeps the
+// pending list clean and ensures a fresh title/body message. Because the
+// underlying schedule is now `on: { hour, minute } + repeats: true`, this is
+// idempotent — the fire time never moves.
 async function rescheduleReminderFromToday() {
   if (!_isNotifPluginAvailable()) return;
   const r = state.dailyReminder || {};
@@ -13732,7 +14100,7 @@ async function rescheduleReminderFromToday() {
   const perm = await _checkNotifPermission();
   if (perm !== 'granted') { await _cancelReminder(); return; }
   await _cancelReminder();
-  await _scheduleReminderFor(_nextScheduledDate(r.time));
+  await _scheduleReminderFor(r.time);
 }
 
 // Used by the profile toggle/time-picker. Persists, requests permission if needed,
@@ -13754,7 +14122,7 @@ async function setReminder(patch) {
     }
     if (perm === 'granted') {
       await _cancelReminder();
-      await _scheduleReminderFor(_nextScheduledDate(state.dailyReminder.time));
+      await _scheduleReminderFor(state.dailyReminder.time);
     } else {
       // User declined OS permission → flip the intent off so UI reflects reality.
       state.dailyReminder.enabled = false;
@@ -13777,7 +14145,7 @@ async function maybeRequestReminderPermission() {
   state.dailyReminder.permissionAsked = true;
   if (perm === 'granted') {
     await _cancelReminder();
-    await _scheduleReminderFor(_nextScheduledDate(state.dailyReminder.time));
+    await _scheduleReminderFor(state.dailyReminder.time);
   } else {
     // Permission denied → reflect in state so the Profile toggle shows OFF.
     state.dailyReminder.enabled = false;
@@ -14101,7 +14469,8 @@ function renderHome() {
             ${unlocked ? '' : '<div class="thinker-card-lock"><svg viewBox="0 0 64 64" width="20" height="20"><use href="#ic-lock"/></svg></div>'}
           `;
         }
-        if (unlocked) card.onclick = () => openThinkerModal(t.id);
+        // Both variants clickable — locked opens the teaser modal, unlocked opens the full view.
+        card.onclick = () => openThinkerModal(t.id, unlocked ? undefined : { locked: true });
         gallery.appendChild(card);
       } catch(cardErr) { console.error('renderHome: thinker card error', t && t.id, cardErr); }
     });
@@ -14423,7 +14792,8 @@ function populateCarousel() {
       <img src="${t.image}" alt="${t.name}" loading="lazy">
       <div class="thinker-carousel-name">${t.name}</div>
     `;
-    if (unlocked) card.onclick = () => openThinkerModal(t.id);
+    // Both variants clickable — locked opens the teaser modal, unlocked opens the full view.
+    card.onclick = () => openThinkerModal(t.id, unlocked ? undefined : { locked: true });
     carousel.appendChild(card);
   });
 }
@@ -14577,6 +14947,20 @@ function closeLibraryModal() {
 }
 
 function openReader(weekId, dayId) {
+  // Defensive: if the guest-signup modal is somehow still .active when we're
+  // about to load a reader, close it. In the intended flow, closeCompleteModal
+  // runs the prompt chain (signup → share → streak → continuation) and only
+  // fires the openReader continuation after every modal has closed, so no
+  // prompt should ever be up at this point. Belt-and-suspenders for any
+  // future path that might re-open a reader while a prompt is up (deep-link,
+  // spotlight shortcut, etc.). Suppress the pending callback since the user
+  // is choosing a new dialogue rather than continuing the post-completion
+  // chain.
+  const _guestSignupModal = document.getElementById('modal-guest-signup');
+  if (_guestSignupModal && _guestSignupModal.classList.contains('active')) {
+    _guestSignupPendingFn = null;
+    _guestSignupModal.classList.remove('active');
+  }
   // If the onboarding overlay is still visible, this open is the spotlight
   // shortcut on step 3 (user tapped the highlighted lesson node directly
   // instead of the "I'm ready!" button). Treat it as completing the tour —
@@ -14609,6 +14993,153 @@ function openReader(weekId, dayId) {
   renderReader();
   showScreen('reader');
   animateScreen(document.getElementById('screen-reader'), 'anim-fade');
+  // Defensive: clear a lingering .active + body scroll lock from a prior
+  // openReader (Capacitor resume paths can re-fire openReader before the
+  // session flag has been touched, leaving stale state). Cheap idempotent
+  // cleanup before the auto-show logic runs.
+  const _introOverlay = document.getElementById('thinker-intro');
+  if (_introOverlay) _introOverlay.classList.remove('active');
+  document.body.style.overflow = '';
+  // If this day introduces a thinker AND it's a fresh entry into an
+  // uncompleted lesson this session, sit an intro overlay on top of the
+  // reader chrome. The reader is fully rendered underneath so the intro's
+  // continue button just hides the overlay for an instant reveal — no
+  // section/XP/dots logic changes.
+  _showThinkerIntroIfNeeded(_day);
+}
+
+// Session-only map of lesson keys → true, so the thinker intro overlay
+// doesn't AUTO re-show if the user backgrounds the app mid-lesson and returns
+// (Capacitor iOS can re-trigger openReader on some resume paths). Cleared on
+// page reload. The manual reopen button bypasses this flag — the reader
+// header's portrait/mystery button always opens the intro on tap.
+const _thinkerIntrosShown = {};
+function _thinkerIntroKey(weekId, dayId) {
+  return String(weekId) + '-' + String(dayId);
+}
+
+// Look up the current day (works from openReader and from the reader-topbar
+// reopen button, which doesn't have `day` in scope).
+function _currentReaderDay() {
+  const chapter = getW().find(w => w.id === state.currentWeek);
+  return chapter ? chapter.days.find(d => d.id === state.currentDay) : null;
+}
+
+// Populate the #thinker-intro overlay DOM from a day record (mystery variant
+// when the thinker isn't unlocked yet, portrait variant when it is). Split
+// from show/open so both entry points share the same rendering.
+function _renderThinkerIntro(day, opts) {
+  if (!day || !day.thinkerId) return false;
+  const overlay = document.getElementById('thinker-intro');
+  if (!overlay) return false;
+
+  const t = getT().find(x => x.id === day.thinkerId);
+  const isEn = state.lang === 'en';
+  const isUnlocked = !!(t && state.unlockedThinkers && state.unlockedThinkers.includes(t.id));
+  const isReopen = !!(opts && opts.reopen);
+
+  const eyebrow = document.getElementById('thinker-intro-eyebrow');
+  const portrait = document.getElementById('thinker-intro-portrait');
+  const mystery = document.getElementById('thinker-intro-mystery');
+  const nameEl = document.getElementById('thinker-intro-name');
+  const eraEl = document.getElementById('thinker-intro-era');
+  const bioEl = document.getElementById('thinker-intro-bio');
+  const btn = document.getElementById('thinker-intro-btn');
+
+  if (isUnlocked && t) {
+    eyebrow.textContent = isEn ? 'Now featuring' : 'נדבר עכשיו על';
+    if (mystery) mystery.style.display = 'none';
+    portrait.style.display = '';
+    portrait.innerHTML = t.image ? `<img src="${t.image}" alt="${t.name}">` : '';
+    nameEl.style.display = '';
+    nameEl.textContent = t.name;
+  } else {
+    // Not yet unlocked (or thinker record missing) → golden mystery coin, no name.
+    eyebrow.textContent = isEn ? 'Your next thinker' : 'ההוגה הבא';
+    portrait.style.display = 'none';
+    portrait.innerHTML = '';
+    if (mystery) { mystery.style.display = ''; }
+    nameEl.style.display = 'none';
+    nameEl.textContent = '';
+  }
+  eraEl.textContent = (t && t.era) || '';
+  bioEl.textContent = (t && t.bio) || '';
+  // Auto-show (fresh entry) reads as an invitation → "Let's begin".
+  // Manual reopen from the header button means the user is already mid-
+  // dialogue and wants to return to it → "Continue".
+  if (isReopen) {
+    btn.textContent = isEn ? 'Continue' : 'המשך';
+  } else {
+    btn.textContent = isEn ? "Let's begin" : 'בואו נתחיל';
+  }
+  return true;
+}
+
+// Auto-show on fresh entry only. Gates: day has a thinkerId, lesson not
+// completed, not already shown this session for this key. Manual reopen
+// bypasses all three gates.
+function _showThinkerIntroIfNeeded(day) {
+  if (!day || !day.thinkerId) return;
+  if (state.completedDays[dayKey(state.currentWeek, state.currentDay)]) return;
+  const key = _thinkerIntroKey(state.currentWeek, state.currentDay);
+  if (_thinkerIntrosShown[key]) return;
+  if (!_renderThinkerIntro(day)) return;
+  _thinkerIntrosShown[key] = true;
+  const overlay = document.getElementById('thinker-intro');
+  overlay.classList.add('active');
+  // Lock body scroll while the intro is up (matches the thinker-modal and
+  // bonus-picker patterns) so the underlying reader can't be scrolled through
+  // the overlay on iOS.
+  document.body.style.overflow = 'hidden';
+}
+
+// Manual open from the reader-topbar reopen button. Always opens (even on
+// completed lessons and after the auto-show has already fired). Uses the
+// current reader day since the button has no argument.
+function _openThinkerIntro() {
+  const day = _currentReaderDay();
+  if (!_renderThinkerIntro(day, { reopen: true })) return;
+  const overlay = document.getElementById('thinker-intro');
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function _closeThinkerIntro() {
+  const overlay = document.getElementById('thinker-intro');
+  if (overlay) overlay.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// Escape closes the intro (web parity — keyboard users, and desktop preview).
+// Android hardware-back isn't wired here because the app has no Capacitor App
+// plugin listener at all right now; adding one for this alone would introduce
+// a new dependency, so it's deferred until a broader back-nav handler lands.
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Escape') return;
+  const overlay = document.getElementById('thinker-intro');
+  if (overlay && overlay.classList.contains('active')) _closeThinkerIntro();
+});
+
+// Populates and toggles visibility of the reader-topbar reopen button.
+// Called from renderReader so the button matches the current day's thinker
+// state (portrait if unlocked, gold mini coin if not; hidden entirely when
+// the day has no thinkerId).
+function _updateThinkerIntroReopenBtn(day) {
+  const btn = document.getElementById('thinker-intro-reopen-btn');
+  if (!btn) return;
+  if (!day || !day.thinkerId) {
+    btn.classList.remove('active');
+    btn.innerHTML = '';
+    return;
+  }
+  const t = getT().find(x => x.id === day.thinkerId);
+  const isUnlocked = !!(t && state.unlockedThinkers && state.unlockedThinkers.includes(t.id));
+  if (isUnlocked && t && t.image) {
+    btn.innerHTML = `<div class="rt-portrait"><img src="${t.image}" alt="${t.name}"></div>`;
+  } else {
+    btn.innerHTML = `<div class="rt-mystery"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#ic-mystery-q"/></svg></div>`;
+  }
+  btn.classList.add('active');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -14668,6 +15199,7 @@ function renderReader() {
   if (progressEl) progressEl.style.width = pct + '%';
 
   renderSectionDots();
+  _updateThinkerIntroReopenBtn(day);
 
   const content = document.getElementById('reader-content');
   content.innerHTML = '';
@@ -15063,8 +15595,16 @@ function getNextLessonInfo() {
 
 function goToNextLesson() {
   const next = getNextLessonInfo();
-  closeCompleteModal();
-  if (next.hasNext) openReader(next.weekId, next.dayId);
+  // Pass openReader as a continuation. closeCompleteModal will run any due
+  // prompts (signup / share / streak_milestone) and only invoke this thunk
+  // AFTER the user closes the last prompt in the chain. If nothing is due
+  // the thunk runs immediately and the user goes straight to the next
+  // dialogue with no home flash.
+  closeCompleteModal({
+    continuation: () => {
+      if (next.hasNext) openReader(next.weekId, next.dayId);
+    }
+  });
 }
 
 function _showDcStats(titleText, subtitleText, xpAmount, streakCount, onContinue) {
@@ -15290,36 +15830,104 @@ function finishDay() {
   }
 }
 
-function closeCompleteModal() {
+// closeCompleteModal(opts?)
+// Called by the "Back to Home" button (no args → continuation defaults to
+// goHome) and by goToNextLesson (opts.continuation = openReader thunk). Both
+// buttons run the same prompt chain — the difference is only what happens
+// AFTER any due prompts close.
+//
+// Chain design: signup → share → streak_milestone → continuation. Each stage
+// invokes the next stage as its onDone callback (either after the modal
+// closes, or immediately if the stage's gate blocks). If no stage is due,
+// the continuation runs immediately without a goHome first — so a Next
+// Dialogue tap with nothing due goes straight to the reader with no home
+// flash. If any stage is due we goHome first so no modal is ever rendered
+// on top of an active reader.
+function closeCompleteModal(opts) {
   document.getElementById('modal-complete').classList.remove('active');
-  const shouldShowShare = state.currentWeek === 1 && state.currentDay === 7;
+  const continuation = (opts && typeof opts.continuation === 'function') ? opts.continuation : goHome;
 
+  const _guestCompletionCount = Object.keys(state.completedDays)
+    .filter(k => !k.endsWith('-0')).length;
+  const _shown = (state.guestPrompt && state.guestPrompt.shownTriggers) || {};
+
+  // Signup prompt eligibility: after the first real dialogue for a guest,
+  // guarded by shownTriggers.first_completion so it fires at most once per
+  // account (third_completion was removed — dialogue 3 now belongs to share).
   const isFirstGuestCompletion = !currentUser
-    && state.guestPrompt.totalShown === 0
-    && Object.keys(state.completedDays).filter(k => !k.endsWith('-0')).length === 1;
+    && _guestCompletionCount >= 1
+    && !_shown.first_completion;
 
-  if (isFirstGuestCompletion) {
-    // Show the soft signup prompt as the user leaves the completion flow,
-    // AFTER they've seen the thinker card. Defer goHome until the prompt closes.
-    // Routed via maybeShowGuestPrompt so the cadence rules still apply.
-    maybeShowGuestPrompt(() => {
-      goHome();
-      if (shouldShowShare) setTimeout(showSharePrompt, 400);
-    }, 'first_completion');
+  // Share prompt eligibility: chapter-1, per-subject once, after dialogue 3.
+  // Flag-based so a Next-Dialogue skip on day 3 still catches on the next
+  // eligible close. showSharePrompt's internal flag check + onDone-invoked-
+  // immediately-if-already-shown makes double-fire safe.
+  const _currentSubject = state.subject || 'philosophy';
+  let _shareAlreadyShown = false;
+  try { _shareAlreadyShown = !!localStorage.getItem(`corpus_share_shown_${_currentSubject}`); } catch(e) {}
+  const shouldShowShare = state.currentWeek === 1
+    && !_shareAlreadyShown
+    && (_guestCompletionCount >= 3 || state.currentDay >= 3);
+
+  // Streak milestone eligibility: 3/7/30-day streaks. Cadence gate inside
+  // maybeShowGuestPrompt (once-per-day) prevents overlap with the signup.
+  const _streakDue = [3, 7, 30].includes(state.dailyStreak);
+
+  const anyPromptDue = isFirstGuestCompletion || shouldShowShare || _streakDue;
+
+  if (!anyPromptDue) {
+    // Nothing to show — continuation handles navigation. On Back to Home this
+    // is goHome (default); on Next Dialogue this is openReader(next). Skipping
+    // the goHome here is what removes the "home flash" between two dialogues.
+    continuation();
     return;
   }
 
+  // At least one prompt is due. goHome() FIRST so state.currentScreen is
+  // 'home' when _shouldShowGuestPrompt evaluates (its reader-screen guard
+  // would otherwise drop the prompt) AND so nothing renders on top of a
+  // stale reader if the continuation is a re-openReader after prompts close.
   goHome();
-  if (shouldShowShare) setTimeout(showSharePrompt, 400);
 
-  // Streak milestone hook — fires only on milestone-value days (3/7/30). The
-  // once-per-day cap inside maybeShowGuestPrompt makes this safe to call on
-  // every dialogue dismissal during a milestone day (only the first attempt
-  // actually shows the prompt). Delayed so it doesn't immediately overlap with
-  // any other celebration overlay still settling.
-  if ([3, 7, 30].includes(state.dailyStreak)) {
-    setTimeout(() => maybeShowGuestPrompt(null, 'streak_milestone'), 400);
-  }
+  // Single-fire continuation guard: any callback path double-invoke can't
+  // run the reader/goHome twice.
+  let _continuationFired = false;
+  const runContinuation = () => {
+    if (_continuationFired) return;
+    _continuationFired = true;
+    continuation();
+  };
+
+  const runStreak = () => {
+    if (_streakDue) {
+      // Fires the callback either after the streak modal closes, or immediately
+      // if the cadence gate blocks (e.g. signup already stamped lastShownDate
+      // today, so streak silently no-ops and we fall through to continuation).
+      maybeShowGuestPrompt(runContinuation, 'streak_milestone');
+    } else {
+      runContinuation();
+    }
+  };
+
+  const runShare = () => {
+    if (shouldShowShare) {
+      // 400ms breather so the just-closed signup modal has time to visually
+      // dismiss before the share modal appears.
+      setTimeout(() => showSharePrompt(runStreak), 400);
+    } else {
+      runStreak();
+    }
+  };
+
+  const runSignup = () => {
+    if (isFirstGuestCompletion) {
+      maybeShowGuestPrompt(runShare, 'first_completion');
+    } else {
+      runShare();
+    }
+  };
+
+  runSignup();
 }
 
 // Gates the guest sign-in prompt so it can fire at multiple milestones (first
@@ -15350,7 +15958,10 @@ function _shouldShowGuestPrompt() {
   // reads on `.permanentlyDismissed` to throw. Both literals now include the
   // key, but this guard makes any future reset path crash-proof too.
   if (!state.guestPrompt) {
-    state.guestPrompt = { totalShown: 0, lastShownDate: '', dismissCount: 0, permanentlyDismissed: false };
+    state.guestPrompt = { totalShown: 0, lastShownDate: '', dismissCount: 0, permanentlyDismissed: false, shownTriggers: {} };
+  }
+  if (!state.guestPrompt.shownTriggers || typeof state.guestPrompt.shownTriggers !== 'object') {
+    state.guestPrompt.shownTriggers = {};
   }
   if (state.guestPrompt.permanentlyDismissed) return false;
   if (state.guestPrompt.dismissCount >= 3) return false;
@@ -15379,6 +15990,11 @@ function showGuestSignupPrompt(originalFn, trigger) {
   const today = new Date().toISOString().split('T')[0];
   state.guestPrompt.totalShown += 1;
   state.guestPrompt.lastShownDate = today;
+  // Per-trigger lifetime flag — first_completion / third_completion consult this
+  // to guarantee at-most-once fire even when their >= count conditions stay
+  // true across many subsequent closes.
+  if (!state.guestPrompt.shownTriggers) state.guestPrompt.shownTriggers = {};
+  state.guestPrompt.shownTriggers[trigger || 'unknown'] = true;
   state.guestSignupPromptShown = true; // legacy back-compat
   saveStateLocal();
   document.getElementById('modal-guest-signup').classList.add('active');
@@ -15464,10 +16080,44 @@ function closeDeleteAccountConfirm() {
   document.getElementById('modal-delete-account').classList.remove('active');
 }
 
-function showSharePrompt() {
+// Returns the URL to attach to any user-visible share action. On iOS native,
+// point at the App Store listing so recipients can install directly. Web and
+// Android (for now — Android app isn't in Play Store yet) keep the web URL
+// so the link opens the same experience the sender was just using. Any new
+// share surface (profile share button, invite screen, etc.) should call this
+// helper so both platforms stay in sync.
+function getShareUrl() {
+  const _isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  if (_isNative && window.Capacitor.getPlatform() === 'ios') {
+    return 'https://apps.apple.com/app/id6781227385';
+  }
+  return 'https://corpusapp.io/#';
+}
+
+// Pending onDone callback for the share modal. Set by showSharePrompt, fired
+// once by doShare (both native-share and clipboard-fallback paths) and by
+// skipShare when the modal is dismissed. Carries the chain continuation from
+// closeCompleteModal so a Next-Dialogue tap only opens the reader after the
+// user has actually interacted with the share prompt.
+let _sharePromptPendingFn = null;
+function _finishSharePrompt() {
+  const fn = _sharePromptPendingFn;
+  _sharePromptPendingFn = null;
+  if (typeof fn === 'function') fn();
+}
+
+function showSharePrompt(onDone) {
   const subject = state.subject || 'philosophy';
   const flagKey = `corpus_share_shown_${subject}`;
-  try { if (localStorage.getItem(flagKey)) return; } catch(e) {}
+  try {
+    if (localStorage.getItem(flagKey)) {
+      // Already shown for this subject — treat as instantly-complete so the
+      // chain continues.
+      if (typeof onDone === 'function') onDone();
+      return;
+    }
+  } catch(e) {}
+  _sharePromptPendingFn = onDone || null;
   const isEn = state.lang === 'en';
   const messages = {
     philosophy: {
@@ -15492,7 +16142,7 @@ function showSharePrompt() {
 }
 
 async function doShare() {
-  const url = 'https://corpusapp.io/#';
+  const url = getShareUrl();
   const shareText = state.lang === 'he'
     ? 'הרעיונות הגדולים בהיסטוריה ב-5 דקות ביום'
     : "History's biggest ideas in 5 minutes a day";
@@ -15501,7 +16151,8 @@ async function doShare() {
       await navigator.share({ title: 'Corpus', text: shareText, url });
       try { localStorage.setItem(`corpus_share_shown_${state.subject || 'philosophy'}`, '1'); } catch(e) {}
       document.getElementById('modal-share').classList.remove('active');
-    } catch(e) { /* user cancelled - don\'t dismiss */ }
+      _finishSharePrompt();
+    } catch(e) { /* user cancelled - don\'t dismiss, keep pending fn for next attempt */ }
   } else {
     try {
       await navigator.clipboard.writeText(`${shareText} ${url}`);
@@ -15516,31 +16167,106 @@ async function doShare() {
     copied.textContent = state.lang === 'en' ? 'Link copied!' : 'הקישור הועתק';
     copied.style.display = 'block';
     try { localStorage.setItem(`corpus_share_shown_${state.subject || 'philosophy'}`, '1'); } catch(e) {}
-    setTimeout(() => document.getElementById('modal-share').classList.remove('active'), 1800);
+    setTimeout(() => {
+      document.getElementById('modal-share').classList.remove('active');
+      _finishSharePrompt();
+    }, 1800);
   }
 }
 
 function skipShare() {
   try { localStorage.setItem(`corpus_share_shown_${state.subject || 'philosophy'}`, '1'); } catch(e) {}
   document.getElementById('modal-share').classList.remove('active');
+  _finishSharePrompt();
 }
 
 function closeLevelUp() {
   document.getElementById('modal-levelup').classList.remove('active');
 }
 
-function openThinkerModal(id) {
+// Given a thinker id, return the week id where they first appear (the day
+// whose thinkerId matches). Searches both subject data sources so a locked
+// teaser can name the chapter regardless of which subject is active. Returns
+// null if no day references this thinker (upcoming/unassigned).
+function _chapterForThinker(thinkerId) {
+  const sources = [
+    (typeof corpusData !== 'undefined') ? corpusData : null,
+    (typeof economicsData !== 'undefined') ? economicsData : null,
+  ];
+  for (const src of sources) {
+    if (!src || !Array.isArray(src.weeks)) continue;
+    for (const week of src.weeks) {
+      if (!week || !Array.isArray(week.days)) continue;
+      for (const day of week.days) {
+        if (day && day.thinkerId === thinkerId) return week.id;
+      }
+    }
+  }
+  return null;
+}
+
+// openThinkerModal(id, options?)
+// options.locked === true → teaser variant: name (with lock glyph), era, and
+// the full bio all render exactly like the unlocked variant. Portrait + emoji
+// are hidden entirely (reveal is saved for the actual unlock), quote is
+// hidden, and a small "Unlocks in Chapter X" line renders under the bio via
+// #thinker-modal-lock-line. All other paths (options omitted / options.locked
+// falsy) render the full unlocked variant exactly as before.
+function openThinkerModal(id, options) {
   const t = getT().find(x => x.id === id);
   if (!t) return;
-  try { posthog.capture('thinker_card_opened', { thinker: t.id }); } catch(e) {}
-  document.getElementById('thinker-modal-name').textContent = t.name;
-  document.getElementById('thinker-modal-era').textContent = t.era;
-  document.getElementById('thinker-modal-bio').textContent = t.bio;
-  document.getElementById('thinker-modal-quote').textContent = t.quote;
+  const opts = options || {};
+  const locked = !!opts.locked;
+  const isEn = state.lang === 'en';
+  try { posthog.capture('thinker_card_opened', { thinker: t.id, locked: locked }); } catch(e) {}
+
+  const modalBox = document.querySelector('#modal-thinker .modal-box');
+  modalBox.classList.toggle('locked', locked);
+
+  // Name: append a small lock glyph in the locked teaser.
+  const nameEl = document.getElementById('thinker-modal-name');
+  if (locked) {
+    nameEl.innerHTML = `${t.name} <svg class="thinker-modal-lock-glyph" viewBox="0 0 64 64" width="14" height="14" aria-hidden="true"><use href="#ic-lock"/></svg>`;
+  } else {
+    nameEl.textContent = t.name;
+  }
+  document.getElementById('thinker-modal-era').textContent = t.era || '';
+
+  // Body: both variants show the full bio. The locked teaser adds a small
+  // secondary "Unlocks in Chapter X" line below and hides the quote entirely;
+  // the unlocked variant hides the lock line and shows the quote as before.
+  const bioEl = document.getElementById('thinker-modal-bio');
+  const quoteEl = document.getElementById('thinker-modal-quote');
+  const lockLineEl = document.getElementById('thinker-modal-lock-line');
+  bioEl.textContent = t.bio || '';
+  bioEl.style.display = '';
+  if (locked) {
+    const chapterId = _chapterForThinker(t.id);
+    const chapterText = chapterId
+      ? (isEn ? `Unlocks in Chapter ${chapterId}` : `נפתח בפרק ${chapterId}`)
+      : (isEn ? 'Unlocks later' : 'ייפתח בהמשך');
+    if (lockLineEl) {
+      lockLineEl.textContent = chapterText;
+      lockLineEl.style.display = '';
+    }
+    quoteEl.style.display = 'none';
+  } else {
+    if (lockLineEl) lockLineEl.style.display = 'none';
+    quoteEl.textContent = t.quote || '';
+    quoteEl.style.display = '';
+  }
+
+  // Portrait / emoji: locked teaser hides both entirely so the reveal is
+  // saved for the actual unlock. The has-portrait layout class is removed so
+  // padding matches the "no image" default (avoids a floating gap at the top).
   const portrait = document.getElementById('thinker-modal-portrait');
   const emojiEl = document.getElementById('thinker-modal-emoji');
-  const modalBox = document.querySelector('#modal-thinker .modal-box');
-  if (t.image) {
+  if (locked) {
+    portrait.innerHTML = '';
+    emojiEl.textContent = '';
+    emojiEl.style.display = 'none';
+    modalBox.classList.remove('has-portrait');
+  } else if (t.image) {
     portrait.innerHTML = `<img class="thinker-modal-portrait-full" src="${t.image}" alt="${t.name}">`;
     emojiEl.textContent = '';
     emojiEl.style.display = 'none';
@@ -15552,16 +16278,28 @@ function openThinkerModal(id) {
     modalBox.classList.remove('has-portrait');
   }
   document.getElementById('modal-thinker').classList.add('active');
+  // Lock body scroll so the home/pantheon list underneath can't be scrolled
+  // through the modal backdrop on iOS. Matches showBonusPicker/closeBonusPicker
+  // at index.html:14574 / :14579.
+  document.body.style.overflow = 'hidden';
 }
 
 function closeThinkerModal() {
   document.getElementById('modal-thinker').classList.remove('active');
+  document.body.style.overflow = '';
 }
 
 // Close modal on overlay click
 document.querySelectorAll('.modal-overlay').forEach(m => {
   if (m.id === 'modal-quiz-feedback') return; // only dismiss via המשך button
   if (m.id === 'modal-share') return; // only dismiss via share or skip buttons
+  // Guest signup dismisses only through the explicit "Maybe later" or sign-in
+  // paths. A backdrop tap here previously removed .active without firing
+  // _guestSignupPendingFn, so the continuation chain (share → streak →
+  // openReader on Next-Dialogue) silently died. Excluding it forces the user
+  // through dismissGuestSignupPrompt or a sign-in button, both of which call
+  // closeGuestSignupPrompt → invokes the pending continuation exactly once.
+  if (m.id === 'modal-guest-signup') return;
   m.addEventListener('click', e => {
     if (e.target === m) {
       m.classList.remove('active');
@@ -16474,6 +17212,21 @@ function initUI() {
         } catch(e) {
           console.error('[Auth] SocialLogin init failed:', e);
         }
+
+        // Foreground-presentation for the daily reminder: if the notification
+        // fires while the app is visible, iOS's default behavior is to swallow
+        // it silently. Surface it as an in-app toast so the user (and any
+        // developer testing with the app open) sees confirmation.
+        if (_isNotifPluginAvailable()) {
+          try {
+            window.Capacitor.Plugins.LocalNotifications.addListener('localNotificationReceived', (n) => {
+              try { showStreakToast((n && n.body) || 'Corpus'); } catch(e) {}
+            });
+            console.log('[Reminder] foreground presentation listener installed');
+          } catch(e) {
+            console.error('[Reminder] listener install failed:', e);
+          }
+        }
       }
 
       // Handle email verification redirect (access_token in URL hash)
@@ -16580,7 +17333,7 @@ function renderPantheon() {
         </div>`;
     }
     return `
-      <div class="pantheon-card locked">
+      <div class="pantheon-card locked" onclick="openThinkerModal('${t.id}', {locked: true})">
         <div class="pantheon-card-inner">
           <div class="pantheon-card-front">
             <img src="${t.image}" alt="${t.name}" onerror="this.style.display='none'">
@@ -17008,7 +17761,29 @@ function showBonusTooltip(card, text) {
   tip.style.left = (cardRect.left + cardRect.width / 2 - wrapRect.left) + 'px';
   tip.style.top = (cardRect.bottom - wrapRect.top + 12) + 'px';
   tip.style.transform = 'translate(-50%, 0)';
+  // Reset any previous clamp so measurement below reflects the natural
+  // centered position before we decide whether it needs to shift.
+  tip.style.removeProperty('--tail-offset');
   tip.classList.add('show');
+  // Clamp the tooltip so it stays at least 8px inside both viewport edges.
+  // Because transform is translate(-50%, 0), tip.style.left is the horizontal
+  // center. We shift the tooltip by the overflow amount, then offset the
+  // arrow (::before) by the opposite so it still points at the card center.
+  // rAF gives the browser one frame to lay out the tooltip so getBoundingClientRect
+  // returns final dimensions.
+  requestAnimationFrame(() => {
+    const tipRect = tip.getBoundingClientRect();
+    const overflowRight = tipRect.right - (window.innerWidth - 8);
+    const overflowLeft  = 8 - tipRect.left;
+    let shift = 0;
+    if (overflowRight > 0) shift = -overflowRight;
+    else if (overflowLeft > 0) shift = overflowLeft;
+    if (shift !== 0) {
+      const currentLeft = parseFloat(tip.style.left) || 0;
+      tip.style.left = (currentLeft + shift) + 'px';
+      tip.style.setProperty('--tail-offset', (-shift) + 'px');
+    }
+  });
   clearTimeout(tip._timer);
   tip._timer = setTimeout(() => tip.classList.remove('show'), 3000);
 }
@@ -17126,10 +17901,19 @@ function hideLevelUp() {
     if (chest) chest.classList.remove('dismissing');
   }, 350);
 
-  // Guest sign-in nudge AFTER the celebration closes. Cadence is gated by
-  // maybeShowGuestPrompt — if a chapter_complete prompt already fired today,
-  // this is a silent no-op.
-  setTimeout(() => maybeShowGuestPrompt(null, 'level_up'), 400);
+  // Guest sign-in nudge AFTER the celebration closes. NEVER navigates the
+  // user — showLevelUp is scheduled setTimeout(..., 3500) from finishDay
+  // (see line ~15302), so by the time the user taps the chest they may have
+  // already started a NEW dialogue. Calling goHome() from here would yank
+  // them mid-dialogue to show a signup prompt, which is worse than missing
+  // the prompt. Only fire when the user is verifiably sitting on home with
+  // no day-complete modal open. Cadence still gated by maybeShowGuestPrompt.
+  setTimeout(() => {
+    const completeModal = document.getElementById('modal-complete');
+    if (completeModal && completeModal.classList.contains('active')) return;
+    if (state.currentScreen !== 'home') return;
+    maybeShowGuestPrompt(null, 'level_up');
+  }, 400);
 }
 
 function addXP(amount) {
