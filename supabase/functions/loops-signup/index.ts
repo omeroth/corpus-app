@@ -144,8 +144,18 @@ serve(async (req: Request): Promise<Response> => {
   const fullName = String(meta.full_name || meta.name || "").trim();
   const firstName = fullName.split(/\s+/)[0] || "";
 
+  // Signup method — auth.users.raw_app_meta_data.provider is populated by GoTrue
+  // on every insert: 'email' for email/password, 'google' / 'apple' for OAuth.
+  // Forward it as a custom Loops contact property so onboarding emails can
+  // segment on signup channel (e.g. skip "confirm your email" for OAuth users).
+  // The trigger already includes the full row via row_to_json(NEW), so no
+  // migration is needed — the field is present on the webhook payload today.
+  const appMeta = (record.raw_app_meta_data || {}) as Record<string, unknown>;
+  const provider = typeof appMeta.provider === "string" ? appMeta.provider : "";
+
   const body: Record<string, string> = { email, source: "app_signup" };
   if (firstName) body.firstName = firstName;
+  if (provider) body.signupMethod = provider;
 
   const loopsHeaders = {
     "Content-Type": "application/json",
