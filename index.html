@@ -2662,14 +2662,28 @@
     font-weight: 600;
     margin-bottom: 8px;
   }
+  /* Applied to both <div> variants (logout/delete-account cancel) and the
+     <button> variant used for the guest-signup "Maybe later". Reset button
+     defaults so the button variant renders identically to the div, and
+     enforce a 44px min-height for a forgiving Android emulator tap target. */
   .share-modal-skip {
-    margin-top: 14px;
+    display: block;
+    margin: 14px auto 0;
+    font-family: inherit;
     font-size: 14px;
     color: var(--text-muted);
+    background: none;
+    border: none;
     cursor: pointer;
-    padding: 6px;
+    padding: 12px 16px;
+    min-height: 44px;
     text-decoration: underline;
     text-underline-offset: 3px;
+    -webkit-tap-highlight-color: rgba(var(--accent-rgb), 0.15);
+    /* Guarantees the element is its own hit-target and can't be shadowed by
+       a sibling with a taller stacking context. */
+    position: relative;
+    z-index: 1;
   }
   .share-modal-copied {
     display: none;
@@ -2894,16 +2908,38 @@
     padding: calc(20px + var(--safe-top)) 20px calc(20px + var(--safe-bottom));
   }
   .modal-overlay.active { display: flex; }
-  /* Android WebView: kill backdrop-filter blur — it's GPU-heavy on Chromium
-     compositor, causes main-thread jank around composited frames, and holds
-     input events on the queue (users tap Continue on the quiz-feedback modal
-     and it doesn't respond for a beat). Compensate the missing blur with a
-     darker semi-opaque scrim so the underlying content is still masked. iOS
-     WebKit handles the blur fine and keeps the polished look. */
-  html.platform-android .modal-overlay {
+  /* Android WebView: kill backdrop-filter blur on EVERY fullscreen overlay.
+     Blur is GPU-heavy on Chromium compositor, causes main-thread jank around
+     composited frames, and holds input events on the queue — taps on modal
+     buttons don't respond for a beat, which read as "unresponsive" (see the
+     original quiz-feedback ghost-tap report). iOS WebKit handles blur fine
+     and keeps the polished look. .guest-signup-overlay / .share-prompt-overlay
+     don't exist as classes today (both flows use .modal-overlay), but they're
+     listed for future-proofing so any dedicated class we add later is covered
+     automatically. */
+  html.platform-android .modal-overlay,
+  html.platform-android .guest-signup-overlay,
+  html.platform-android .share-prompt-overlay,
+  html.platform-android #thinker-intro,
+  html.platform-android .levelup-overlay {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+  }
+  /* Per-overlay solid-scrim fallback to replace the mask the blur was
+     providing. .levelup-overlay is already 95% opaque so no change needed;
+     #thinker-intro uses a solid gradient background so no fallback needed. */
+  html.platform-android .modal-overlay,
+  html.platform-android .guest-signup-overlay,
+  html.platform-android .share-prompt-overlay {
     background: rgba(61, 31, 122, 0.72);
+  }
+  /* Dark-mode scrim swap — the purple-tinted scrim above reads too warm on a
+     dark app background; use a neutral near-black tint so modals feel like
+     they float over the dark surface rather than glow purple. */
+  html.dark.platform-android .modal-overlay,
+  html.dark.platform-android .guest-signup-overlay,
+  html.dark.platform-android .share-prompt-overlay {
+    background: rgba(6, 4, 18, 0.78);
   }
 
   /* Chapter-complete overlay — reuses .dc-screen/.dc-stats-screen styling; only positioning here */
@@ -6186,8 +6222,8 @@
 <div class="modal-overlay" id="modal-share">
   <div class="modal-box share-modal-box">
     <div id="share-text" class="share-modal-text"></div>
-    <button class="nav-btn" id="share-btn" onclick="doShare()"></button>
-    <div id="share-skip" class="share-modal-skip" onclick="skipShare()"></div>
+    <button class="nav-btn" id="share-btn" onclick="_shareModalTap('share')"></button>
+    <div id="share-skip" class="share-modal-skip" onclick="_shareModalTap('skip')"></div>
     <div id="share-copied" class="share-modal-copied"></div>
   </div>
 </div>
@@ -6196,14 +6232,14 @@
   <div class="modal-box">
     <div class="modal-title" id="guest-signup-title">Save your progress</div>
     <div class="modal-subtitle" id="guest-signup-body">Nice start. Create a free account so your progress is always here.</div>
-    <button class="nav-btn auth-btn-social" onclick="closeGuestSignupPrompt(); authWithGoogle();" style="margin-top:16px;">
+    <button class="nav-btn auth-btn-social" id="guest-signup-google-btn" onclick="_guestSignupTap('google')" style="margin-top:16px;">
       <span class="auth-social-icon">G</span> Continue with Google
     </button>
-    <button class="nav-btn auth-btn-social auth-btn-apple" onclick="closeGuestSignupPrompt(); authWithApple();" style="margin-top:8px;">
+    <button class="nav-btn auth-btn-social auth-btn-apple" id="guest-signup-apple-btn" onclick="_guestSignupTap('apple')" style="margin-top:8px;">
       <span class="auth-social-icon"><svg width="14" height="17" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg></span> Continue with Apple
     </button>
-    <button class="nav-btn" id="guest-signup-email-btn" onclick="closeGuestSignupPrompt(); setAuthMode('signup'); showAuthScreen();" style="margin-top:10px;">Sign up with email</button>
-    <div class="share-modal-skip" id="guest-signup-skip" onclick="dismissGuestSignupPrompt();">Maybe later</div>
+    <button class="nav-btn" id="guest-signup-email-btn" onclick="_guestSignupTap('email')" style="margin-top:10px;">Sign up with email</button>
+    <button type="button" class="share-modal-skip" id="guest-signup-skip" onclick="_guestSignupTap('skip')">Maybe later</button>
   </div>
 </div>
 
@@ -16390,6 +16426,9 @@ function maybeShowGuestPrompt(callback, trigger) {
 let _guestSignupPendingFn = null;
 function showGuestSignupPrompt(originalFn, trigger) {
   _guestSignupPendingFn = originalFn || null;
+  // Reset the tap-dispatch guard so the buttons register again on this new
+  // open. Without the reset a modal reused across triggers would ignore taps.
+  _guestSignupClosing = false;
   // Close the day-complete screen so the prompt isn't hidden behind it
   const completeModal = document.getElementById('modal-complete');
   if (completeModal) completeModal.classList.remove('active');
@@ -16441,6 +16480,12 @@ function showGuestSignupPrompt(originalFn, trigger) {
 }
 function closeGuestSignupPrompt() {
   document.getElementById('modal-guest-signup').classList.remove('active');
+  // Reset the tap-dispatch guard here (in addition to the reset at the top of
+  // showGuestSignupPrompt) so that if the modal is closed but not immediately
+  // reopened, a stale true value can never persist and permanently swallow
+  // the next open's first tap. Covers the user-reported "Maybe later dead"
+  // failure mode.
+  _guestSignupClosing = false;
   const fn = _guestSignupPendingFn;
   _guestSignupPendingFn = null;
   if (typeof fn === 'function') fn();   // continue the original post-dialogue flow
@@ -16453,6 +16498,38 @@ function dismissGuestSignupPrompt() {
   saveStateLocal();
   try { posthog.capture('guest_prompt_dismissed', { dismiss_count: state.guestPrompt.dismissCount }); } catch(e) {}
   closeGuestSignupPrompt();
+}
+
+// Central tap dispatch for the guest-signup modal buttons. All four buttons
+// (Google / Apple / email / Maybe later) route through here so we can:
+//   1. Guard against Android WebView double-firing touchend + synthetic click
+//      via the _guestSignupClosing flag (reset in showGuestSignupPrompt).
+//   2. Keep one place that composes the "close modal → fire action" sequence,
+//      which for sign-in paths is closeGuestSignupPrompt() (invokes the
+//      pending continuation) and for Maybe later is dismissGuestSignupPrompt()
+//      (increments the dismiss counter FIRST, then invokes the continuation).
+//   3. Guarantee the prompt-chain continuation still runs exactly once — the
+//      pending fn is cleared inside closeGuestSignupPrompt on the first call,
+//      so a stray second fire is a no-op.
+let _guestSignupClosing = false;
+function _guestSignupTap(kind) {
+  if (_guestSignupClosing) return;
+  _guestSignupClosing = true;
+  if (kind === 'google') { closeGuestSignupPrompt(); authWithGoogle(); }
+  else if (kind === 'apple') { closeGuestSignupPrompt(); authWithApple(); }
+  else if (kind === 'email') { closeGuestSignupPrompt(); setAuthMode('signup'); showAuthScreen(); }
+  else if (kind === 'skip') { dismissGuestSignupPrompt(); }
+}
+
+// Same shape for the share prompt's two actions. doShare and skipShare each
+// close the modal + fire _finishSharePrompt exactly once, so the guard here
+// only exists to swallow a synthetic-click double-fire on Android.
+let _sharePromptClosing = false;
+function _shareModalTap(kind) {
+  if (_sharePromptClosing) return;
+  _sharePromptClosing = true;
+  if (kind === 'share') { doShare(); }
+  else if (kind === 'skip') { skipShare(); }
 }
 
 function showLogoutConfirm() {
@@ -16508,12 +16585,17 @@ function getShareUrl() {
 // user has actually interacted with the share prompt.
 let _sharePromptPendingFn = null;
 function _finishSharePrompt() {
+  // Mirror the guest-signup guard reset in closeGuestSignupPrompt — clears
+  // the tap-dispatch guard on modal close so a stale true value can't leave
+  // the share prompt's Share/Skip buttons deaf on a subsequent appearance.
+  _sharePromptClosing = false;
   const fn = _sharePromptPendingFn;
   _sharePromptPendingFn = null;
   if (typeof fn === 'function') fn();
 }
 
 function showSharePrompt(onDone) {
+  _sharePromptClosing = false;
   const subject = state.subject || 'philosophy';
   const flagKey = `corpus_share_shown_${subject}`;
   try {
@@ -17730,6 +17812,40 @@ function initUI() {
           closeQuizFeedbackModal();
         }, { passive: false });
       }
+    } catch(e) {}
+    // Same touchend+preventDefault treatment for the guest-signup and share
+    // prompt buttons. On Android WebView, click dispatch can lag hundreds of
+    // ms behind the actual touch under GPU load (the same root cause as the
+    // qfm ghost-tap fix), which reads as "the popup ignored my tap". Firing
+    // on touchend + preventDefault suppresses the synthetic click AND runs
+    // the handler immediately; the _guestSignupClosing / _sharePromptClosing
+    // flags guard against WebView variants where preventDefault doesn't
+    // suppress the click (the second call is then a no-op).
+    try {
+      [
+        ['guest-signup-google-btn', 'google'],
+        ['guest-signup-apple-btn', 'apple'],
+        ['guest-signup-email-btn', 'email'],
+        ['guest-signup-skip', 'skip'],
+      ].forEach(function(pair) {
+        const el = document.getElementById(pair[0]);
+        if (!el) return;
+        el.addEventListener('touchend', function(e) {
+          e.preventDefault();
+          _guestSignupTap(pair[1]);
+        }, { passive: false });
+      });
+      [
+        ['share-btn', 'share'],
+        ['share-skip', 'skip'],
+      ].forEach(function(pair) {
+        const el = document.getElementById(pair[0]);
+        if (!el) return;
+        el.addEventListener('touchend', function(e) {
+          e.preventDefault();
+          _shareModalTap(pair[1]);
+        }, { passive: false });
+      });
     } catch(e) {}
     loadState();
     // Apply appearance BEFORE any user-visible render so the app boots in the
