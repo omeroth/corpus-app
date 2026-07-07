@@ -1025,6 +1025,30 @@
   }
   .pf-settings-btn > svg:first-child { color: var(--accent); flex-shrink: 0; }
   .pf-settings-btn > span { flex: 1; }
+  /* Profile share row — same shape as .pf-settings-btn (surface card, accent
+     rim, accent icon, accent-dark label) so it fits the profile's row rhythm.
+     Sits above the Settings collapsible. */
+  .pf-share-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: calc(100% - 32px);
+    margin: 12px 16px 0;
+    padding: 14px 20px;
+    background: var(--surface);
+    border: 1.5px solid rgba(var(--accent-rgb), 0.18);
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    font-family: inherit;
+    text-align: start;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .pf-share-btn:active { transform: scale(0.98); }
+  .pf-share-btn > svg:first-child { color: var(--accent); flex-shrink: 0; }
+  .pf-share-btn > span { flex: 1; }
   .pf-settings-chevron {
     color: var(--accent-muted);
     flex-shrink: 0;
@@ -4226,6 +4250,31 @@
   }
   #dc-stats-back-home:active,
   #chapter-back-home-btn:active { opacity: 0.65; }
+  /* Secondary share action on completion modal. Lower visual weight than the
+     Continue button but more affordance than a plain text link — a soft
+     accent-tinted pill matches the streak/XP token language and reads well
+     in both light and dark. */
+  .dc-share-btn {
+    margin-top: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    background: rgba(var(--accent-rgb), 0.10);
+    color: var(--accent);
+    border: 1px solid rgba(var(--accent-rgb), 0.25);
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    opacity: 0;
+    animation: dc-fade-up 0.5s ease-out 2.6s forwards;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.15s;
+  }
+  .dc-share-btn:hover { filter: brightness(1.05); }
+  .dc-share-btn:active { transform: scale(0.94); }
+  .dc-share-btn svg { flex-shrink: 0; }
   /* Thinker screen */
   .dc-thinker-screen {
     justify-content: flex-start;
@@ -5884,6 +5933,20 @@
       <div class="pf-week-row" id="pf-week-row"></div>
     </div>
 
+    <!-- Share Corpus row — permanent, always-visible CTA above the Settings
+         collapsible. Styled to match .pf-settings-btn so the row rhythm holds.
+         Fires shareCorpusFromProfile() → navigator.share with the generic
+         Corpus message; does NOT touch the corpus_share_shown_* localStorage
+         flag so it never interferes with the one-time share prompt after
+         dialogue 3. -->
+    <button class="pf-share-btn" id="pf-share-btn" onclick="shareCorpusFromProfile()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+      </svg>
+      <span id="pf-share-btn-label">שתפו את Corpus עם חברים</span>
+    </button>
+
     <!-- Settings (הגדרות) — collapsible group holding Language + Notifications.
          The inner .pf-lang-section and .pf-reminder-section are byte-for-byte
          the same as before this refactor; only their parent wrapper is new,
@@ -6043,6 +6106,18 @@
     </div>
     <button class="dc-continue-btn" id="dc-stats-continue"></button>
     <button id="dc-stats-back-home" style="display:none"></button>
+    <!-- Secondary "Share" action. Sits below the two primary CTAs on the
+         completion modal. Fires shareCompletion() which composes a message
+         from the just-completed day's thinker + title, invokes the OS share
+         sheet via navigator.share, and does NOT close the modal or run the
+         prompt-chain continuation — this is a side action. -->
+    <button class="dc-share-btn" id="dc-share-btn" onclick="shareCompletion()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+      </svg>
+      <span id="dc-share-btn-label">שתפו</span>
+    </button>
   </div>
   <!-- MOMENT 2: Thinker Card -->
   <div class="dc-screen dc-thinker-screen" id="dc-thinker-screen" style="display:none">
@@ -16423,7 +16498,7 @@ function getShareUrl() {
   if (_isNative && window.Capacitor.getPlatform() === 'ios') {
     return 'https://apps.apple.com/app/id6781227385';
   }
-  return 'https://corpusapp.io/#';
+  return 'https://corpusapp.io';
 }
 
 // Pending onDone callback for the share modal. Set by showSharePrompt, fired
@@ -16471,6 +16546,91 @@ function showSharePrompt(onDone) {
   document.getElementById('share-skip').textContent = isEn ? 'Skip' : 'דלג';
   document.getElementById('share-copied').style.display = 'none';
   document.getElementById('modal-share').classList.add('active');
+}
+
+// Permanent share buttons — separate plumbing from the one-time share PROMPT
+// (doShare / skipShare / _finishSharePrompt) so these can be tapped freely
+// without touching the corpus_share_shown_* flag or the post-dialogue prompt
+// chain. Two public entry points:
+//   shareCompletion()        — completion-modal button; message names the
+//                              just-completed dialogue's thinker + title.
+//   shareCorpusFromProfile() — profile row button; generic message.
+//
+// Both funnel through _shareCorpus(source, text) which invokes navigator.share
+// or falls back to clipboard, and emits a share_initiated PostHog event with
+// { source, method }. Neither path stamps localStorage or fires the prompt-
+// chain continuation.
+
+async function _shareCorpus(source, text) {
+  const url = getShareUrl();
+  const full = text + ' ' + url;
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'Corpus', text: text, url });
+      try { posthog.capture('share_initiated', { source: source, method: 'native' }); } catch(e) {}
+    } catch(e) {
+      // User cancelled the OS share sheet — normal, no telemetry, no fallback.
+    }
+    return;
+  }
+  // No navigator.share (older Android / desktop). Clipboard fallback with a
+  // brief in-app toast so the user knows it worked.
+  try {
+    await navigator.clipboard.writeText(full);
+  } catch(e) {
+    const ta = document.createElement('textarea');
+    ta.value = full;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+  try { posthog.capture('share_initiated', { source: source, method: 'clipboard' }); } catch(e) {}
+  try {
+    const msg = state.lang === 'en' ? 'Link copied!' : 'הקישור הועתק';
+    showStreakToast(msg);
+  } catch(e) {}
+}
+
+// Reads the current day (state.currentWeek / state.currentDay) to build a
+// contextual completion message. Falls back to the generic message if the
+// day has no thinkerId or the lookup can't resolve the title.
+function shareCompletion() {
+  const chapter = getW().find(w => w.id === state.currentWeek);
+  const day = chapter ? chapter.days.find(d => d.id === state.currentDay) : null;
+  const isEn = state.lang === 'en';
+  let title = day ? (isEn ? (day.titleEn || day.title) : (day.title || day.titleEn)) : '';
+  // The dialogue title is phrased as a question — keep the author's own end
+  // punctuation if present (?, !, ., …), otherwise append the Hebrew/English
+  // question mark to match the "השאלה:/on:" framing of the message.
+  if (title) {
+    const trimmed = title.trim();
+    const lastChar = trimmed.slice(-1);
+    if (!/[?!.…؟]/.test(lastChar)) title = trimmed + (isEn ? '?' : '?');
+    else title = trimmed;
+  }
+  let thinkerName = '';
+  if (day && day.thinkerId) {
+    const t = getT().find(x => x.id === day.thinkerId);
+    if (t) thinkerName = t.name;
+  }
+  let text;
+  if (title && thinkerName) {
+    text = isEn
+      ? `Just finished a dialogue with ${thinkerName} on: ${title} Try Corpus too:`
+      : `סיימתי עכשיו דיאלוג עם ${thinkerName} על השאלה: ${title} נסה גם את Corpus:`;
+  } else {
+    text = isEn
+      ? 'Just finished a dialogue on Corpus. Try Corpus too:'
+      : 'סיימתי עכשיו דיאלוג ב-Corpus. נסה גם את Corpus:';
+  }
+  _shareCorpus('completion_modal', text);
+}
+
+function shareCorpusFromProfile() {
+  const text = state.lang === 'en'
+    ? "History's biggest ideas in 5 minutes a day — check out Corpus:"
+    : 'הרעיונות הגדולים בהיסטוריה ב-5 דקות ביום — תראו את Corpus:';
+  _shareCorpus('profile', text);
 }
 
 async function doShare() {
@@ -18043,6 +18203,12 @@ function updateLangUI() {
   if (checkEn) checkEn.textContent = isEn ? '✓' : '';
   updateReminderUI();
   _updateAppearanceUI();
+  // Localize the permanent share entry points. The completion-modal label is
+  // touched here too so a mid-lesson language flip keeps its text current.
+  const pfShareLabel = document.getElementById('pf-share-btn-label');
+  if (pfShareLabel) pfShareLabel.textContent = isEn ? 'Share Corpus with friends' : 'שתפו את Corpus עם חברים';
+  const dcShareLabel = document.getElementById('dc-share-btn-label');
+  if (dcShareLabel) dcShareLabel.textContent = isEn ? 'Share' : 'שתפו';
 }
 
 function updateReminderUI() {
