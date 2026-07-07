@@ -15,6 +15,60 @@
     --amber:#F59E0B;
     --pink:#FF6FA8;
   }
+  /* Dark palette — mirrors the parent app's philosophy dark tokens so the
+     onboarding feels contiguous with the app the user is about to enter.
+     Slide 1 (starry night) is already deep; only slides 2 & 3 need their
+     "daylight" backgrounds swapped for twilight. */
+  html.dark{
+    --ink:#F5F1FF;
+    --purple:#9D7AE8;
+    --purple-light:#B995F3;
+    --lilac:#C9AEF7;
+    --bg:#1A1430;
+    color-scheme:dark;
+  }
+  html.dark body{background:#0E0626}
+  html.dark .phone{background:var(--bg)}
+  /* Slide 2 — daylight → deep twilight. Same radial-gradient shape, dark stops. */
+  html.dark .s2{
+    background:
+      radial-gradient(ellipse at 50% 18%,#2E1E5C 0%,transparent 60%),
+      radial-gradient(ellipse at 90% 90%,#3A2570 0%,transparent 55%),
+      linear-gradient(180deg,#1A1430 0%,#241B42 100%);
+    color:var(--ink);
+  }
+  html.dark .s2 .copy h1{color:var(--ink)}
+  html.dark .s2 .copy p{color:#C9BFE4}
+  html.dark .s2 .topic{background:#241B42;border-color:rgba(255,255,255,.1);color:var(--ink);
+    box-shadow:0 8px 22px -8px rgba(0,0,0,.5)}
+  html.dark .s2 .cta-primary{background:var(--purple);color:#FFFFFF;
+    box-shadow:0 14px 32px -10px rgba(0,0,0,.6),inset 0 -3px 0 rgba(0,0,0,.25)}
+  /* Slide 3 — rewards celebration → moonlit sky. */
+  html.dark .s3{
+    background:
+      radial-gradient(ellipse at 50% 12%,#3A2A5C 0%,transparent 50%),
+      radial-gradient(ellipse at 12% 88%,#3A1D42 0%,transparent 55%),
+      linear-gradient(180deg,#1A1430 0%,#241B42 100%);
+    color:var(--ink);
+  }
+  html.dark .s3 .copy h1{color:var(--ink)}
+  html.dark .s3 .copy p{color:#C9BFE4}
+  html.dark .s3 .cta-primary{background:linear-gradient(180deg,#FFB74A 0%,#F59E0B 100%);
+    color:#3A1B00;
+    box-shadow:0 16px 38px -8px rgba(0,0,0,.7),
+      inset 0 -4px 0 rgba(154,82,0,.4),
+      inset 0 2px 0 rgba(255,255,255,.35);}
+  html.dark .s3 .badge{background:#241B42;color:var(--ink);
+    box-shadow:0 14px 32px -10px rgba(0,0,0,.6)}
+  /* Top-chrome dark-slide detection already flips dots + skip to the
+     purple ink; in dark mode the "dark" class only fires on slides 2/3
+     which are now also dark, so re-map to a light-on-dark treatment. */
+  html.dark .top.dark .dot{background:rgba(255,255,255,.28)}
+  html.dark .top.dark .dot.active{background:#FFFFFF}
+  html.dark .top.dark .dot.done{background:rgba(255,255,255,.7)}
+  html.dark .top.dark .skip{color:rgba(255,255,255,.85)}
+  html.dark .nudge{background:#241B42;color:var(--ink);
+    box-shadow:0 14px 36px -8px rgba(0,0,0,.6)}
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{font-family:'Inter',sans-serif;color:var(--ink);direction:ltr;text-align:left;
     -webkit-font-smoothing:antialiased;height:100%;overflow:hidden;background:#0E0626}
@@ -617,6 +671,25 @@
 </template>
 
 <script>
+  // ===== Appearance bridge with the parent app =====
+  // The parent (index.html) points the iframe src at
+  // Onboarding_new.html?appearance=<light|dark> based on state.appearance
+  // (resolving 'system' via prefers-color-scheme first). It also postMessages
+  // { type:'appearance', mode } on live changes so we can update in place
+  // without reload. Dark overrides in <style> below key off html.dark.
+  (function applyInitialAppearance(){
+    try {
+      const params = new URLSearchParams(location.search);
+      const mode = params.get('appearance');
+      if (mode === 'dark') document.documentElement.classList.add('dark');
+    } catch(e) {}
+  })();
+  window.addEventListener('message', function(e){
+    if (e && e.data && e.data.type === 'appearance') {
+      document.documentElement.classList.toggle('dark', e.data.mode === 'dark');
+    }
+  });
+
   // ===== Mount owls =====
   const expressions = ['owl-neutral','owl-admiring','owl-action'];
   const tpl = document.getElementById('owl-template');

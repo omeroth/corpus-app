@@ -60,6 +60,32 @@
     --accent-bar-bg: #F8F5FF;
     --red: #EF5350;
     --red-light: #FFEBEE;
+    /* Semantic status tokens — added for dark-mode phase 1. Values match the
+       hardcoded literals used across quiz feedback, auth success, and error
+       toasts today so this migration is pixel-identical. */
+    --success: #2E7D32;
+    --success-strong: #1B5E20;
+    --success-bg: #E8F5E9;
+    --success-border: #4CAF50;
+    --error: #C62828;
+    --error-strong: #B71C1C;
+    --error-bg: #FFEBEE;
+    --error-border: #EF5350;
+    --auth-success: #22c55e;
+    --auth-error: #ef4444;
+    /* Text color for elements sitting on top of --accent (buttons, level
+       badges, level-up modal). Stays white in BOTH light and dark modes so
+       accent-colored buttons keep their contrast. Distinct from --surface so
+       card backgrounds can darken without dragging button text down with them. */
+    --on-accent: #FFFFFF;
+    /* Treasure palette — recurring gold hexes used by mystery mark, bonus
+       unlock, chest, and streak flourishes. Extracted so dark mode can keep
+       them warm-gold while the surrounding chrome darkens. */
+    --treasure-gold: #D4AF37;
+    --treasure-light: #FFD982;
+    --treasure-rim: #C7892C;
+    --treasure-deep: #8B6914;
+    --treasure-shadow: #6B5010;
     --radius: 20px;
     --shadow: 0 4px 20px rgba(61,31,122,0.1);
     --shadow-lg: 0 8px 40px rgba(61,31,122,0.15);
@@ -71,6 +97,9 @@
 
   html.theme-philosophy,
   #screen-subject.theme-philosophy {
+    /* Card / modal / topbar surface. Same value as :root today; declared here
+       so the html.dark.theme-* layer can override it per subject if needed. */
+    --surface: #FFFFFF;
     --accent: #7B4FD4;
     --accent-dark: #5A35A8;
     --accent-muted: #9B7FC9;
@@ -106,6 +135,7 @@
 
   html.theme-economics,
   #screen-subject.theme-economics {
+    --surface: #FFFFFF;
     --accent: #2563EB;
     --accent-dark: #1E3A8A;
     --accent-muted: #7BA3E8;
@@ -139,6 +169,7 @@
 
   html.theme-psychology,
   #screen-subject.theme-psychology {
+    --surface: #FFFFFF;
     --accent: #F59E0B;
     --accent-dark: #92400E;
     --accent-muted: #FBBF77;
@@ -168,6 +199,148 @@
     /* Mystery-mark gold gradient tinted 15% toward --accent (amber nuance). */
     --mystery-top: #FDDD90;
     --mystery-bottom: #CE7F07;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     DARK MODE — html.dark.theme-* overrides
+     ═══════════════════════════════════════════════════════════════════════
+     Toggled by applyAppearance() based on state.appearance ('light' | 'dark'
+     | 'system'). Selector specificity (0,2,1) beats both :root (0,1,0) and
+     html.theme-* (0,1,1), so overrides land regardless of subject.
+
+     Palette philosophy:
+       - Deep subject-tinted surface (--bg → --surface → --surface-2 climb)
+       - Lifted accent (~15-25% brighter than light-mode base) to hold
+         contrast on dark ground
+       - Ink → light (was darkest; now lightest for text-on-dark)
+       - Muted text stays muted (~40-50% relative to text)
+       - Glow rgba stays saturated with higher alpha for visibility
+       - Shadows switch from tinted-dark to true-dark rgba
+
+     Status tokens (success/error) are shared across subjects — no per-theme
+     variants needed — so they live in a single html.dark rule that any
+     subject inherits. Treasure gold stays warm-gold in both modes. */
+
+  html.dark.theme-philosophy,
+  html.dark #screen-subject.theme-philosophy {
+    --bg: #1A1430;
+    --surface: #241B42;
+    --surface-2: #2E2255;
+    --border: #3D2F6B;
+    --border-deep: #52428A;
+    --text: #EDE8F7;
+    --ink: #F5F1FF;
+    --text-2: #C9BFE4;
+    --text-muted: #9A8DC0;
+    --accent: #9D7AE8;
+    --accent-dark: #7B4FD4;
+    --accent-muted: #7A66A8;
+    --accent-glow: rgba(157, 122, 232, 0.35);
+    --accent-rgb: 157, 122, 232;
+    --accent-tint: #322152;
+    --accent-tint-strong: #4A3378;
+    --accent-soft-border: #5A4098;
+    --accent-bar-bg: #241B42;
+    --purple: #9D7AE8;
+    --purple-light: #B995F3;
+    --lilac: #C9AEF7;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.6);
+    --card-front-bg: rgba(157, 122, 232, 0.10);
+    --card-back-bg-start: #241B42;
+    --card-back-bg-end: #2E2255;
+    --card-back-text: #EDE8F7;
+    /* Mystery gradient — same warm gold spec, slightly lifted for dark ground. */
+    --mystery-top: #F0DAB0;
+    --mystery-bottom: #C88025;
+  }
+
+  html.dark.theme-economics,
+  html.dark #screen-subject.theme-economics {
+    --bg: #0F1829;
+    --surface: #16233D;
+    --surface-2: #1D2E4F;
+    --border: #2A3F66;
+    --border-deep: #3D5688;
+    --text: #E8EDF7;
+    --ink: #F2F6FF;
+    --text-2: #BCCAE4;
+    --text-muted: #8CA0C4;
+    --accent: #5B8DF0;
+    --accent-dark: #2563EB;
+    --accent-muted: #4A6FB8;
+    --accent-glow: rgba(91, 141, 240, 0.35);
+    --accent-rgb: 91, 141, 240;
+    --accent-tint: #1D2E4F;
+    --accent-tint-strong: #2C4778;
+    --accent-soft-border: #3D5EA0;
+    --accent-bar-bg: #16233D;
+    --purple: #5B8DF0;
+    --purple-light: #7BA3F5;
+    --lilac: #9DBAFA;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.6);
+    --card-front-bg: rgba(91, 141, 240, 0.10);
+    --card-back-bg-start: #16233D;
+    --card-back-bg-end: #1D2E4F;
+    --card-back-text: #E8EDF7;
+    --mystery-top: #E0D2B2;
+    --mystery-bottom: #B57828;
+  }
+
+  html.dark.theme-psychology,
+  html.dark #screen-subject.theme-psychology {
+    /* Teal-tinted dark neutrals per Phase 2 brief (contrasts with amber accent
+       for a distinctive third-subject look — deep sea vs sunlit gold). */
+    --bg: #0F1A1F;
+    --surface: #172A32;
+    --surface-2: #1F3A45;
+    --border: #2D4F5C;
+    --border-deep: #416A78;
+    --text: #E8F1F5;
+    --ink: #F0F8FB;
+    --text-2: #B9CBD3;
+    --text-muted: #86A0AA;
+    --accent: #F5B94A;
+    --accent-dark: #F59E0B;
+    --accent-muted: #B08A45;
+    --accent-glow: rgba(245, 185, 74, 0.35);
+    --accent-rgb: 245, 185, 74;
+    --accent-tint: #2A2A18;
+    --accent-tint-strong: #4A3E1F;
+    --accent-soft-border: #7A5F28;
+    --accent-bar-bg: #172A32;
+    --purple: #F5B94A;
+    --purple-light: #FBC56C;
+    --lilac: #FDD89B;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.6);
+    --card-front-bg: rgba(245, 185, 74, 0.10);
+    --card-back-bg-start: #172A32;
+    --card-back-bg-end: #1F3A45;
+    --card-back-text: #E8F1F5;
+    --mystery-top: #F5D890;
+    --mystery-bottom: #C88028;
+  }
+
+  /* Status tokens (subject-agnostic) — lifted foregrounds + dark-tinted
+     backgrounds so quiz feedback banners stay readable on dark ground.
+     color-scheme flags UA-drawn form controls (time picker, checkbox thumb,
+     scroll bars) to render dark on iOS/Android/desktop. */
+  html.dark {
+    color-scheme: dark;
+    --success: #6EE087;
+    --success-strong: #A8F0BC;
+    --success-bg: #1B3320;
+    --success-border: #4CAF50;
+    --error: #F87171;
+    --error-strong: #FCA5A5;
+    --error-bg: #3A1D1D;
+    --error-border: #EF5350;
+    --auth-success: #4ADE80;
+    --auth-error: #F87171;
+    --red: #F87171;
+    --red-light: rgba(248, 113, 113, 0.14);
   }
 
   html {
@@ -252,8 +425,8 @@
     justify-self: center;
   }
   .stats-subheader {
-    background: #FFFFFF;
-    border: 1px solid #E6DCF5;
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 14px 14px 14px 14px;
     padding: 8px 16px;
     display: flex;
@@ -261,7 +434,7 @@
     gap: 28px;
     font-size: 10.5px;
     font-weight: 700;
-    color: #2A1266;
+    color: var(--ink);
     position: fixed;
     /* fallback so the bar appears below the 54px topbar (+ iOS safe-area) even if JS hasn't measured yet */
     top: calc(54px + var(--safe-top));
@@ -286,8 +459,8 @@
     top: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
-    background: #2A1266;
-    color: white;
+    background: var(--ink);
+    color: var(--on-accent);
     font-size: 11px;
     font-weight: 700;
     padding: 4px 10px;
@@ -303,7 +476,7 @@
     left: 50%;
     transform: translateX(-50%);
     border: 5px solid transparent;
-    border-bottom-color: #2A1266;
+    border-bottom-color: var(--ink);
     z-index: 100;
   }
   .topbar-stat svg {
@@ -529,7 +702,7 @@
     position: relative;
     align-self: center;
     background: var(--accent, #7B4FD4);
-    color: #fff;
+    color: var(--on-accent);
     font-size: 11px;
     font-weight: 700;
     padding: 4px 12px;
@@ -544,7 +717,7 @@
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.85);
-    color: white;
+    color: var(--on-accent);
     padding: 12px 20px;
     border-radius: 20px;
     font-size: 14px;
@@ -654,7 +827,7 @@
   }
   .thinker-scroll::-webkit-scrollbar { display: none; }
   .pf-card {
-    background: #FFFFFF;
+    background: var(--surface);
     border: 1.5px solid rgba(var(--accent-rgb), 0.18);
     border-radius: 20px;
     padding: 20px;
@@ -755,7 +928,7 @@
   }
   .pf-week-circle.active {
     background: var(--accent);
-    color: white;
+    color: var(--on-accent);
   }
   .pf-week-circle.today {
     border-color: #F59E0B;
@@ -840,7 +1013,7 @@
     gap: 10px;
     width: 100%;
     padding: 14px 20px;
-    background: #FFFFFF;
+    background: var(--surface);
     border: 1.5px solid rgba(var(--accent-rgb), 0.18);
     border-radius: 14px;
     cursor: pointer;
@@ -874,7 +1047,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #FFFFFF;
+    background: var(--surface);
     border: 1.5px solid rgba(var(--accent-rgb), 0.18);
     border-radius: 14px;
     padding: 14px 20px;
@@ -887,7 +1060,7 @@
     text-align: start;
   }
   .pf-lang-dropdown {
-    background: #FFFFFF;
+    background: var(--surface);
     border: 1.5px solid rgba(var(--accent-rgb), 0.18);
     border-radius: 14px;
     margin-top: 6px;
@@ -929,7 +1102,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #FFFFFF;
+    background: var(--surface);
     border: 1.5px solid rgba(var(--accent-rgb), 0.18);
     border-radius: 14px;
     padding: 12px 16px;
@@ -969,7 +1142,7 @@
     width: 20px; height: 20px;
     inset-inline-start: 3px;
     top: 3px;
-    background: white;
+    background: var(--surface);
     border-radius: 50%;
     transition: transform 0.2s;
     box-shadow: 0 1px 3px rgba(0,0,0,0.18);
@@ -1222,7 +1395,7 @@
   .pantheon-card-name {
     font-size: 12px;
     font-weight: 800;
-    color: #FFFFFF;
+    color: var(--on-accent);
     line-height: 1.2;
     text-shadow: 0 1px 4px rgba(0,0,0,0.5);
   }
@@ -1262,7 +1435,7 @@
   }
   .pantheon-card-back {
     transform: rotateY(180deg);
-    background: #FFFFFF;
+    background: var(--surface);
     border: 1px solid #FFD982;
     box-shadow: 0 6px 14px -4px rgba(42,18,102,.18), 0 0 0 1px #FFF8E8;
     border-radius: 18px;
@@ -1378,7 +1551,7 @@
     background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
     border-radius: 0 0 14px 14px;
   }
-  .thinker-card.painting .thinker-name { color: #fff; font-size: 12px; }
+  .thinker-card.painting .thinker-name { color: var(--on-accent); font-size: 12px; }
   .thinker-card.painting .thinker-era { color: rgba(255,255,255,0.7); }
   .thinker-card.painting .thinker-card-lock {
     position: absolute;
@@ -1399,7 +1572,7 @@
 
   /* ── Chapter list ── */
   .week-item {
-    background: #fff;
+    background: var(--surface);
     border: none;
     border-radius: 16px;
     box-shadow: 0 2px 12px rgba(0,0,0,0.06);
@@ -1414,12 +1587,12 @@
   }
   .week-item:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(var(--accent-rgb), 0.1); }
   .week-item.locked { opacity: 0.5; cursor: default; }
-  .week-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; background: #FFFFFF; border: 1.5px solid #F0E8FB; cursor: pointer; transition: transform 0.15s; margin-bottom: 10px; }
+  .week-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; background: var(--surface); border: 1.5px solid var(--border); cursor: pointer; transition: transform 0.15s; margin-bottom: 10px; }
   .week-row:active { transform: scale(0.98); }
   .week-row-bonus { background: #FFFBF0; border-color: #F5B544; }
   .week-row-locked { opacity: 0.78; cursor: default; background: #F8F5FF; border: 1.5px dashed #C9BFE0; }
-  .week-row-num { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; flex-shrink: 0; box-shadow: 0 2px 0 var(--ink); }
-  .week-row-num-bonus { background: #F5B544; box-shadow: 0 2px 0 #C7892C; color: #2A1266; }
+  .week-row-num { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; flex-shrink: 0; box-shadow: 0 2px 0 var(--ink); }
+  .week-row-num-bonus { background: #F5B544; box-shadow: 0 2px 0 #C7892C; color: var(--ink); }
   .week-row-num-locked { background: #C9BFE0; box-shadow: 0 2px 0 #8D7DAE; }
   .next-lesson-btn {
     display: block;
@@ -1427,7 +1600,7 @@
     margin: 0;
     padding: 14px;
     background: linear-gradient(180deg, var(--purple-light), var(--accent));
-    color: #fff;
+    color: var(--on-accent);
     border: none;
     font-weight: 800;
     font-size: 16px;
@@ -1440,9 +1613,9 @@
   .next-lesson-btn:active { transform: scale(0.97); }
   .week-row-completed { opacity: 0.75; cursor: default; }
   .week-row-active { border-color: var(--accent); box-shadow: 0 2px 12px var(--accent-glow); }
-  .week-row-num-completed { background: var(--accent); box-shadow: 0 2px 0 var(--ink); color: white; }
+  .week-row-num-completed { background: var(--accent); box-shadow: 0 2px 0 var(--ink); color: var(--on-accent); }
   .week-row-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-  .week-row-ttl { font-weight: 700; font-size: 14px; color: #2A1266; }
+  .week-row-ttl { font-weight: 700; font-size: 14px; color: var(--ink); }
   .week-row-sub { font-size: 11px; color: #8D7DAE; }
   .week-row-chev { color: #B6A8D4; font-size: 18px; font-weight: 700; }
   .week-row-bonus-special { background: linear-gradient(135deg, #FFFBF0 0%, #FFF3D0 100%); border: 1.5px solid #F5B544; box-shadow: 0 2px 12px rgba(245,181,68,0.15); }
@@ -1457,7 +1630,7 @@
   @keyframes p1-breathe { 0%, 100% { transform: translateY(0) scale(1); opacity: 0.7; } 50% { transform: translateY(-1px) scale(1.04); opacity: 0.95; } }
   .p2-lock { animation: p2-rattle 2.4s ease-in-out infinite; transform-origin: 50% 80%; }
   @keyframes p2-rattle { 0%, 100% { transform: rotate(0) translateY(0); } 25% { transform: rotate(-4deg) translateY(-1px); } 50% { transform: rotate(0) translateY(-2px); } 75% { transform: rotate(4deg) translateY(-1px); } }
-  .week-bonus-progress { margin-top: 5px; height: 4px; border-radius: 2px; background: #fff; border: 1px solid #E6DCF5; overflow: hidden; margin-bottom: 3px; }
+  .week-bonus-progress { margin-top: 5px; height: 4px; border-radius: 2px; background: var(--surface); border: 1px solid var(--border); overflow: hidden; margin-bottom: 3px; }
   .week-bonus-progress span { display: block; height: 100%; background: linear-gradient(90deg, var(--purple-light), var(--accent), var(--purple-light)); background-size: 200% 100%; border-radius: 2px; animation: p1-shine 3s linear infinite; }
   @keyframes p1-shine { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
   .week-bonus-progress-warm span { background: linear-gradient(90deg, var(--accent), #F5B544, #FFD982, #F5B544, var(--accent)); background-size: 300% 100%; animation: p2-flow 2.4s linear infinite; }
@@ -1477,7 +1650,7 @@
   .unlock-lock-big { width: 120px; height: 120px; filter: drop-shadow(0 0 28px rgba(255,217,130,.9)); animation: p3-pop .9s cubic-bezier(.34,1.56,.64,1) .15s both, p3-float 3s ease-in-out 1.05s infinite; z-index: 1; }
   @keyframes p3-pop { 0% { transform: scale(.2) translateY(20px) rotate(-12deg); opacity: 0; } 60% { transform: scale(1.18) translateY(-4px) rotate(3deg); opacity: 1; } 100% { transform: scale(1) translateY(0) rotate(0); opacity: 1; } }
   @keyframes p3-float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-5px) rotate(-1.5deg); } }
-  .unlock-h3 { font-size: 24px; font-weight: 900; color: #FFFFFF; margin: 0; animation: p3-rise .6s ease-out .55s both; z-index: 1; }
+  .unlock-h3 { font-size: 24px; font-weight: 900; color: var(--on-accent); margin: 0; animation: p3-rise .6s ease-out .55s both; z-index: 1; }
   .unlock-p { font-size: 13px; color: #FFD982; font-weight: 600; margin: 0; line-height: 1.6; animation: p3-rise .6s ease-out .7s both; z-index: 1; }
   @keyframes p3-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   .unlock-cta-btn { margin-top: 8px; background: linear-gradient(180deg, #FFD982, #F5B544); border: 1px solid #C7892C; color: #3a2400; font-weight: 800; font-size: 15px; padding: 12px 32px; border-radius: 999px; cursor: pointer; font-family: inherit; box-shadow: 0 2px 0 #C7892C, inset 0 1px 0 rgba(255,255,255,.5); animation: p3-rise .6s ease-out .85s both, p3-cta-bob 1.8s ease-in-out 1.5s infinite; z-index: 1; }
@@ -1532,7 +1705,7 @@
     font-size: 15px;
     font-weight: 700;
     color: var(--text);
-    background: white;
+    background: var(--surface);
     border-radius: 20px;
     padding: 6px 14px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
@@ -1757,7 +1930,7 @@
     margin: 0 auto;
     background: linear-gradient(90deg, var(--accent), var(--purple-light), var(--accent), var(--purple-light));
     background-size: 200% auto;
-    color: #fff;
+    color: var(--on-accent);
     font-family: 'Nunito', sans-serif;
     font-weight: 700;
     font-size: 16px;
@@ -1793,13 +1966,13 @@
     border-right: none;
     border-left: 3px solid var(--accent);
   }
-  .week-item.completed-week .week-num { background: rgba(46,125,50,0.12); color: #2E7D32; border-color: rgba(46,125,50,0.3); }
+  .week-item.completed-week .week-num { background: rgba(46,125,50,0.12); color: var(--success); border-color: rgba(46,125,50,0.3); }
   .week-check {
     width: 28px;
     height: 28px;
     border-radius: 50%;
     background: var(--accent);
-    color: white;
+    color: var(--on-accent);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1821,7 +1994,7 @@
     top: -1px;
     right: -1px;
     background: #F59E0B;
-    color: #2A1266;
+    color: var(--ink);
     font-size: 9px;
     font-weight: 800;
     padding: 3px 8px;
@@ -1833,8 +2006,8 @@
     position: absolute;
     bottom: calc(100% + 8px);
     right: 0;
-    background: #2A1266;
-    color: white;
+    background: var(--ink);
+    color: var(--on-accent);
     font-size: 12px;
     padding: 8px 12px;
     border-radius: 8px;
@@ -1849,15 +2022,15 @@
     bottom: calc(100% + 2px);
     right: 16px;
     border: 6px solid transparent;
-    border-top-color: #2A1266;
+    border-top-color: var(--ink);
     z-index: 100;
   }
   .bottom-nav {
     display: flex;
     align-items: center;
     justify-content: space-around;
-    background: #fff;
-    border-top: 1px solid #ECE3F8;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
     padding: 6px 14px 10px;
     padding-bottom: calc(10px + var(--safe-bottom));
     height: calc(var(--bottom-nav-height) + var(--safe-bottom));
@@ -1906,7 +2079,7 @@
     transition: background 0.15s, box-shadow 0.15s;
     box-shadow: 0 2px 8px rgba(var(--accent-rgb), 0.07);
   }
-  .btn-library:hover { background: #fff; box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.13); }
+  .btn-library:hover { background: var(--surface); box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.13); }
 
   /* ── Library modal ── */
   .library-modal-box {
@@ -1957,7 +2130,7 @@
   }
   .day-item.completed .day-circle {
     background: var(--accent);
-    color: white;
+    color: var(--on-accent);
     border: 2px solid var(--ink);
     font-size: 14px;
     font-weight: 900;
@@ -2031,7 +2204,7 @@
     font-size: 16px;
     font-weight: 800;
     background: linear-gradient(180deg, var(--purple-light), var(--accent));
-    color: #fff;
+    color: var(--on-accent);
     border: none;
     border-radius: 999px;
     box-shadow: 0 3px 0 var(--ink), inset 0 1px 0 rgba(255,255,255,.25);
@@ -2221,7 +2394,7 @@
   .section-body {
     font-size: 1rem;
     line-height: 1.6;
-    color: #1A1A2E;
+    color: var(--ink);
     font-weight: 400;
     text-align: start;
   }
@@ -2249,7 +2422,7 @@
     font-size: 0.95rem;
     font-weight: 700;
     line-height: 1.8;
-    color: #1A1A2E;
+    color: var(--ink);
     font-style: italic;
   }
   .source-attr {
@@ -2272,7 +2445,7 @@
   .quiz-eyebrow-line {
     flex: 1;
     height: 1px;
-    background: linear-gradient(270deg, #9B6FE4, transparent);
+    background: linear-gradient(270deg, var(--purple-light), transparent);
   }
   .quiz-eyebrow-label {
     font-size: 0.7rem;
@@ -2287,7 +2460,7 @@
     line-height: 1.7;
     color: #4A3580;
     font-style: italic;
-    border-right: 3px solid #9B6FE4;
+    border-right: 3px solid var(--purple-light);
     padding-right: 14px;
     margin-bottom: 20px;
   }
@@ -2297,7 +2470,7 @@
     line-height: 1.6;
     margin-bottom: 20px;
     font-weight: 800;
-    color: #1A1A2E;
+    color: var(--ink);
   }
   .quiz-options { display: flex; flex-direction: column; gap: 10px; }
   .quiz-option {
@@ -2311,7 +2484,7 @@
     transition: background 0.2s ease, border-color 0.2s ease;
     font-family: 'DM Sans', sans-serif;
     font-weight: 500;
-    color: #1A1A2E;
+    color: var(--ink);
     width: 100%;
     display: flex;
     align-items: center;
@@ -2345,21 +2518,21 @@
   .opt-text { flex: 1; line-height: 1.5; }
   .option-correct {
     background: rgba(34,197,94,0.12) !important;
-    border: 1.5px solid #22c55e !important;
+    border: 1.5px solid var(--auth-success) !important;
     transition: all 0.3s ease;
   }
   .option-correct .opt-letter {
-    background: #22c55e;
-    color: #fff;
+    background: var(--auth-success);
+    color: var(--on-accent);
   }
   .option-wrong {
     background: rgba(239,68,68,0.1) !important;
-    border: 1.5px solid #ef4444 !important;
+    border: 1.5px solid var(--auth-error) !important;
     transition: all 0.3s ease;
   }
   .option-wrong .opt-letter {
-    background: #ef4444;
-    color: #fff;
+    background: var(--auth-error);
+    color: var(--on-accent);
   }
   .option-faded { opacity: 0.35; pointer-events: none; transition: opacity 0.3s ease; }
   .quiz-block { display: flex; flex-direction: column; gap: 0; }
@@ -2382,14 +2555,14 @@
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background: #D8C4FF;
+    background: var(--accent-tint-strong);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 13px;
     font-weight: 800;
     flex-shrink: 0;
-    color: #5E37A8;
+    color: var(--accent-dark);
     font-family: 'Nunito', sans-serif;
   }
   .quiz-feedback {
@@ -2402,15 +2575,15 @@
     border-right: 4px solid transparent;
   }
   .quiz-feedback.correct {
-    background: #E8F5E9;
-    color: #1B5E20;
-    border-right-color: #4CAF50;
+    background: var(--success-bg);
+    color: var(--success-strong);
+    border-right-color: var(--success-border);
     display: block;
   }
   .quiz-feedback.wrong {
-    background: #FFEBEE;
-    color: #B71C1C;
-    border-right-color: #EF5350;
+    background: var(--error-bg);
+    color: var(--error-strong);
+    border-right-color: var(--error-border);
     display: block;
   }
 
@@ -2438,8 +2611,8 @@
     font-family: 'Nunito', sans-serif;
     margin-bottom: 18px;
   }
-  .qfm-xp.correct { color: #2E7D32; }
-  .qfm-xp.wrong   { color: #C62828; }
+  .qfm-xp.correct { color: var(--success); }
+  .qfm-xp.wrong   { color: var(--error); }
   .qfm-explanation {
     font-size: 1rem; line-height: 1.65;
     color: var(--text);
@@ -2628,7 +2801,7 @@
   /* ── Navigation button ── */
   .nav-btn {
     background: var(--accent);
-    color: white;
+    color: var(--on-accent);
     border: none;
     border-radius: 28px;
     border-bottom: 5px solid var(--accent-dark);
@@ -2664,7 +2837,7 @@
      --red variable; inherits all sizing/animation/disabled behaviour from .nav-btn. */
   .nav-btn.destructive {
     background: var(--red);
-    color: #fff;
+    color: var(--on-accent);
     border-color: var(--red);
     border-bottom-color: rgba(0,0,0,0.2);
   }
@@ -2890,10 +3063,10 @@
 
   /* ── Level up modal ── */
   .levelup-modal .modal-box {
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 50%, #9B6FE4 100%);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 50%, var(--purple-light) 100%);
     border-color: rgba(var(--accent-rgb), 0.4);
   }
-  .levelup-modal .modal-title { color: white; }
+  .levelup-modal .modal-title { color: var(--on-accent); }
   .levelup-modal .modal-subtitle { color: rgba(255,255,255,0.7); }
   .level-particle {
     position: absolute;
@@ -2937,7 +3110,7 @@
     pointer-events: auto;
   }
   .levelup-title {
-    color: white;
+    color: var(--on-accent);
     font-size: 28px;
     font-weight: 600;
     margin-bottom: -50px;
@@ -3079,7 +3252,7 @@
     100% { opacity: 0; transform: scale(0.85); }
   }
   .levelup-level-name {
-    color: white;
+    color: var(--on-accent);
     font-size: 32px;
     font-weight: 700;
     margin-bottom: 16px;
@@ -3100,8 +3273,8 @@
     margin-bottom: 32px;
   }
   .levelup-continue {
-    background: #1D4ED8;
-    color: white;
+    background: var(--accent);
+    color: var(--on-accent);
     border: none;
     padding: 14px 32px;
     border-radius: 999px;
@@ -3110,24 +3283,24 @@
     font-family: Nunito, sans-serif;
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
-    box-shadow: 0 4px 0 0 #1E3A8A;
+    box-shadow: 0 4px 0 0 var(--accent-dark);
     pointer-events: auto;  /* parent .levelup-reveal is pointer-events:none */
   }
   .levelup-overlay[data-subject="economics"] .levelup-continue {
-    background: #1D4ED8;
-    box-shadow: 0 4px 0 0 #1E3A8A;
+    background: var(--accent);
+    box-shadow: 0 4px 0 0 var(--accent-dark);
   }
   .levelup-overlay[data-subject="philosophy"] .levelup-continue {
-    background: #5B33A1;
-    box-shadow: 0 4px 0 0 #3D1F7A;
+    background: var(--accent);
+    box-shadow: 0 4px 0 0 var(--accent-dark);
   }
   .levelup-continue:hover {
     transform: translateY(2px);
-    box-shadow: 0 2px 0 0 #1E3A8A;
+    box-shadow: 0 2px 0 0 var(--accent-dark);
     filter: brightness(1.05);
   }
   .levelup-overlay[data-subject="philosophy"] .levelup-continue:hover {
-    box-shadow: 0 2px 0 0 #3D1F7A;
+    box-shadow: 0 2px 0 0 var(--accent-dark);
   }
 
   /* ── Streak indicator ── */
@@ -3137,7 +3310,7 @@
     left: 50%;
     transform: translateX(-50%);
     background: linear-gradient(135deg, var(--gold), #8B6914);
-    color: white;
+    color: var(--on-accent);
     padding: 12px 24px;
     border-radius: 99px;
     font-family: 'Nunito', sans-serif;
@@ -3309,7 +3482,7 @@
   }
   .thinker-intro-btn {
     background: var(--accent);
-    color: #FFFFFF;
+    color: var(--on-accent);
     border: none;
     border-radius: 999px;
     padding: 15px 40px;
@@ -3486,9 +3659,9 @@
      [━━━━ label icon] like CHECK YOURSELF. RTL/Hebrew unaffected — selector is
      gated by [dir="ltr"]. */
   [dir="ltr"] .section-type-label svg { order: 1; }
-  [dir="ltr"] .quiz-feedback.correct { border-right: none; border-left: 4px solid #4CAF50; }
-  [dir="ltr"] .quiz-feedback.wrong { border-right: none; border-left: 4px solid #EF5350; }
-  [dir="ltr"] .quiz-intro-v2 { border-right: none; border-left: 3px solid #9B6FE4; padding-right: 0; padding-left: 14px; }
+  [dir="ltr"] .quiz-feedback.correct { border-right: none; border-left: 4px solid var(--success-border); }
+  [dir="ltr"] .quiz-feedback.wrong { border-right: none; border-left: 4px solid var(--error-border); }
+  [dir="ltr"] .quiz-intro-v2 { border-right: none; border-left: 3px solid var(--purple-light); padding-right: 0; padding-left: 14px; }
   [dir="ltr"] .thinker-scroll { flex-direction: row; }
   [dir="ltr"] .week-item { flex-direction: row-reverse; }
   [dir="ltr"] .day-item { flex-direction: row-reverse; }
@@ -3507,12 +3680,20 @@
     gap: 28px;
   }
   .auth-screen.active { display: flex; }
+  /* Dark: the accent-gradient reads too bright once --accent is lifted for
+     button contrast. Swap to a deep bg → surface-2 climb so the auth screen
+     recedes like the rest of the dark app. Logo/tagline stay white via
+     --on-accent and the semi-white rgba, both of which read fine on the
+     darkened gradient. */
+  html.dark .auth-screen {
+    background: linear-gradient(150deg, var(--bg) 0%, var(--surface-2) 100%);
+  }
   .auth-logo-wrap { text-align: center; direction: ltr; width: 100%; }
   .auth-logo-text {
     font-family: 'Nunito', sans-serif;
     font-size: 38px;
     font-weight: 900;
-    color: #fff;
+    color: var(--on-accent);
     letter-spacing: -1px;
   }
   .auth-tagline {
@@ -3523,7 +3704,7 @@
     letter-spacing: 0.5px;
   }
   .auth-card {
-    background: #fff;
+    background: var(--surface);
     border-radius: 24px;
     padding: 32px 28px 28px;
     width: 100%;
@@ -3535,7 +3716,7 @@
   }
   .auth-mode-toggle {
     display: flex;
-    background: #f0eafc;
+    background: var(--surface-2);
     border-radius: 12px;
     padding: 4px;
     margin-bottom: 4px;
@@ -3554,13 +3735,14 @@
     transition: all 0.18s;
   }
   .auth-mode-btn.active {
-    background: #fff;
+    background: var(--surface);
     color: var(--accent);
     box-shadow: 0 2px 8px rgba(var(--accent-rgb), 0.15);
   }
   .auth-input {
     width: 100%;
-    border: 1.5px solid #e0d8f5;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
     border-radius: 12px;
     padding: 12px 16px;
     font-family: 'Nunito', sans-serif;
@@ -3590,24 +3772,24 @@
   .auth-btn:disabled { opacity: 0.6; cursor: default; }
   .auth-btn-primary {
     background: var(--accent);
-    color: #fff;
+    color: var(--on-accent);
     box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.35);
   }
   .auth-btn-primary:hover:not(:disabled) { filter: brightness(0.92); }
   .auth-btn-social {
-    background: #fff;
+    background: var(--surface);
     color: var(--text);
-    border: 1.5px solid #e0d8f5;
+    border: 1.5px solid var(--border);
   }
-  .auth-btn-social:hover { background: #f7f4ff; border-color: var(--accent); }
+  .auth-btn-social:hover { background: var(--accent-tint); border-color: var(--accent); }
   .auth-btn-apple {
     background: #000;
-    color: #fff;
+    color: var(--on-accent);
     border-color: #000;
     margin-top: 8px;
   }
   .auth-btn-apple:hover { background: #1a1a1a; border-color: #1a1a1a; }
-  .auth-btn-apple .auth-social-icon { color: #fff; display: inline-flex; align-items: center; }
+  .auth-btn-apple .auth-social-icon { color: var(--on-accent); display: inline-flex; align-items: center; }
   .auth-social-icon {
     font-size: 16px;
     font-weight: 900;
@@ -3625,11 +3807,11 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: #e0d8f5;
+    background: var(--border);
   }
   .auth-error {
     font-size: 13px;
-    color: #ef5350;
+    color: var(--red);
     min-height: 18px;
     text-align: center;
     font-family: 'Nunito', sans-serif;
@@ -3647,7 +3829,7 @@
     text-underline-offset: 3px;
     transition: color 0.18s;
   }
-  .auth-guest-link:hover { color: #fff; }
+  .auth-guest-link:hover { color: var(--on-accent); }
   .logout-btn {
     background: none;
     border: none;
@@ -3699,7 +3881,7 @@
     right: auto;
     left: auto;
     z-index: 500;
-    background: white;
+    background: var(--surface);
     border-radius: 16px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.12);
     padding: 16px;
@@ -3740,13 +3922,41 @@
     min-width: 40px;
     text-align: center;
   }
+  /* Reader settings popover — appearance three-button pill row, same shape as
+     the text-size row but with the tint-strong active-state used by the
+     auth-mode-toggle so the current selection is obvious in either mode. */
+  .settings-appearance-row {
+    display: flex;
+    gap: 6px;
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: 4px;
+  }
+  .settings-appearance-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    border-radius: 7px;
+    padding: 8px 10px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .settings-appearance-btn.active {
+    background: var(--surface);
+    color: var(--accent);
+    box-shadow: 0 1px 4px rgba(var(--accent-rgb), 0.18);
+  }
   /* ── Onboarding ── */
   .onboarding-backdrop { position: fixed; inset: 0; z-index: 999; pointer-events: all; }
   .onboarding-owl-float { position: fixed; z-index: 1001; width: 100px; height: 100px; transition: top 0.6s cubic-bezier(0.34,1.56,0.64,1), left 0.6s cubic-bezier(0.34,1.56,0.64,1); }
   .onboarding-owl-float svg { width: 100%; height: 100%; }
   @keyframes floaty { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-10px) rotate(1deg); } }
   .floating { animation: floaty 2.8s ease-in-out infinite; transform-origin: 50% 80%; }
-  .onboarding-speech { position: fixed; z-index: 1001; background: white; border-radius: 20px; padding: 16px 18px; max-width: 240px; font-size: 14px; font-weight: 600; color: #2A1B4A; line-height: 1.5; box-shadow: 0 8px 32px rgba(42,27,74,0.2); transition: top 0.5s cubic-bezier(0.34,1.56,0.64,1), left 0.5s cubic-bezier(0.34,1.56,0.64,1); animation: bubblePop 0.3s cubic-bezier(0.34,1.56,0.64,1); text-align: left; direction: ltr; }
+  .onboarding-speech { position: fixed; z-index: 1001; background: var(--surface); border-radius: 20px; padding: 16px 18px; max-width: 240px; font-size: 14px; font-weight: 600; color: #2A1B4A; line-height: 1.5; box-shadow: 0 8px 32px rgba(42,27,74,0.2); transition: top 0.5s cubic-bezier(0.34,1.56,0.64,1), left 0.5s cubic-bezier(0.34,1.56,0.64,1); animation: bubblePop 0.3s cubic-bezier(0.34,1.56,0.64,1); text-align: left; direction: ltr; }
   .onboarding-speech::before { display: none; }
   .onboarding-speech.tail-top::before { content: ''; display: block; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 10px solid white; }
   .onboarding-speech.tail-left::before { content: ''; display: block; position: absolute; top: 20px; left: -10px; width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-right: 10px solid white; filter: drop-shadow(-2px 0 2px rgba(42,27,74,0.08)); }
@@ -3762,9 +3972,9 @@
      still visually points at the card center. Default 0px = arrow at
      tooltip's horizontal center (unchanged behavior when no clamp). */
   .bonus-tooltip.tail-top::before { border-bottom-color: #D4AF37; left: calc(50% + var(--tail-offset, 0px)); }
-  .onboarding-next-btn { display: block; margin-top: 10px; background: var(--accent); color: white; border: none; border-radius: 50px; padding: 8px 20px; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; }
+  .onboarding-next-btn { display: block; margin-top: 10px; background: var(--accent); color: var(--on-accent); border: none; border-radius: 50px; padding: 8px 20px; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; }
   #onboarding-lang-buttons { display: flex; }
-  .onboarding-lang-btn { flex: 1; max-width: 120px; padding: 8px 16px; background: var(--accent); color: white; border: none; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .onboarding-lang-btn { flex: 1; max-width: 120px; padding: 8px 16px; background: var(--accent); color: var(--on-accent); border: none; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1); }
   .onboarding-lang-btn:active { transform: scale(0.93); }
   .onboarding-dots-float { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); z-index: 1002; display: flex; gap: 8px; align-items: center; }
   .owl-svg [data-expr] { display: none; }
@@ -3781,7 +3991,7 @@
   @keyframes pointBob { 0%,100%{transform:translateY(0)}50%{transform:translateY(4px)} }
   .owl-svg.owl-action [data-point] { animation: pointBob 1.1s ease-in-out infinite; }
   .onboarding-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.4); transition: all 0.3s ease; }
-  .onboarding-dot.active { background: white; width: 24px; border-radius: 4px; box-shadow: 0 0 8px rgba(255,255,255,0.6); }
+  .onboarding-dot.active { background: var(--surface); width: 24px; border-radius: 4px; box-shadow: 0 0 8px rgba(255,255,255,0.6); }
 
   /* ── Learning card body typography ── */
   .learning-card-body {
@@ -3985,7 +4195,7 @@
   }
   .dc-continue-btn {
     background: var(--accent);
-    color: white;
+    color: var(--on-accent);
     border: none;
     border-radius: 50px;
     padding: 16px 48px;
@@ -4145,7 +4355,7 @@
     font-size: 16px;
     font-weight: 800;
     background: var(--accent);
-    color: white;
+    color: var(--on-accent);
     border: none;
     border-radius: 999px;
     cursor: pointer;
@@ -4313,7 +4523,7 @@
   .anim-fade { animation: fadeIn 0.45s ease both; }
 
   .cc-a {
-    background: #FFFFFF;
+    background: var(--surface);
     border: 1.5px solid var(--accent);
     border-radius: 18px;
     padding: 18px;
@@ -4333,12 +4543,12 @@
   .cc-a-ttl {
     font-size: 16px;
     font-weight: 800;
-    color: #2A1266;
+    color: var(--ink);
     margin-bottom: 4px;
   }
   .cc-a-sub {
     font-size: 12px;
-    color: #8D7DAE;
+    color: var(--text-2);
     font-weight: 600;
     margin-bottom: 10px;
   }
@@ -4347,7 +4557,7 @@
     top: -9px;
     right: 18px;
     background: var(--accent);
-    color: #fff;
+    color: var(--on-accent);
     font-size: 9.5px;
     font-weight: 800;
     letter-spacing: .12em;
@@ -4370,12 +4580,12 @@
     display: grid;
     place-items: center;
     flex-shrink: 0;
-    box-shadow: 0 3px 0 #2A1266, inset 0 1px 0 rgba(255,255,255,.3);
+    box-shadow: 0 3px 0 var(--ink), inset 0 1px 0 rgba(255,255,255,.3);
   }
   .cc-a .day-num {
     font-size: 18px;
     font-weight: 900;
-    color: #fff;
+    color: var(--on-accent);
     line-height: 1;
   }
   .cc-a .body {
@@ -4388,12 +4598,12 @@
   .cc-a .body .ttl {
     font-size: 13.5px;
     font-weight: 800;
-    color: #2A1266;
+    color: var(--ink);
     line-height: 1.25;
   }
   .cc-a .body .sub {
     font-size: 10.5px;
-    color: #8D7DAE;
+    color: var(--text-2);
     font-weight: 600;
     line-height: 1.4;
   }
@@ -4407,9 +4617,9 @@
     flex: 1;
     height: 5px;
     border-radius: 3px;
-    background: #F5EFFE;
+    background: var(--accent-tint);
     overflow: hidden;
-    border: 1px solid #E6DCF5;
+    border: 1px solid var(--border);
   }
   .cc-a .progress .track span {
     display: block;
@@ -4425,7 +4635,7 @@
   .cc-a-cta {
     position: relative;
     background: linear-gradient(180deg, var(--purple-light), var(--accent));
-    color: #fff;
+    color: var(--on-accent);
     border: none;
     font-weight: 800;
     font-size: 14px;
@@ -4433,7 +4643,7 @@
     width: auto;
     min-width: 150px;
     border-radius: 999px;
-    box-shadow: 0 3px 0 #2A1266, inset 0 1px 0 rgba(255,255,255,.25);
+    box-shadow: 0 3px 0 var(--ink), inset 0 1px 0 rgba(255,255,255,.25);
     cursor: pointer;
     font-family: inherit;
   }
@@ -4540,7 +4750,7 @@
   /* Completed-chapter diagonal ribbon (top-right LTR; mirrored to top-left for RTL) */
   .level-card.completed .level-num {
     background: var(--accent);
-    color: #fff;
+    color: var(--on-accent);
   }
   .level-card.completed::before {
     content: 'COMPLETED';
@@ -4549,7 +4759,7 @@
     right: -38px;
     width: 140px;
     background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
-    color: #fff;
+    color: var(--on-accent);
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 1px;
@@ -4591,7 +4801,7 @@
     font-family: 'Nunito', sans-serif;
     transition: background 300ms ease, color 300ms ease;
   }
-  .level-card.expanded .level-num { background: var(--accent); color: #fff; }
+  .level-card.expanded .level-num { background: var(--accent); color: var(--on-accent); }
 
   .level-card-text { flex: 1; min-width: 0; }
   .level-eyebrow {
@@ -4647,10 +4857,10 @@
   .lesson-circle.completed {
     background: var(--accent);
     box-shadow: 0 2px 8px var(--accent-glow);
-    color: #fff;
+    color: var(--on-accent);
   }
   .lesson-circle.next-up {
-    background: var(--accent); color: #fff;
+    background: var(--accent); color: var(--on-accent);
     animation: lesson-ring-pulse 2.2s ease-in-out infinite;
   }
   .lesson-circle.locked-circle {
@@ -4720,7 +4930,7 @@
   }
   .practice-card-sub { font-size: 11px; color: var(--text-2); margin-top: 2px; }
   .practice-btn {
-    background: var(--accent); color: #fff;
+    background: var(--accent); color: var(--on-accent);
     border: none; border-radius: 999px;
     padding: 10px 18px; font-size: 13px; font-weight: 800;
     font-family: 'Nunito', sans-serif; cursor: pointer;
@@ -4860,7 +5070,7 @@
     top: 0; left: 0; right: 0;
     z-index: 3000;
     background: var(--accent);
-    color: #FFFFFF;
+    color: var(--on-accent);
     padding: calc(10px + var(--safe-top)) 16px 10px;
     font-family: 'Nunito', sans-serif;
     font-weight: 700;
@@ -4873,7 +5083,7 @@
   #update-banner.visible { display: flex; }
   #update-banner .update-banner-text { flex: 1; line-height: 1.35; }
   #update-banner a.update-banner-link {
-    color: #FFFFFF;
+    color: var(--on-accent);
     font-weight: 800;
     text-decoration: underline;
     text-underline-offset: 2px;
@@ -4881,7 +5091,7 @@
   #update-banner button.update-banner-dismiss {
     background: rgba(255,255,255,0.18);
     border: none;
-    color: #FFFFFF;
+    color: var(--on-accent);
     font-family: inherit;
     font-weight: 800;
     font-size: 18px;
@@ -5710,6 +5920,33 @@
           </div>
         </div>
 
+        <!-- Appearance (dark mode) — reuses .pf-lang-section/.pf-lang-btn/
+             .pf-lang-dropdown/.pf-lang-option so it inherits the same styling
+             and behaviour as the language switcher. Three modes: Light / Dark
+             / System (default). Handled by setAppearance() in JS. -->
+        <div class="pf-lang-section">
+          <button class="pf-lang-btn" id="pf-appearance-btn" onclick="toggleAppearanceDropdown()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <span id="pf-appearance-label">מראה</span>
+            <span id="pf-appearance-current" style="margin-inline-end:auto;font-size:12px"></span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="pf-lang-dropdown" id="pf-appearance-dropdown" style="display:none">
+            <button class="pf-lang-option" onclick="setAppearance('light')">
+              <span id="pf-appearance-light-label">בהיר</span>
+              <span class="pf-lang-check" id="pf-appearance-check-light"></span>
+            </button>
+            <button class="pf-lang-option" onclick="setAppearance('dark')">
+              <span id="pf-appearance-dark-label">כהה</span>
+              <span class="pf-lang-check" id="pf-appearance-check-dark"></span>
+            </button>
+            <button class="pf-lang-option" onclick="setAppearance('system')">
+              <span id="pf-appearance-system-label">אוטומטי</span>
+              <span class="pf-lang-check" id="pf-appearance-check-system"></span>
+            </button>
+          </div>
+        </div>
+
         <!-- Daily Reminder -->
         <div class="pf-reminder-section">
           <div class="pf-reminder-row">
@@ -6015,6 +6252,17 @@ async function syncProgressToSupabase() {
       daily_reminder: state.dailyReminder,
     }, { onConflict: 'user_id' });
   } catch(e) {}
+  try {
+    // Separate upsert so a missing `appearance` column doesn't break the main sync.
+    // Requires Supabase column: appearance text on user_progress.
+    // Cross-device sync for the dark-mode preference — if the column doesn't
+    // exist yet, this silently no-ops and the choice stays local until the
+    // migration lands.
+    await sb.from('user_progress').upsert({
+      user_id: currentUser.id,
+      appearance: state.appearance || 'system',
+    }, { onConflict: 'user_id' });
+  } catch(e) {}
 }
 
 async function loadProgressFromSupabase() {
@@ -6031,6 +6279,12 @@ async function loadProgressFromSupabase() {
     });
     state.chapterCompleteShown = state.chapterCompleteShown || {};
     (data.chapter_complete_shown || []).forEach(k => { state.chapterCompleteShown[k] = true; });
+    // Appearance preference: only override the local value if Supabase has a
+    // non-empty value AND it's a valid mode. Missing column returns undefined.
+    if (data.appearance && ['light', 'dark', 'system'].includes(data.appearance)) {
+      state.appearance = data.appearance;
+      try { applyAppearance(); } catch(e) {}
+    }
     // If Supabase says this user has completed onboarding, mark it locally so
     // startOnboarding's localStorage check skips the spotlight tour on a new
     // device / fresh install / cleared browser data. Defensive on missing column.
@@ -6163,7 +6417,7 @@ async function handleAuthSubmit() {
       await enterApp(data.session.user);
     } else if (data.user && !data.session) {
       // Email confirmation required
-      errEl.style.color = '#22c55e';
+      errEl.style.color = 'var(--auth-success)';
       errEl.textContent = 'We sent you a verification email. Click the link in the email to enter the app.';
       btn.disabled = false;
       btn.textContent = 'Sign Up';
@@ -6246,8 +6500,40 @@ async function authWithApple() {
 
 let _introCarouselInited = false;
 
+// Compute the appearance the parent wants the iframe to render in ('light' |
+// 'dark'). Resolves 'system' via prefers-color-scheme so the iframe boots in
+// the correct mode on cold entry. Kept sync — no async storage lookups.
+function _currentEffectiveAppearance() {
+  const m = state.appearance || 'system';
+  if (m === 'dark') return 'dark';
+  if (m === 'light') return 'light';
+  return (_appearanceMQ && _appearanceMQ.matches) ? 'dark' : 'light';
+}
+
+// Point the intro iframe at Onboarding_new.html?appearance=<mode> so the
+// carousel's local :root can pick up the dark palette before its first paint.
+// Called from showIntro/showAuthFlow every open path so a re-entry after
+// changing preference sees the new mode. Live updates (user flips appearance
+// while the intro is up) go through postMessage below.
+function _syncIntroIframeAppearance() {
+  const iframe = document.getElementById('intro-iframe');
+  if (!iframe) return;
+  const mode = _currentEffectiveAppearance();
+  // Only rewrite src if the appearance query differs — avoids reloading the
+  // carousel from scratch when the parent re-invokes showIntro.
+  const desired = 'Onboarding_new.html?appearance=' + mode;
+  if (!iframe.src.endsWith(desired)) iframe.src = desired;
+  // Also postMessage so an already-loaded iframe reacts without reload.
+  try {
+    if (iframe.contentWindow) {
+      iframe.contentWindow.postMessage({ type: 'appearance', mode }, '*');
+    }
+  } catch(e) {}
+}
+
 function showIntro() {
   if (localStorage.getItem('corpus_intro_done')) return;
+  _syncIntroIframeAppearance();
   const overlay = document.getElementById('intro-overlay');
   if (overlay) overlay.style.display = 'block';
 }
@@ -6255,6 +6541,7 @@ function showIntro() {
 function showAuthFlow() {
   // Logged-out entry point. Show intro once, then enter as guest.
   if (!localStorage.getItem('corpus_intro_done')) {
+    _syncIntroIframeAppearance();
     const overlay = document.getElementById('intro-overlay');
     if (overlay) { overlay.style.display = 'block'; return; }
   }
@@ -13620,6 +13907,10 @@ function defaultState() {
     settingsExpanded: false,   // Profile → Settings collapsible; persisted with the rest of state.
     isPaid: false,   // manual flag for now; later driven by subscription
     subject: 'philosophy',
+    // Dark-mode preference. 'system' follows the OS via prefers-color-scheme
+    // (with a live change listener); 'light' / 'dark' force a mode regardless
+    // of OS. Applied by applyAppearance() during init before first paint.
+    appearance: 'system',
     // Daily reminder local-notification settings. Default ON; OS permission is requested
     // after the user finishes their first lesson (not during onboarding). Until permission
     // is granted, the toggle reflects intent but no notification is actually scheduled.
@@ -13838,6 +14129,10 @@ function toggleSettings() {
       panel.style.zIndex = '9999';
     }
     setTimeout(() => { panel.style.display = 'flex'; }, 10);
+    // Refresh the appearance row (labels + active pill) so the popover reflects
+    // whatever state.appearance is on open — matches whether the user set it
+    // from Profile → Settings, an OS flip in system mode, or a prior tap here.
+    try { _updateAppearanceUI(); } catch(e) {}
   } else {
     panel.style.display = 'none';
   }
@@ -15549,7 +15844,7 @@ function handleQuiz(chosen, correctIdx, explanation, btn, questionIdx, isSingleQ
     if (block) {
       const feedbackEl = block.querySelector('.quiz-inline-feedback');
       if (feedbackEl) {
-        feedbackEl.innerHTML = `<span class="qif-icon" style="color:${isCorrect ? '#2E7D32' : '#C62828'}">${isCorrect ? '✓' : '✗'}</span> ${explanation}`;
+        feedbackEl.innerHTML = `<span class="qif-icon" style="color:${isCorrect ? 'var(--success)' : 'var(--error)'}">${isCorrect ? '✓' : '✗'}</span> ${explanation}`;
         feedbackEl.style.display = '';
       }
     }
@@ -15572,7 +15867,7 @@ function showQuizExplanation(earnedXP, isCorrect, explanation) {
   // Continue tap will actually close this instance.
   _qfmClosing = false;
   document.getElementById('qfm-icon').textContent = isCorrect ? '✓' : '✗';
-  document.getElementById('qfm-icon').style.color = isCorrect ? '#2E7D32' : '#C62828';
+  document.getElementById('qfm-icon').style.color = isCorrect ? 'var(--success)' : 'var(--error)';
   const xpEl = document.getElementById('qfm-xp');
   xpEl.textContent = '+' + earnedXP + ' XP';
   xpEl.className = 'qfm-xp ' + (isCorrect ? 'correct' : 'wrong');
@@ -16879,6 +17174,102 @@ function applyTheme(subject) {
   root.classList.add('theme-' + (subject || 'philosophy'));
 }
 
+// Dark-mode plumbing.
+// applyAppearance(mode?) applies the current preference to <html> by toggling
+// the .dark class. Modes: 'light' | 'dark' | 'system' (default). System mode
+// reads and re-reads prefers-color-scheme so a macOS/iOS/Android appearance
+// flip updates in place without a reload.
+//
+// Called from three places:
+//   1. Very early in initUI (right after loadState) so the class is on
+//      before first paint — avoids a light→dark flash on cold-start.
+//   2. From setAppearance() when the user picks in Settings.
+//   3. From the prefers-color-scheme media-query change listener (below),
+//      but only while state.appearance === 'system'.
+const _appearanceMQ = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)')) || null;
+function applyAppearance(mode) {
+  if (typeof mode === 'string') state.appearance = mode;
+  const m = state.appearance || 'system';
+  const wantDark = (m === 'dark') || (m === 'system' && _appearanceMQ && _appearanceMQ.matches);
+  document.documentElement.classList.toggle('dark', !!wantDark);
+  // Native status bar: swap text style so it stays legible against the new bg.
+  // Skipped silently on web / if the plugin isn't installed.
+  try {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar
+        && typeof window.Capacitor.Plugins.StatusBar.setStyle === 'function') {
+      window.Capacitor.Plugins.StatusBar.setStyle({ style: wantDark ? 'DARK' : 'LIGHT' });
+    }
+  } catch(e) {}
+}
+if (_appearanceMQ && typeof _appearanceMQ.addEventListener === 'function') {
+  _appearanceMQ.addEventListener('change', () => {
+    if ((state.appearance || 'system') === 'system') {
+      applyAppearance();
+      try { _syncIntroIframeAppearance(); } catch(e) {}
+    }
+  });
+}
+
+// Called by the Settings toggle. Persists the choice and immediately applies.
+function setAppearance(mode) {
+  if (mode !== 'light' && mode !== 'dark' && mode !== 'system') return;
+  state.appearance = mode;
+  saveState();
+  applyAppearance();
+  _updateAppearanceUI();
+  // Auto-close the dropdown to match the language switcher's UX.
+  const dd = document.getElementById('pf-appearance-dropdown');
+  if (dd) dd.style.display = 'none';
+  // Propagate to the onboarding iframe if it's mounted (rare — the user is
+  // usually past the intro by the time they touch Settings — but keeps the
+  // two documents in sync if they overlap).
+  try { _syncIntroIframeAppearance(); } catch(e) {}
+  try { posthog.capture('appearance_changed', { mode }); } catch(e) {}
+}
+
+function toggleAppearanceDropdown() {
+  const dd = document.getElementById('pf-appearance-dropdown');
+  if (!dd) return;
+  dd.style.display = (dd.style.display === 'none' || !dd.style.display) ? 'block' : 'none';
+  // Close the language dropdown if it's open — only one at a time.
+  const lang = document.getElementById('pf-lang-dropdown');
+  if (lang && lang.style.display !== 'none') lang.style.display = 'none';
+}
+
+// Refresh the "current" label and the check-mark next to each option so the
+// selected mode always matches state. Called from setAppearance and from
+// renderProfile / setAppLang paths that touch the Settings UI.
+function _updateAppearanceUI() {
+  const isEn = state.lang === 'en';
+  const labels = {
+    light:  isEn ? 'Light'  : 'בהיר',
+    dark:   isEn ? 'Dark'   : 'כהה',
+    system: isEn ? 'System' : 'אוטומטי'
+  };
+  const cur = state.appearance || 'system';
+  const currentLabel = document.getElementById('pf-appearance-current');
+  if (currentLabel) currentLabel.textContent = labels[cur];
+  const heading = document.getElementById('pf-appearance-label');
+  if (heading) heading.textContent = isEn ? 'Appearance' : 'מראה';
+  ['light', 'dark', 'system'].forEach(m => {
+    const opt = document.getElementById('pf-appearance-' + m + '-label');
+    if (opt) opt.textContent = labels[m];
+    const check = document.getElementById('pf-appearance-check-' + m);
+    if (check) check.textContent = (cur === m) ? '✓' : '';
+  });
+  // Reader-settings popover mirror — same handler, so both stay in sync
+  // whether the user changed it from Profile → Settings or mid-dialogue.
+  const readerHeading = document.getElementById('settings-appearance-label');
+  if (readerHeading) readerHeading.textContent = isEn ? 'Appearance' : 'מראה';
+  ['light', 'dark', 'system'].forEach(m => {
+    const btn = document.getElementById('reader-appearance-' + m);
+    if (btn) {
+      btn.textContent = labels[m];
+      btn.classList.toggle('active', cur === m);
+    }
+  });
+}
+
 function previewSubjectTheme(subject) {
   const el = document.getElementById('screen-subject');
   if (!el) return;
@@ -17181,6 +17572,11 @@ function initUI() {
       }
     } catch(e) {}
     loadState();
+    // Apply appearance BEFORE any user-visible render so the app boots in the
+    // correct mode. loadState is synchronous (localStorage), so state.appearance
+    // is populated by this point on returning sessions. On brand-new installs
+    // it falls to defaultState() default 'system' → follows OS.
+    try { applyAppearance(); } catch(e) {}
     // Fires once per page load, for EVERYONE (guests + logged-in). The referrer property
     // is the linchpin for the landing→app funnel — when a user arrives from get.corpusapp.io,
     // document.referrer contains that origin, letting PostHog join the two sessions in a funnel.
@@ -17584,7 +17980,7 @@ function showStreakTooltip(el, streakVal, dateStr) {
     c.style.borderColor = '';
     c.style.borderWidth = '';
   });
-  el.style.borderColor = '#F59E0B';
+  el.style.borderColor = 'var(--amber)';
   el.style.borderWidth = '3px';
   const streakEl = document.getElementById('pf-streak-num');
   if (streakEl) {
@@ -17646,6 +18042,7 @@ function updateLangUI() {
   if (checkHe) checkHe.textContent = isEn ? '' : '✓';
   if (checkEn) checkEn.textContent = isEn ? '✓' : '';
   updateReminderUI();
+  _updateAppearanceUI();
 }
 
 function updateReminderUI() {
@@ -18131,6 +18528,17 @@ document.addEventListener('DOMContentLoaded', function() {
       <button class="text-size-btn" onclick="changeTextSize(-1)">A-</button>
       <span class="text-size-current" id="text-size-current">100%</span>
       <button class="text-size-btn" onclick="changeTextSize(1)">A+</button>
+    </div>
+  </div>
+  <!-- Appearance mirror of the profile Settings toggle. Same setAppearance()
+       handler + state.appearance, so both surfaces stay in sync automatically.
+       Three-button row inline (no dropdown here — real-estate is tight). -->
+  <div class="settings-section">
+    <div class="settings-label" id="settings-appearance-label">מראה</div>
+    <div class="settings-appearance-row">
+      <button class="settings-appearance-btn" id="reader-appearance-light" onclick="setAppearance('light')">בהיר</button>
+      <button class="settings-appearance-btn" id="reader-appearance-dark" onclick="setAppearance('dark')">כהה</button>
+      <button class="settings-appearance-btn" id="reader-appearance-system" onclick="setAppearance('system')">אוטומטי</button>
     </div>
   </div>
 </div>
