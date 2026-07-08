@@ -44,6 +44,14 @@ jobs:
           cp version.json          _deploy/
           cp -r assets             _deploy/
           cp -r images             _deploy/
+          # Share cards + dialogue landing pages (Part 2 of the share-cards
+          # refactor). Generated locally via `npm run gen:share` and committed
+          # to the repo so the runner doesn't need node-canvas + TTFs.
+          # Skipped silently on the very first push after the refactor lands
+          # (before the generator has been run once) so the deploy doesn't
+          # break in that transitional window.
+          if [ -d share ]; then cp -r share _deploy/; fi
+          if [ -d d ];     then cp -r d     _deploy/; fi
           echo "--- _deploy summary ---"
           find _deploy -type f | wc -l
           du -sh _deploy
