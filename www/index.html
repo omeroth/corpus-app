@@ -3344,8 +3344,17 @@
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
     box-shadow: 0 4px 0 0 var(--accent-dark);
-    pointer-events: auto;  /* parent .levelup-reveal is pointer-events:none */
+    /* Base: NOT interactive. .levelup-reveal is z-index 10000 and lives
+       persistently in the DOM (position: fixed inside .levelup-overlay);
+       leaving pointer-events: auto here made this button a permanent hit
+       target at ~z=10001 even after .levelup-overlay lost its .active
+       class — which silently swallowed taps on any modal that opened at
+       the same screen coordinates (the reported "Maybe later dead"
+       symptom). Scope pointer-events: auto to only when the reveal card
+       is actually revealed (JS adds .active after the chest arc). */
+    pointer-events: none;
   }
+  .levelup-reveal.active .levelup-continue { pointer-events: auto; }
   .levelup-overlay[data-subject="economics"] .levelup-continue {
     background: var(--accent);
     box-shadow: 0 4px 0 0 var(--accent-dark);
@@ -16018,6 +16027,8 @@ function closeQuizFeedbackModal() {
         // never leave the page in a pointer-events: none state.
         document.body.style.pointerEvents = '';
       }
+      // Drain any level-up that was deferred while the quiz-feedback was up.
+      try { _tryFirePendingLevelUp(); } catch(e) {}
     }, 120);
   });
 }
@@ -16396,6 +16407,12 @@ function _shouldShowGuestPrompt() {
   // doesn't burn the once-per-day cap — lastShownDate is only stamped on
   // actual display inside showGuestSignupPrompt.
   if (state.currentScreen === 'reader') return false;
+  // Reverse of the showLevelUp deferral: if the level-up celebration is
+  // currently on-screen (chest/reveal), don't stack the guest prompt under
+  // it. hideLevelUp's own trailing setTimeout(400) → maybeShowGuestPrompt
+  // will re-check and fire once the celebration is dismissed.
+  const _luOverlay = document.getElementById('levelup-overlay');
+  if (_luOverlay && _luOverlay.classList.contains('active')) return false;
   // Defense in depth: authLogout() and deleteAccount() historically reset
   // `state` to a bare literal that omitted guestPrompt, leaving downstream
   // reads on `.permanentlyDismissed` to throw. Both literals now include the
@@ -16489,6 +16506,8 @@ function closeGuestSignupPrompt() {
   const fn = _guestSignupPendingFn;
   _guestSignupPendingFn = null;
   if (typeof fn === 'function') fn();   // continue the original post-dialogue flow
+  // Drain any level-up that was deferred while this prompt was up.
+  try { _tryFirePendingLevelUp(); } catch(e) {}
 }
 // Tap-handler for the "Maybe later" link — distinct from the sign-in paths so
 // only an explicit dismiss increments the dismiss counter (sign-in paths route
@@ -16592,9 +16611,19 @@ function _finishSharePrompt() {
   const fn = _sharePromptPendingFn;
   _sharePromptPendingFn = null;
   if (typeof fn === 'function') fn();
+  // Drain any level-up that was deferred while this prompt was up.
+  try { _tryFirePendingLevelUp(); } catch(e) {}
 }
 
 function showSharePrompt(onDone) {
+  // Coexistence: if the level-up overlay is already up, don't stack the
+  // share prompt underneath it. Treat as instantly-complete so the chain
+  // continues; hideLevelUp will re-invoke the share flow after dismissal.
+  const _luOverlay = document.getElementById('levelup-overlay');
+  if (_luOverlay && _luOverlay.classList.contains('active')) {
+    if (typeof onDone === 'function') onDone();
+    return;
+  }
   _sharePromptClosing = false;
   const subject = state.subject || 'philosophy';
   const flagKey = `corpus_share_shown_${subject}`;
@@ -18544,9 +18573,36 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 // === Level-up treasure chest modal ===
 let currentLevelUpData = null;
 
+// If showLevelUp fires while a prompt modal (guest signup / share / quiz
+// feedback) is open, we DEFER it — otherwise the celebration overlay lands
+// on top of the prompt at z=9999, covering it entirely. Drained by
+// _tryFirePendingLevelUp() from every prompt-close path.
+let _pendingLevelUpIdx = null;
+function _tryFirePendingLevelUp() {
+  if (_pendingLevelUpIdx == null) return;
+  const idx = _pendingLevelUpIdx;
+  _pendingLevelUpIdx = null;
+  // Small settle delay so the prompt's fade / display: none commits before
+  // the level-up overlay grabs pointer-events.
+  setTimeout(() => showLevelUp(idx), 200);
+}
+
 function showLevelUp(newLevelIndex) {
   const levelData = LEVELS[newLevelIndex];
   if (!levelData) return;
+
+  // Coexistence gate — if a prompt modal is active, queue for after close.
+  // Preferring deferral over z-index juggling: an invisible-but-clickable
+  // level-up overlay was the reported "Maybe later dead" root cause.
+  const _busyIds = ['modal-guest-signup', 'modal-share', 'modal-quiz-feedback'];
+  const _busy = _busyIds.some(id => {
+    const el = document.getElementById(id);
+    return !!(el && el.classList.contains('active'));
+  });
+  if (_busy) {
+    _pendingLevelUpIdx = newLevelIndex;
+    return;
+  }
 
   // If a previous hide is still mid-close (its deferred reset hasn't fired),
   // cancel that pending reset so it can't clobber the state we're about to set.
