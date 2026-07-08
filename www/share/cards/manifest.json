@@ -1,0 +1,1065 @@
+{
+  "generatedAt": "2026-07-08T13:53:49.662Z",
+  "items": [
+    {
+      "weekId": 1,
+      "dayId": 1,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "socrates",
+      "title": "למה בכלל צריך פילוסופיה?",
+      "card": "share/cards/he/phil-1-1.png",
+      "page": "d/phil-1-1-he.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 1,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "socrates",
+      "title": "Why Do We Even Need Philosophy?",
+      "card": "share/cards/en/phil-1-1.png",
+      "page": "d/phil-1-1-en.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 2,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "socrates",
+      "title": "החוצפה לא לדעת",
+      "card": "share/cards/he/phil-1-2.png",
+      "page": "d/phil-1-2-he.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 2,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "socrates",
+      "title": "The Audacity of Not Knowing",
+      "card": "share/cards/en/phil-1-2.png",
+      "page": "d/phil-1-2-en.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 3,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "plato",
+      "title": "משל המערה",
+      "card": "share/cards/he/phil-1-3.png",
+      "page": "d/phil-1-3-he.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 3,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "plato",
+      "title": "The Allegory of the Cave",
+      "card": "share/cards/en/phil-1-3.png",
+      "page": "d/phil-1-3-en.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 4,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "russell",
+      "title": "הכלא של הוודאות",
+      "card": "share/cards/he/phil-1-4.png",
+      "page": "d/phil-1-4-he.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 4,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "russell",
+      "title": "The Prison of Certainty",
+      "card": "share/cards/en/phil-1-4.png",
+      "page": "d/phil-1-4-en.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 5,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "wittgenstein",
+      "title": "האם אנחנו מבינים על מה אנחנו מדברים?",
+      "card": "share/cards/he/phil-1-5.png",
+      "page": "d/phil-1-5-he.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 5,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "wittgenstein",
+      "title": "Is Philosophy Even About Real Questions?",
+      "card": "share/cards/en/phil-1-5.png",
+      "page": "d/phil-1-5-en.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 6,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "aurelius",
+      "title": "פילוסופיה כדרך חיים",
+      "card": "share/cards/he/phil-1-6.png",
+      "page": "d/phil-1-6-he.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 6,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "aurelius",
+      "title": "Philosophy as a Way of Life",
+      "card": "share/cards/en/phil-1-6.png",
+      "page": "d/phil-1-6-en.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 2,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "aristotle",
+      "title": "מה הם החיים הטובים?",
+      "card": "share/cards/he/phil-2-2.png",
+      "page": "d/phil-2-2-he.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 2,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "aristotle",
+      "title": "What Makes a Good Life?",
+      "card": "share/cards/en/phil-2-2.png",
+      "page": "d/phil-2-2-en.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 3,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "kant",
+      "title": "מה אני חייב לעשות?",
+      "card": "share/cards/he/phil-2-3.png",
+      "page": "d/phil-2-3-he.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 3,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "kant",
+      "title": "What Must Be Done?",
+      "card": "share/cards/en/phil-2-3.png",
+      "page": "d/phil-2-3-en.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 4,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "mill",
+      "title": "מה מביא לאושר הגדול ביותר?",
+      "card": "share/cards/he/phil-2-4.png",
+      "page": "d/phil-2-4-he.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 4,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "mill",
+      "title": "What Brings the Most Happiness?",
+      "card": "share/cards/en/phil-2-4.png",
+      "page": "d/phil-2-4-en.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 5,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "nietzsche",
+      "title": "מאיפה בא המוסר?",
+      "card": "share/cards/he/phil-2-5.png",
+      "page": "d/phil-2-5-he.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 5,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "nietzsche",
+      "title": "Where Does Morality Come From?",
+      "card": "share/cards/en/phil-2-5.png",
+      "page": "d/phil-2-5-en.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 6,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "thomson",
+      "title": "דילמת הקרונית",
+      "card": "share/cards/he/phil-2-6.png",
+      "page": "d/phil-2-6-he.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 6,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "thomson",
+      "title": "The Trolley Problem",
+      "card": "share/cards/en/phil-2-6.png",
+      "page": "d/phil-2-6-en.html"
+    },
+    {
+      "weekId": "bonus1",
+      "dayId": 1,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "kant",
+      "title": "קאנט: האם מותר ל-AI לשקר?",
+      "card": "share/cards/he/phil-bonus1-1.png",
+      "page": "d/phil-bonus1-1-he.html"
+    },
+    {
+      "weekId": "bonus1",
+      "dayId": 1,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "kant",
+      "title": "Kant: Is AI Allowed to Lie?",
+      "card": "share/cards/en/phil-bonus1-1.png",
+      "page": "d/phil-bonus1-1-en.html"
+    },
+    {
+      "weekId": "bonus1",
+      "dayId": 2,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "mill",
+      "title": "מיל: במי המכונה צריכה לפגוע?",
+      "card": "share/cards/he/phil-bonus1-2.png",
+      "page": "d/phil-bonus1-2-he.html"
+    },
+    {
+      "weekId": "bonus1",
+      "dayId": 2,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "mill",
+      "title": "Mill: The Autonomous Car and the Greatest Good",
+      "card": "share/cards/en/phil-bonus1-2.png",
+      "page": "d/phil-bonus1-2-en.html"
+    },
+    {
+      "weekId": "bonus1",
+      "dayId": 3,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "aristotle",
+      "title": "אריסטו: כשה-AI טועה - מי אחראי?",
+      "card": "share/cards/he/phil-bonus1-3.png",
+      "page": "d/phil-bonus1-3-he.html"
+    },
+    {
+      "weekId": "bonus1",
+      "dayId": 3,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "aristotle",
+      "title": "Aristotle: AI and Responsibility",
+      "card": "share/cards/en/phil-bonus1-3.png",
+      "page": "d/phil-bonus1-3-en.html"
+    },
+    {
+      "weekId": "bonus1",
+      "dayId": 4,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "nietzsche",
+      "title": "ניטשה: מי מחליט מה הערכים של ה-AI?",
+      "card": "share/cards/he/phil-bonus1-4.png",
+      "page": "d/phil-bonus1-4-he.html"
+    },
+    {
+      "weekId": "bonus1",
+      "dayId": 4,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "nietzsche",
+      "title": "Nietzsche: Who Decides the Values of AI?",
+      "card": "share/cards/en/phil-bonus1-4.png",
+      "page": "d/phil-bonus1-4-en.html"
+    },
+    {
+      "weekId": "bonus1",
+      "dayId": 5,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "socrates",
+      "title": "סוקרטס: האם AI יכול לעזור לנו לחשוב?",
+      "card": "share/cards/he/phil-bonus1-5.png",
+      "page": "d/phil-bonus1-5-he.html"
+    },
+    {
+      "weekId": "bonus1",
+      "dayId": 5,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "socrates",
+      "title": "Socrates: AI as a Teacher or a Midwife?",
+      "card": "share/cards/en/phil-bonus1-5.png",
+      "page": "d/phil-bonus1-5-en.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 2,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "descartes",
+      "title": "האם אפשר לדעת כלל?",
+      "card": "share/cards/he/phil-3-2.png",
+      "page": "d/phil-3-2-he.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 2,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "descartes",
+      "title": "Is it possible to know anything at all?",
+      "card": "share/cards/en/phil-3-2.png",
+      "page": "d/phil-3-2-en.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 3,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "hume",
+      "title": "האם החושים אמינים?",
+      "card": "share/cards/he/phil-3-3.png",
+      "page": "d/phil-3-3-he.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 3,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "hume",
+      "title": "Are the senses reliable?",
+      "card": "share/cards/en/phil-3-3.png",
+      "page": "d/phil-3-3-en.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 4,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "kant",
+      "title": "מה השכל מביא לידע?",
+      "card": "share/cards/he/phil-3-4.png",
+      "page": "d/phil-3-4-he.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 4,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "kant",
+      "title": "What does the mind bring to knowledge?",
+      "card": "share/cards/en/phil-3-4.png",
+      "page": "d/phil-3-4-en.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 5,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "gettier",
+      "title": "שלושה עמודים ששינו הכל",
+      "card": "share/cards/he/phil-3-5.png",
+      "page": "d/phil-3-5-he.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 5,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "gettier",
+      "title": "Three Pages That Changed Everything",
+      "card": "share/cards/en/phil-3-5.png",
+      "page": "d/phil-3-5-en.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 6,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "popper",
+      "title": "איך המדע מתקדם?",
+      "card": "share/cards/he/phil-3-6.png",
+      "page": "d/phil-3-6-he.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 6,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "popper",
+      "title": "How does science progress?",
+      "card": "share/cards/en/phil-3-6.png",
+      "page": "d/phil-3-6-en.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 2,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "plato",
+      "title": "עולם האידאות",
+      "card": "share/cards/he/phil-4-2.png",
+      "page": "d/phil-4-2-he.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 2,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "plato",
+      "title": "The World of Forms",
+      "card": "share/cards/en/phil-4-2.png",
+      "page": "d/phil-4-2-en.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 3,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "spinoza",
+      "title": "הכל אחד",
+      "card": "share/cards/he/phil-4-3.png",
+      "page": "d/phil-4-3-he.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 3,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "spinoza",
+      "title": "All is One",
+      "card": "share/cards/en/phil-4-3.png",
+      "page": "d/phil-4-3-en.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 4,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "berkeley",
+      "title": "להיות זה להיתפס",
+      "card": "share/cards/he/phil-4-4.png",
+      "page": "d/phil-4-4-he.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 4,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "berkeley",
+      "title": "To Be is to Be Perceived",
+      "card": "share/cards/en/phil-4-4.png",
+      "page": "d/phil-4-4-en.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 6,
+      "subject": "philosophy",
+      "lang": "he",
+      "thinkerId": "bostrom",
+      "title": "האם אנחנו חיים בתוך סימולציה?",
+      "card": "share/cards/he/phil-4-6.png",
+      "page": "d/phil-4-6-he.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 6,
+      "subject": "philosophy",
+      "lang": "en",
+      "thinkerId": "bostrom",
+      "title": "Are We Living Inside a Simulation?",
+      "card": "share/cards/en/phil-4-6.png",
+      "page": "d/phil-4-6-en.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 1,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "samuelson",
+      "title": "השאלות שאי אפשר לברוח מהן",
+      "card": "share/cards/he/econ-1-1.png",
+      "page": "d/econ-1-1-he.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 1,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "samuelson",
+      "title": "The Questions That Cannot Be Escaped",
+      "card": "share/cards/en/econ-1-1.png",
+      "page": "d/econ-1-1-en.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 2,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "smith",
+      "title": "הסדר שאף אחד לא תכנן",
+      "card": "share/cards/he/econ-1-2.png",
+      "page": "d/econ-1-2-he.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 2,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "smith",
+      "title": "The Order That No One Planned",
+      "card": "share/cards/en/econ-1-2.png",
+      "page": "d/econ-1-2-en.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 3,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "marx",
+      "title": "מה שסמית לא ראה",
+      "card": "share/cards/he/econ-1-3.png",
+      "page": "d/econ-1-3-he.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 3,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "marx",
+      "title": "What Smith Did Not See",
+      "card": "share/cards/en/econ-1-3.png",
+      "page": "d/econ-1-3-en.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 4,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "keynes",
+      "title": "כשהשוק לא חוזר לאיזון",
+      "card": "share/cards/he/econ-1-4.png",
+      "page": "d/econ-1-4-he.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 4,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "keynes",
+      "title": "When the Market Does Not Return to Balance",
+      "card": "share/cards/en/econ-1-4.png",
+      "page": "d/econ-1-4-en.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 5,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "friedman",
+      "title": "השוק כשומר על החירות",
+      "card": "share/cards/he/econ-1-5.png",
+      "page": "d/econ-1-5-he.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 5,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "friedman",
+      "title": "The Market as a Guardian of Freedom",
+      "card": "share/cards/en/econ-1-5.png",
+      "page": "d/econ-1-5-en.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 6,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "sen",
+      "title": "מה הכלכלה באמת מודדת?",
+      "card": "share/cards/he/econ-1-6.png",
+      "page": "d/econ-1-6-he.html"
+    },
+    {
+      "weekId": 1,
+      "dayId": 6,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "sen",
+      "title": "What Does Economics Really Measure?",
+      "card": "share/cards/en/econ-1-6.png",
+      "page": "d/econ-1-6-en.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 1,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "smith",
+      "title": "פרדוקס המים והיהלום",
+      "card": "share/cards/he/econ-2-1.png",
+      "page": "d/econ-2-1-he.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 1,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "smith",
+      "title": "The Paradox of Water and Diamonds",
+      "card": "share/cards/en/econ-2-1.png",
+      "page": "d/econ-2-1-en.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 2,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "marx",
+      "title": "ערך עודף",
+      "card": "share/cards/he/econ-2-2.png",
+      "page": "d/econ-2-2-he.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 2,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "marx",
+      "title": "Surplus Value",
+      "card": "share/cards/en/econ-2-2.png",
+      "page": "d/econ-2-2-en.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 3,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "jevons",
+      "title": "המהפכה השולית",
+      "card": "share/cards/he/econ-2-3.png",
+      "page": "d/econ-2-3-he.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 3,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "jevons",
+      "title": "The Marginal Revolution",
+      "card": "share/cards/en/econ-2-3.png",
+      "page": "d/econ-2-3-en.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 4,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "marshall",
+      "title": "היצע, ביקוש, והמחיר",
+      "card": "share/cards/he/econ-2-4.png",
+      "page": "d/econ-2-4-he.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 4,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "marshall",
+      "title": "Supply, Demand, and Price",
+      "card": "share/cards/en/econ-2-4.png",
+      "page": "d/econ-2-4-en.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 5,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "sandel",
+      "title": "האם הכל ניתן למחיר?",
+      "card": "share/cards/he/econ-2-5.png",
+      "page": "d/econ-2-5-he.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 5,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "sandel",
+      "title": "Can Everything Be Priced?",
+      "card": "share/cards/en/econ-2-5.png",
+      "page": "d/econ-2-5-en.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 6,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "kahneman",
+      "title": "כשהמוח מטעה אותנו",
+      "card": "share/cards/he/econ-2-6.png",
+      "page": "d/econ-2-6-he.html"
+    },
+    {
+      "weekId": 2,
+      "dayId": 6,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "kahneman",
+      "title": "When the Mind Deceives Us",
+      "card": "share/cards/en/econ-2-6.png",
+      "page": "d/econ-2-6-en.html"
+    },
+    {
+      "weekId": "bonusEcon1",
+      "dayId": 1,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "smith",
+      "title": "סמית: למה הדלק התייקר עוד לפני שנגמר?",
+      "card": "share/cards/he/econ-bonusEcon1-1.png",
+      "page": "d/econ-bonusEcon1-1-he.html"
+    },
+    {
+      "weekId": "bonusEcon1",
+      "dayId": 1,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "smith",
+      "title": "Smith: Why did fuel get more expensive before it ran out?",
+      "card": "share/cards/en/econ-bonusEcon1-1.png",
+      "page": "d/econ-bonusEcon1-1-en.html"
+    },
+    {
+      "weekId": "bonusEcon1",
+      "dayId": 2,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "jevons",
+      "title": "ג'בונס: למה כל הנפט בעולם התייקר, כשרק חלק ממנו אוים?",
+      "card": "share/cards/he/econ-bonusEcon1-2.png",
+      "page": "d/econ-bonusEcon1-2-he.html"
+    },
+    {
+      "weekId": "bonusEcon1",
+      "dayId": 2,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "jevons",
+      "title": "Jevons: Why did all the world's oil get more expensive when only part of it was threatened?",
+      "card": "share/cards/en/econ-bonusEcon1-2.png",
+      "page": "d/econ-bonusEcon1-2-en.html"
+    },
+    {
+      "weekId": "bonusEcon1",
+      "dayId": 3,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "aquinas",
+      "title": "אקווינס: כשמחיר הדלק מזנק במלחמה, זה הוגן או ניצול?",
+      "card": "share/cards/he/econ-bonusEcon1-3.png",
+      "page": "d/econ-bonusEcon1-3-he.html"
+    },
+    {
+      "weekId": "bonusEcon1",
+      "dayId": 3,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "aquinas",
+      "title": "Aquinas: When fuel prices spike in war, is it just or exploitation?",
+      "card": "share/cards/en/econ-bonusEcon1-3.png",
+      "page": "d/econ-bonusEcon1-3-en.html"
+    },
+    {
+      "weekId": "bonusEcon1",
+      "dayId": 4,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "ricardo",
+      "title": "ריקרדו: מי התעשר מהמשבר בלי להרים אצבע?",
+      "card": "share/cards/he/econ-bonusEcon1-4.png",
+      "page": "d/econ-bonusEcon1-4-he.html"
+    },
+    {
+      "weekId": "bonusEcon1",
+      "dayId": 4,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "ricardo",
+      "title": "Ricardo: Who got rich from the crisis without lifting a finger?",
+      "card": "share/cards/en/econ-bonusEcon1-4.png",
+      "page": "d/econ-bonusEcon1-4-en.html"
+    },
+    {
+      "weekId": "bonusEcon1",
+      "dayId": 5,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "sen",
+      "title": "סן: מי באמת שילם את מחיר המשבר?",
+      "card": "share/cards/he/econ-bonusEcon1-5.png",
+      "page": "d/econ-bonusEcon1-5-he.html"
+    },
+    {
+      "weekId": "bonusEcon1",
+      "dayId": 5,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "sen",
+      "title": "Sen: Who really paid the price of the crisis?",
+      "card": "share/cards/en/econ-bonusEcon1-5.png",
+      "page": "d/econ-bonusEcon1-5-en.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 1,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "smith",
+      "title": "מהו הון?",
+      "card": "share/cards/he/econ-3-1.png",
+      "page": "d/econ-3-1-he.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 1,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "smith",
+      "title": "What is Capital?",
+      "card": "share/cards/en/econ-3-1.png",
+      "page": "d/econ-3-1-en.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 2,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "ricardo",
+      "title": "חוק התפוקה הפוחתת",
+      "card": "share/cards/he/econ-3-2.png",
+      "page": "d/econ-3-2-he.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 2,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "ricardo",
+      "title": "The Law of Diminishing Returns",
+      "card": "share/cards/en/econ-3-2.png",
+      "page": "d/econ-3-2-en.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 3,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "ricardo",
+      "title": "חלוקת ההכנסות",
+      "card": "share/cards/he/econ-3-3.png",
+      "page": "d/econ-3-3-he.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 3,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "ricardo",
+      "title": "The Distribution of Income",
+      "card": "share/cards/en/econ-3-3.png",
+      "page": "d/econ-3-3-en.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 4,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "marx",
+      "title": "מבנה ההון",
+      "card": "share/cards/he/econ-3-4.png",
+      "page": "d/econ-3-4-he.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 4,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "marx",
+      "title": "The Structure of Capital",
+      "card": "share/cards/en/econ-3-4.png",
+      "page": "d/econ-3-4-en.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 5,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "piketty",
+      "title": "r > g",
+      "card": "share/cards/he/econ-3-5.png",
+      "page": "d/econ-3-5-he.html"
+    },
+    {
+      "weekId": 3,
+      "dayId": 5,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "piketty",
+      "title": "r > g",
+      "card": "share/cards/en/econ-3-5.png",
+      "page": "d/econ-3-5-en.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 1,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "aquinas",
+      "title": "המחיר הצודק",
+      "card": "share/cards/he/econ-4-1.png",
+      "page": "d/econ-4-1-he.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 1,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "aquinas",
+      "title": "The Just Price",
+      "card": "share/cards/en/econ-4-1.png",
+      "page": "d/econ-4-1-en.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 2,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "pareto",
+      "title": "יעילות פארטו",
+      "card": "share/cards/he/econ-4-2.png",
+      "page": "d/econ-4-2-he.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 2,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "pareto",
+      "title": "Pareto Efficiency",
+      "card": "share/cards/en/econ-4-2.png",
+      "page": "d/econ-4-2-en.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 3,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "rawls",
+      "title": "מסך הבערות",
+      "card": "share/cards/he/econ-4-3.png",
+      "page": "d/econ-4-3-he.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 3,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "rawls",
+      "title": "The Veil of Ignorance",
+      "card": "share/cards/en/econ-4-3.png",
+      "page": "d/econ-4-3-en.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 4,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "nozick",
+      "title": "זכויות פרט",
+      "card": "share/cards/he/econ-4-4.png",
+      "page": "d/econ-4-4-he.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 4,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "nozick",
+      "title": "Individual Rights",
+      "card": "share/cards/en/econ-4-4.png",
+      "page": "d/econ-4-4-en.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 5,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "hayek",
+      "title": "הייק וצדק חברתי",
+      "card": "share/cards/he/econ-4-5.png",
+      "page": "d/econ-4-5-he.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 5,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "hayek",
+      "title": "Hayek and Social Justice",
+      "card": "share/cards/en/econ-4-5.png",
+      "page": "d/econ-4-5-en.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 6,
+      "subject": "economics",
+      "lang": "he",
+      "thinkerId": "sen",
+      "title": "יכולות אנושיות",
+      "card": "share/cards/he/econ-4-6.png",
+      "page": "d/econ-4-6-he.html"
+    },
+    {
+      "weekId": 4,
+      "dayId": 6,
+      "subject": "economics",
+      "lang": "en",
+      "thinkerId": "sen",
+      "title": "Human Capabilities",
+      "card": "share/cards/en/econ-4-6.png",
+      "page": "d/econ-4-6-en.html"
+    }
+  ]
+}

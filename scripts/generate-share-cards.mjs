@@ -26,15 +26,24 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-let canvasModule;
+// node-canvas is required to render the PNG cards but is NOT required to
+// emit the HTML landing pages. If canvas can't be loaded (native deps
+// missing, fonts unavailable, running in a stripped CI env, etc.), we
+// still write the pages so /d/<slug>-<w>-<d>-<lang>.html resolves to a
+// real file. The pages' og:image will 404 until the cards are generated
+// later, but the URL round-trip works.
+let canvasModule = null;
 try {
   canvasModule = await import('canvas');
 } catch (e) {
-  console.error('\n[gen:share] The `canvas` package is not installed.');
-  console.error('            Install it with:  npm i -D canvas\n');
-  process.exit(1);
+  console.warn('[gen:share] `canvas` not installed — pages only, no PNG cards.');
+  console.warn('            Install with `npm i -D canvas` + drop TTFs in scripts/fonts/');
+  console.warn('            when you want to generate the images.');
 }
-const { createCanvas, loadImage, registerFont } = canvasModule;
+const createCanvas   = canvasModule ? canvasModule.createCanvas   : null;
+const loadImage      = canvasModule ? canvasModule.loadImage      : null;
+const registerFont   = canvasModule ? canvasModule.registerFont   : null;
+const CANVAS_ENABLED = !!canvasModule;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -102,6 +111,7 @@ function extractData() {
 // ─────────────────────────────────────────────────────────────────────────
 
 function _registerFonts() {
+  if (!CANVAS_ENABLED) return;
   const fontsDir = path.join(__dirname, 'fonts');
   if (!fs.existsSync(fontsDir)) {
     console.warn('[gen:share] scripts/fonts missing — falling back to sans-serif.');
@@ -555,12 +565,16 @@ async function main() {
 
           const slug = _SUBJECT_SLUG[subject] || 'phil';
 
-          // Card PNG
-          const cardDir  = path.join(OUT_CARDS, lang);
-          const cardFile = path.join(cardDir, `${slug}-${week.id}-${day.id}.png`);
-          fs.mkdirSync(cardDir, { recursive: true });
-          const buf = await renderCard({ thinker, dayTitle, subject, lang });
-          fs.writeFileSync(cardFile, buf);
+          // Card PNG — only when canvas is available. Pages don't depend on
+          // the card existing to round-trip; the og:image will just 404 until
+          // a run with canvas installed writes the PNGs. Skip silently.
+          if (CANVAS_ENABLED) {
+            const cardDir  = path.join(OUT_CARDS, lang);
+            const cardFile = path.join(cardDir, `${slug}-${week.id}-${day.id}.png`);
+            fs.mkdirSync(cardDir, { recursive: true });
+            const buf = await renderCard({ thinker, dayTitle, subject, lang });
+            fs.writeFileSync(cardFile, buf);
+          }
 
           // HTML landing page
           fs.mkdirSync(OUT_PAGES, { recursive: true });
@@ -597,8 +611,9 @@ async function main() {
     JSON.stringify(manifest, null, 2) + '\n'
   );
 
-  console.log(`[gen:share] wrote ${manifest.items.length} cards + pages`);
-  console.log(`[gen:share] cards → ${path.relative(ROOT, OUT_CARDS)}`);
+  console.log(`[gen:share] wrote ${manifest.items.length} pages` +
+              (CANVAS_ENABLED ? ` + ${manifest.items.length} cards` : ' (cards skipped — canvas not installed)'));
+  if (CANVAS_ENABLED) console.log(`[gen:share] cards → ${path.relative(ROOT, OUT_CARDS)}`);
   console.log(`[gen:share] pages → ${path.relative(ROOT, OUT_PAGES)}`);
   console.log(`[gen:share] manifest → ${path.relative(ROOT, path.join(OUT_CARDS, 'manifest.json'))}`);
 }
