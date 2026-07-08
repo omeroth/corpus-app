@@ -6364,25 +6364,18 @@ async function syncProgressToSupabase() {
       onboarding_done: !!localStorage.getItem('corpus_onboarding_done'),
     }, { onConflict: 'user_id' });
   } catch(e) {}
-  try {
-    // Separate upsert so a missing `daily_reminder` column doesn't break the main sync.
-    // Requires Supabase column: daily_reminder jsonb on user_progress.
-    await sb.from('user_progress').upsert({
-      user_id: currentUser.id,
-      daily_reminder: state.dailyReminder,
-    }, { onConflict: 'user_id' });
-  } catch(e) {}
-  try {
-    // Separate upsert so a missing `appearance` column doesn't break the main sync.
-    // Requires Supabase column: appearance text on user_progress.
-    // Cross-device sync for the dark-mode preference — if the column doesn't
-    // exist yet, this silently no-ops and the choice stays local until the
-    // migration lands.
-    await sb.from('user_progress').upsert({
-      user_id: currentUser.id,
-      appearance: state.appearance || 'system',
-    }, { onConflict: 'user_id' });
-  } catch(e) {}
+  // NB: daily_reminder and appearance are intentionally NOT synced.
+  //   - daily_reminder embeds `permissionAsked` (per-device OS state) and the
+  //     notification scheduler runs on-device via the LocalNotifications
+  //     plugin, so cross-device sync of the time/enabled fields would fight
+  //     the local scheduler rather than help.
+  //   - appearance is a per-device UI preference (a dark tablet + a light
+  //     phone is a legitimate setup), and `system` mode already follows the
+  //     OS per device, which is the meaningful cross-device story.
+  // Both had try/catch-wrapped upserts here that PostgREST rejected with 400
+  // because the columns don't exist in user_progress — silent 400s in the
+  // console since July 5. Removing the upserts removes the noise; the local
+  // choice persists via saveStateLocal already.
 }
 
 async function loadProgressFromSupabase() {
@@ -6399,25 +6392,17 @@ async function loadProgressFromSupabase() {
     });
     state.chapterCompleteShown = state.chapterCompleteShown || {};
     (data.chapter_complete_shown || []).forEach(k => { state.chapterCompleteShown[k] = true; });
-    // Appearance preference: only override the local value if Supabase has a
-    // non-empty value AND it's a valid mode. Missing column returns undefined.
-    if (data.appearance && ['light', 'dark', 'system'].includes(data.appearance)) {
-      state.appearance = data.appearance;
-      try { applyAppearance(); } catch(e) {}
-    }
     // If Supabase says this user has completed onboarding, mark it locally so
     // startOnboarding's localStorage check skips the spotlight tour on a new
-    // device / fresh install / cleared browser data. Defensive on missing column.
+    // device / fresh install / cleared browser data.
     if (data.onboarding_done === true) {
       try { localStorage.setItem('corpus_onboarding_done', '1'); } catch(e) {}
     }
-    // Restore daily-reminder preference from cloud (cross-device). Defensive on missing column.
-    if (data.daily_reminder && typeof data.daily_reminder === 'object') {
-      state.dailyReminder = Object.assign(
-        { enabled: true, time: '19:00', permissionAsked: false },
-        data.daily_reminder
-      );
-    }
+    // NB: appearance and daily_reminder are intentionally not read here —
+    // both are device-local (see syncProgressToSupabase for the why). Reading
+    // undefined from a missing column was harmless but paired confusingly
+    // with the failing write; removing both halves keeps the sync surface
+    // honest about what actually crosses devices.
     migrateCompletedDaysKeys();
     saveStateLocal();
   } catch(e) {}
@@ -6426,8 +6411,14 @@ async function loadProgressFromSupabase() {
 async function loadSubscription() {
   if (!currentUser) return;
   try {
+    // maybeSingle: 0 rows returns { data: null } without a 406 status. The
+    // subscriptions table is empty for the vast majority of users (only a
+    // handful have ever had rows), so single() was emitting a 406 on almost
+    // every app open — visible in the console but functionally correct
+    // because the catch below fails safe. Switching to maybeSingle removes
+    // the noise without changing behavior.
     const { data } = await sb.from('subscriptions')
-      .select('*').eq('user_id', currentUser.id).single();
+      .select('*').eq('user_id', currentUser.id).maybeSingle();
     if (!data || !data.current_period_end) {
       state.isPaid = false;   // no subscription = free user
       saveStateLocal();
