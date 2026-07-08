@@ -16739,13 +16739,291 @@ function showSharePrompt(onDone) {
 // { source, method }. Neither path stamps localStorage or fires the prompt-
 // chain continuation.
 
+// ═══════════════════════════════════════════════════════════════════════
+// Share card generator (Level 2 share)
+// ═══════════════════════════════════════════════════════════════════════
+// Renders an offscreen 1080×1350 canvas per the approved design brief and
+// returns a PNG blob for navigator.share({ files: [...] }). Falls back to
+// the plain-text share silently if:
+//   - the canvas throws
+//   - the portrait fails to load
+//   - navigator.canShare doesn't support files
+//   - generation takes more than 2s
+// Never blocks the share sheet on card failure.
+
+// Per-theme color mapping. Kept as a plain object rather than reading from
+// CSS variables so a device that opened the app in dark mode still gets a
+// light card that reads well on any social feed background.
+const _SHARE_CARD_THEMES = {
+  philosophy: {
+    bg:       '#F0EAFC',
+    wordmark: '#7B4FD4',
+    name:     '#3D2E66',
+    era:      '#9A85C4',
+    question: '#4A3580'
+  },
+  economics: {
+    bg:       '#E8F0FC',
+    wordmark: '#2563EB',
+    name:     '#1E3A66',
+    era:      '#7E9BC8',
+    question: '#1D4ED8'
+  },
+  psychology: {
+    bg:       '#FEF3D8',
+    wordmark: '#F59E0B',
+    name:     '#5C3306',
+    era:      '#B08A45',
+    question: '#92400E'
+  }
+};
+const _SHARE_CARD_PLATE   = '#FDFBF6';   // warm off-white portrait plate
+const _SHARE_CARD_RIM     = '#E5C158';   // muted gold rim + divider
+const _SHARE_CARD_URL_TXT = '#B8860B';   // corpusapp.io line
+
+// Wraps text to fit maxWidth in at most maxLines. Returns the array of lines
+// actually used (may be < maxLines for short text). ctx.font must already be
+// set. Handles both LTR and RTL — canvas bidi renders each line correctly
+// once we've computed the wrap points against ctx.measureText.
+function _wrapCardText(ctx, text, maxWidth, maxLines) {
+  const words = String(text || '').split(/\s+/).filter(Boolean);
+  if (!words.length) return [];
+  const lines = [];
+  let current = '';
+  for (let i = 0; i < words.length; i++) {
+    const test = current ? current + ' ' + words[i] : words[i];
+    if (ctx.measureText(test).width > maxWidth && current) {
+      lines.push(current);
+      current = words[i];
+      if (lines.length === maxLines - 1) {
+        // Last available line: pack the remainder onto it verbatim so we
+        // don't drop tail words — the shrink-to-fit outer loop is what
+        // handles overflow properly.
+        current = words.slice(i).join(' ');
+        break;
+      }
+    } else {
+      current = test;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
+
+// Shrink-to-fit wrapper for the hero question. Starts at 64px, drops in 4px
+// steps until the text fits in maxLines OR we hit the 40px floor.
+function _fitQuestion(ctx, text, maxWidth, maxLines, fontFamily) {
+  for (let size = 64; size >= 40; size -= 4) {
+    ctx.font = `800 ${size}px ${fontFamily}`;
+    const lines = _wrapCardText(ctx, text, maxWidth, maxLines);
+    if (lines.length <= maxLines) return { size, lines };
+  }
+  // Floor: force-wrap even if it means overflow
+  ctx.font = `800 40px ${fontFamily}`;
+  return { size: 40, lines: _wrapCardText(ctx, text, maxWidth, maxLines) };
+}
+
+// Loads an image with a Promise wrapper + reasonable timeout. Same-origin
+// (thinker portraits ship in the bundle at ./images/*.webp) so no CORS.
+function _loadCardImage(src, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    let done = false;
+    const t = setTimeout(() => {
+      if (!done) { done = true; reject(new Error('image timeout')); }
+    }, timeoutMs || 1500);
+    img.onload  = () => { if (!done) { done = true; clearTimeout(t); resolve(img); } };
+    img.onerror = e => { if (!done) { done = true; clearTimeout(t); reject(e); } };
+    // Attribute-set of crossOrigin is harmless for same-origin and lets a
+    // future CDN move work without changes.
+    img.crossOrigin = 'anonymous';
+    img.src = src;
+  });
+}
+
+// Main entry point. Returns a Promise<Blob> or throws.
+async function generateShareCard(thinkerId, dayTitle) {
+  const W = 1080, H = 1350;
+  const isEn = state.lang === 'en';
+  const subject = state.subject || 'philosophy';
+  const theme = _SHARE_CARD_THEMES[subject] || _SHARE_CARD_THEMES.philosophy;
+  const t = getT().find(x => x.id === thinkerId);
+  if (!t) throw new Error('thinker not found');
+
+  // Wait for the app's fonts (Nunito + DM Sans) to have hydrated so the
+  // canvas doesn't fall back to a system substitute mid-generation. Guarded
+  // by a short race so a browser without document.fonts still proceeds.
+  try {
+    await Promise.race([
+      document.fonts.ready,
+      new Promise(r => setTimeout(r, 500))
+    ]);
+  } catch(e) {}
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.direction = isEn ? 'ltr' : 'rtl';
+  ctx.textBaseline = 'top';
+
+  // ── Background ────────────────────────────────────────────────────────
+  ctx.fillStyle = theme.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  const cx = W / 2;
+  let y = 80;
+
+  // ── Corpus wordmark ───────────────────────────────────────────────────
+  ctx.fillStyle = theme.wordmark;
+  ctx.font = '600 56px Nunito, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Corpus', cx, y);
+  y += 100;
+
+  // ── Portrait circle ───────────────────────────────────────────────────
+  // ~340px diameter, warm off-white plate, 8px gold rim. Portrait draws
+  // clipped to a circle inset from the plate. If the image fails, we still
+  // draw the plate + rim so the layout below doesn't collapse.
+  const portraitR = 170;   // radius; diameter 340
+  const portraitCy = y + portraitR;
+  // Plate (background disc)
+  ctx.beginPath();
+  ctx.arc(cx, portraitCy, portraitR, 0, Math.PI * 2);
+  ctx.fillStyle = _SHARE_CARD_PLATE;
+  ctx.fill();
+  // Rim
+  ctx.lineWidth = 8;
+  ctx.strokeStyle = _SHARE_CARD_RIM;
+  ctx.stroke();
+  // Portrait (clipped to inner circle so the rim shows on top)
+  if (t.image) {
+    try {
+      const img = await _loadCardImage(t.image, 1500);
+      ctx.save();
+      const innerR = portraitR - 6;
+      ctx.beginPath();
+      ctx.arc(cx, portraitCy, innerR, 0, Math.PI * 2);
+      ctx.clip();
+      // Cover-fit: fill the circle regardless of the source aspect ratio.
+      const iw = img.naturalWidth || img.width;
+      const ih = img.naturalHeight || img.height;
+      const scale = Math.max((innerR * 2) / iw, (innerR * 2) / ih);
+      const dw = iw * scale, dh = ih * scale;
+      const dx = cx - dw / 2;
+      // Nudge upward ~10% so faces don't get cropped chin-first (matches
+      // the existing portrait crop in .thinker-intro-portrait CSS which
+      // uses object-position: center 20%).
+      const dy = (portraitCy - dh / 2) - dh * 0.08;
+      ctx.drawImage(img, dx, dy, dw, dh);
+      ctx.restore();
+    } catch(e) {
+      // Portrait failed — plate + rim already drew; continue with a text
+      // fallback badge (first initial) so the composition holds.
+      ctx.fillStyle = theme.wordmark;
+      ctx.font = '800 120px Nunito, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText((t.name || '?').slice(0, 1), cx, portraitCy);
+      ctx.textBaseline = 'top';
+    }
+  }
+  y = portraitCy + portraitR + 60;
+
+  // ── Thinker name ──────────────────────────────────────────────────────
+  ctx.fillStyle = theme.name;
+  ctx.font = '900 48px Nunito, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(t.name, cx, y);
+  y += 62;
+
+  // ── Era ───────────────────────────────────────────────────────────────
+  if (t.era) {
+    ctx.fillStyle = theme.era;
+    ctx.font = '600 26px "DM Sans", sans-serif';
+    ctx.fillText(t.era, cx, y);
+    y += 60;
+  } else {
+    y += 20;
+  }
+
+  // ── Hero question (shrink-to-fit, up to 3 lines) ──────────────────────
+  const questionText = String(dayTitle || '').trim();
+  if (questionText) {
+    const maxWidth = W - 160;   // 80px side gutter each side
+    const { size, lines } = _fitQuestion(ctx, questionText, maxWidth, 3, 'Nunito, sans-serif');
+    ctx.fillStyle = theme.question;
+    ctx.font = `800 ${size}px Nunito, sans-serif`;
+    const lineHeight = size * 1.2;
+    for (const line of lines) {
+      ctx.fillText(line, cx, y);
+      y += lineHeight;
+    }
+    y += 20;
+  }
+
+  // ── Gold divider ──────────────────────────────────────────────────────
+  ctx.strokeStyle = _SHARE_CARD_RIM;
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(cx - 60, y);
+  ctx.lineTo(cx + 60, y);
+  ctx.stroke();
+  y += 44;
+
+  // ── Tagline ───────────────────────────────────────────────────────────
+  const tagline = isEn
+    ? "5 minutes a day with history's greatest minds"
+    : '5 דקות ביום עם גדולי ההוגים';
+  ctx.fillStyle = theme.era;
+  ctx.font = '500 24px "DM Sans", sans-serif';
+  ctx.fillText(tagline, cx, y);
+  y += 44;
+
+  // ── URL ───────────────────────────────────────────────────────────────
+  ctx.fillStyle = _SHARE_CARD_URL_TXT;
+  ctx.font = '700 24px "DM Sans", sans-serif';
+  ctx.fillText('corpusapp.io', cx, y);
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      blob => blob ? resolve(blob) : reject(new Error('toBlob returned null')),
+      'image/png'
+    );
+  });
+}
+
+// Debug hook — call from DevTools to render a card into the DOM for visual
+// review. Usage: window._debugShareCard('kant', 'What is enlightenment?')
+window._debugShareCard = async function(thinkerId, dayTitle) {
+  const t = getT().find(x => x.id === thinkerId);
+  const title = dayTitle || (t && (state.lang === 'en' ? 'What is enlightenment?' : 'מהי הנאורות?')) || 'Sample question';
+  try {
+    const blob = await generateShareCard(thinkerId, title);
+    document.querySelectorAll('.debug-share-card').forEach(el => el.remove());
+    const wrap = document.createElement('div');
+    wrap.className = 'debug-share-card';
+    wrap.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out';
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(blob);
+    img.style.cssText = 'max-width:100%;max-height:100%;box-shadow:0 20px 60px rgba(0,0,0,0.5)';
+    wrap.appendChild(img);
+    wrap.addEventListener('click', () => wrap.remove());
+    document.body.appendChild(wrap);
+    console.log('[debugShareCard] blob size', blob.size);
+    return blob;
+  } catch(e) {
+    console.error('[debugShareCard] failed', e);
+    throw e;
+  }
+};
+
 async function _shareCorpus(source, text) {
   const url = getShareUrl();
   const full = text + ' ' + url;
   if (navigator.share) {
     try {
       await navigator.share({ title: 'Corpus', text: text, url });
-      try { posthog.capture('share_initiated', { source: source, method: 'native' }); } catch(e) {}
+      try { posthog.capture('share_initiated', { source: source, method: 'native', card: false }); } catch(e) {}
     } catch(e) {
       // User cancelled the OS share sheet — normal, no telemetry, no fallback.
     }
@@ -16762,7 +17040,7 @@ async function _shareCorpus(source, text) {
     document.body.appendChild(ta); ta.select(); document.execCommand('copy');
     document.body.removeChild(ta);
   }
-  try { posthog.capture('share_initiated', { source: source, method: 'clipboard' }); } catch(e) {}
+  try { posthog.capture('share_initiated', { source: source, method: 'clipboard', card: false }); } catch(e) {}
   try {
     const msg = state.lang === 'en' ? 'Link copied!' : 'הקישור הועתק';
     showStreakToast(msg);
@@ -16770,25 +17048,29 @@ async function _shareCorpus(source, text) {
 }
 
 // Reads the current day (state.currentWeek / state.currentDay) to build a
-// contextual completion message. Falls back to the generic message if the
-// day has no thinkerId or the lookup can't resolve the title.
+// contextual completion message. Tries the generated share-card path first
+// when the day has a thinkerId — the OS share sheet then receives an image
+// file plus the text. Falls back to text-only share silently if:
+//   - no thinkerId on the day
+//   - card generation throws
+//   - card generation exceeds a 2s budget
+//   - navigator.canShare doesn't accept files (older Android WebViews)
+// The user must never wait more than 2s on card generation.
 function shareCompletion() {
   const chapter = getW().find(w => w.id === state.currentWeek);
   const day = chapter ? chapter.days.find(d => d.id === state.currentDay) : null;
   const isEn = state.lang === 'en';
   let title = day ? (isEn ? (day.titleEn || day.title) : (day.title || day.titleEn)) : '';
-  // The dialogue title is phrased as a question — keep the author's own end
-  // punctuation if present (?, !, ., …), otherwise append the Hebrew/English
-  // question mark to match the "השאלה:/on:" framing of the message.
   if (title) {
     const trimmed = title.trim();
     const lastChar = trimmed.slice(-1);
     if (!/[?!.…؟]/.test(lastChar)) title = trimmed + (isEn ? '?' : '?');
     else title = trimmed;
   }
+  const thinkerId = day && day.thinkerId ? day.thinkerId : null;
   let thinkerName = '';
-  if (day && day.thinkerId) {
-    const t = getT().find(x => x.id === day.thinkerId);
+  if (thinkerId) {
+    const t = getT().find(x => x.id === thinkerId);
     if (t) thinkerName = t.name;
   }
   let text;
@@ -16801,7 +17083,47 @@ function shareCompletion() {
       ? 'Just finished a dialogue on Corpus. Try Corpus too:'
       : 'סיימתי עכשיו דיאלוג ב-Corpus. נסה גם את Corpus:';
   }
-  _shareCorpus('completion_modal', text);
+  if (thinkerId && title) {
+    _shareCorpusWithCard('completion_modal', text, thinkerId, title);
+  } else {
+    _shareCorpus('completion_modal', text);
+  }
+}
+
+// Runs the card-generation attempt behind a 2s budget, then routes to
+// navigator.share with the file attached. If any step fails (generation,
+// canShare check, share call), silently falls back to the plain-text share.
+async function _shareCorpusWithCard(source, text, thinkerId, dayTitle) {
+  const url = getShareUrl();
+  let blob = null;
+  try {
+    blob = await Promise.race([
+      generateShareCard(thinkerId, dayTitle),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('card timeout')), 2000))
+    ]);
+  } catch(e) {
+    // Generation failed or timed out — fall through to text share.
+    console.warn('[shareCard] generation failed, falling back to text', e);
+    return _shareCorpus(source, text);
+  }
+  // Feature-detect files support. Safari + modern Chrome/Firefox implement
+  // canShare; older Android WebViews may not — treat as unsupported.
+  const file = new File([blob], 'corpus.png', { type: 'image/png' });
+  const payload = { title: 'Corpus', text: text, url: url, files: [file] };
+  const supported = !!(navigator.share && navigator.canShare && navigator.canShare({ files: [file] }));
+  if (!supported) {
+    return _shareCorpus(source, text);
+  }
+  try {
+    await navigator.share(payload);
+    try { posthog.capture('share_initiated', { source: source, method: 'native', card: true }); } catch(e) {}
+  } catch(e) {
+    // User cancelled the share sheet, or the OS rejected the file. Cancellation
+    // matches _shareCorpus's silent policy; a rejection retries text-only.
+    if (e && e.name !== 'AbortError') {
+      return _shareCorpus(source, text);
+    }
+  }
 }
 
 function shareCorpusFromProfile() {
