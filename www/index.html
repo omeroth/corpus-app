@@ -16979,16 +16979,29 @@ async function generateShareCard(thinkerId, dayTitle, subject) {
   y += 62;
 
   // ── Era ───────────────────────────────────────────────────────────────
+  // Wrap the era string in Unicode LRI/PDI (U+2066 / U+2069) so the numeric
+  // range always reads in logical order regardless of the canvas's paragraph
+  // direction. Without the isolation, Hebrew (ctx.direction='rtl') was
+  // rendering "1723–1790" as "1790–1723" on some Chromium builds — the en
+  // dash counts as a weak neutral, and the surrounding RTL context flipped
+  // the visual order of the two numeric runs.
   if (t.era) {
     ctx.fillStyle = theme.era;
     ctx.font = '600 26px "DM Sans", sans-serif';
-    ctx.fillText(t.era, cx, y);
+    // ⁦ = LRI (Left-to-Right Isolate), ⁩ = PDI (Pop Directional Isolate)
+    ctx.fillText('⁦' + t.era + '⁩', cx, y);
     y += 60;
   } else {
     y += 20;
   }
 
   // ── Hero question (shrink-to-fit, up to 3 lines) ──────────────────────
+  // In RTL languages the manual word-wrap helper produces per-line strings
+  // whose base direction the canvas re-resolves from first strong char.
+  // A Hebrew title ending in "?" (or " ") had the trailing neutral drift
+  // to the visual start of the line because the wrap dropped the paragraph
+  // context. Prefix RTL lines with RLM (U+200F) to lock base direction so
+  // trailing "?", quotes, and other neutrals stay on the visual left.
   const questionText = String(dayTitle || '').trim();
   if (questionText) {
     const maxWidth = W - 160;   // 80px side gutter each side
@@ -16996,8 +17009,11 @@ async function generateShareCard(thinkerId, dayTitle, subject) {
     ctx.fillStyle = theme.question;
     ctx.font = `800 ${size}px Nunito, sans-serif`;
     const lineHeight = size * 1.2;
+    const RLM = '‏';       // Right-to-Left Mark — invisible base-direction lock
+    const isRTL = !isEn;
     for (const line of lines) {
-      ctx.fillText(line, cx, y);
+      const rendered = isRTL ? (RLM + line + RLM) : line;
+      ctx.fillText(rendered, cx, y);
       y += lineHeight;
     }
     y += 20;
