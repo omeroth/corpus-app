@@ -4,8 +4,13 @@
 // Reads the dialogue data structures out of index.html (corpusData +
 // economicsData + THINKERS + THINKERS_EN), then for every dialogue that has
 // a thinkerId, renders:
-//   share/cards/<lang>/<weekId>-<dayId>.png    — 1200×630 OG image
-//   d/<weekId>-<dayId>-<lang>.html             — landing page with OG tags
+//   share/cards/<lang>/<subject>-<weekId>-<dayId>.png    — 1200×630 OG image
+//   d/<subject>-<weekId>-<dayId>-<lang>.html             — landing page with OG tags
+//
+// The subject prefix (phil / econ / psyc) is what keeps philosophy week 1
+// day 1 from silently clobbering economics week 1 day 1 (both data
+// sources use the same numeric week/day ids). Keep _SUBJECT_SLUG below
+// byte-identical to the mirror in index.html's shareCompletion.
 // Both languages, both subject palettes. Also emits share/cards/manifest.json.
 //
 // This is a Node ESM script (.mjs) — run via `npm run gen:share` (see
@@ -136,6 +141,15 @@ const THEMES = {
   philosophy: { bg: '#F0EAFC', wordmark: '#7B4FD4', name: '#3D2E66', era: '#9A85C4', question: '#4A3580' },
   economics:  { bg: '#E8F0FC', wordmark: '#2563EB', name: '#1E3A66', era: '#7E9BC8', question: '#1D4ED8' },
   psychology: { bg: '#FEF3D8', wordmark: '#F59E0B', name: '#5C3306', era: '#B08A45', question: '#92400E' },
+};
+
+// Slug prefix keeps philosophy 1-1 and economics 1-1 (both real, both
+// legitimate) from stomping on each other's page/card files. Kept in
+// lockstep with the mirror inside index.html's shareCompletion.
+const _SUBJECT_SLUG = {
+  philosophy: 'phil',
+  economics:  'econ',
+  psychology: 'psyc',
 };
 const PLATE   = '#FDFBF6';
 const RIM     = '#E5C158';
@@ -319,7 +333,8 @@ function renderPage({ weekId, dayId, thinker, dayTitle, dayIntro, subject, lang 
   const isEn = lang === 'en';
   const dir = isEn ? 'ltr' : 'rtl';
   const theme = THEMES[subject] || THEMES.philosophy;
-  const cardUrl = `${SITE_URL}/share/cards/${lang}/${weekId}-${dayId}.png`;
+  const slug = _SUBJECT_SLUG[subject] || 'phil';
+  const cardUrl = `${SITE_URL}/share/cards/${lang}/${slug}-${weekId}-${dayId}.png`;
   const title = dayTitle || 'Corpus';
   const description = isEn
     ? `A dialogue with ${thinker.name} on Corpus — 5 minutes a day with history's greatest minds.`
@@ -347,7 +362,7 @@ function renderPage({ weekId, dayId, thinker, dayTitle, dayIntro, subject, lang 
 <meta property="og:image" content="${cardUrl}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:url" content="${SITE_URL}/d/${weekId}-${dayId}-${lang}.html">
+<meta property="og:url" content="${SITE_URL}/d/${slug}-${weekId}-${dayId}-${lang}.html">
 <meta property="og:site_name" content="Corpus">
 <meta property="og:locale" content="${isEn ? 'en_US' : 'he_IL'}">
 
@@ -512,7 +527,7 @@ async function main() {
     { subject: 'economics',  data: economicsData },
   ];
 
-  // Manifest maps (weekId, dayId, lang) → generated card path.
+  // Manifest maps (subject, weekId, dayId, lang) → generated card + page paths.
   const manifest = { generatedAt: new Date().toISOString(), items: [] };
 
   for (const { subject, data } of subjects) {
@@ -538,16 +553,18 @@ async function main() {
             : (day.title    || day.titleEn);
           if (!dayTitle) continue;
 
+          const slug = _SUBJECT_SLUG[subject] || 'phil';
+
           // Card PNG
           const cardDir  = path.join(OUT_CARDS, lang);
-          const cardFile = path.join(cardDir, `${week.id}-${day.id}.png`);
+          const cardFile = path.join(cardDir, `${slug}-${week.id}-${day.id}.png`);
           fs.mkdirSync(cardDir, { recursive: true });
           const buf = await renderCard({ thinker, dayTitle, subject, lang });
           fs.writeFileSync(cardFile, buf);
 
           // HTML landing page
           fs.mkdirSync(OUT_PAGES, { recursive: true });
-          const pageFile = path.join(OUT_PAGES, `${week.id}-${day.id}-${lang}.html`);
+          const pageFile = path.join(OUT_PAGES, `${slug}-${week.id}-${day.id}-${lang}.html`);
           fs.writeFileSync(pageFile, renderPage({
             weekId:   week.id,
             dayId:    day.id,
@@ -565,8 +582,8 @@ async function main() {
             lang,
             thinkerId: day.thinkerId,
             title:  dayTitle,
-            card:   `share/cards/${lang}/${week.id}-${day.id}.png`,
-            page:   `d/${week.id}-${day.id}-${lang}.html`,
+            card:   `share/cards/${lang}/${slug}-${week.id}-${day.id}.png`,
+            page:   `d/${slug}-${week.id}-${day.id}-${lang}.html`,
           });
         }
       }

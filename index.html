@@ -16856,7 +16856,12 @@ function shareCompletion() {
   let overrideUrl = null;
   if (thinkerId && title && state.currentWeek != null && state.currentDay != null) {
     const lang = isEn ? 'en' : 'he';
-    overrideUrl = `https://corpusapp.io/d/${state.currentWeek}-${state.currentDay}-${lang}.html`;
+    // Subject-prefixed slug avoids the philosophy 1-1 vs economics 1-1
+    // collision (both data sources use the same numeric week/day ids).
+    // Kept in lockstep with _SUBJECT_SLUG inside scripts/generate-share-cards.mjs.
+    const _SUBJECT_SLUG = { philosophy: 'phil', economics: 'econ', psychology: 'psyc' };
+    const slug = _SUBJECT_SLUG[state.subject] || 'phil';
+    overrideUrl = `https://corpusapp.io/d/${slug}-${state.currentWeek}-${state.currentDay}-${lang}.html`;
   }
   _shareCorpus('completion_modal', text, overrideUrl);
 }
