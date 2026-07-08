@@ -6365,7 +6365,7 @@
 // App Store release. The iOS-only update-banner checkForUpdate() compares
 // this against corpusapp.io/version.json to decide whether to prompt the
 // user to grab the newest App Store build.
-const APP_VERSION = '1.0.4';
+const APP_VERSION = '1.0.5';
 
 const SUPABASE_URL = 'https://xcoikjoatcrjqxzykwlt.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhjb2lram9hdGNyanF4enlrd2x0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMjc5NjYsImV4cCI6MjA4OTcwMzk2Nn0.5EhOsN9M4_kLYoRKO97dPGof8RN7PteXQrtKyx4CcKI';
@@ -16742,18 +16742,24 @@ function showSharePrompt(onDone) {
 // ═══════════════════════════════════════════════════════════════════════
 // Share card generator + share entry points
 // ═══════════════════════════════════════════════════════════════════════
-// Restored file-share flow. The completion Share button generates a
-// 1080×1350 PNG at runtime and hands it to navigator.share({ files }); the
-// text + url that ride along point at the App Store (iOS) or corpusapp.io
-// (web/Android) via getShareUrl() — the direct destination. The generated
-// /d/<slug>-<w>-<d>-<lang>.html landing pages still ship at build time and
-// remain reachable via that URL — they're just unused by the in-app flow.
+// Landing-page share flow. The completion Share button hands the OS share
+// sheet a text + URL only — no file attachment. The URL points at the
+// build-generated /d/<slug>-<w>-<d>-<lang>.html landing page (see
+// scripts/generate-share-cards.mjs), which carries the OG image and
+// redirects human visitors to the store. WhatsApp/Twitter/etc render the
+// card via OG tags; the client tap redirect handles the store handoff.
+// This intentionally moves away from navigator.share({ files }): sharing a
+// File turns WhatsApp into an image-editor picker and drops the caption
+// URL, breaking the preview flow we want.
 //
-// Reentrancy: the outer entry points (shareCompletion,
-// shareCorpusFromProfile) guard on _shareInFlight so a double-tap can't
-// stack two share sheets. Both `_shareCorpus` (text) and
-// `_shareCorpusWithCard` (file) are guard-free primitives so the guarded
-// entry can safely delegate between them.
+// Profile share (shareCorpusFromProfile) still uses getShareUrl() — the
+// direct App Store / marketing site link — because there's no dialogue
+// context to land on.
+//
+// generateShareCard() remains in the file for _debugShareCard (dev tool);
+// no user-facing surface calls it any more. Reentrancy: shareCompletion +
+// shareCorpusFromProfile still guard on _shareInFlight so a double-tap
+// can't stack two share sheets.
 
 // Per-theme color mapping for the generated PNG. Kept as a plain object so
 // a device in dark mode still gets a light card that reads on any social
@@ -17030,11 +17036,12 @@ function _withShareGuard(fn) {
   });
 }
 
-// TEXT share primitive — no guard (caller's responsibility). Used both as a
-// direct path (profile row) and as the file-share fallback when card
-// generation fails.
-async function _shareCorpus(source, text) {
-  const url = getShareUrl();
+// TEXT + URL share primitive — no guard (caller's responsibility). Used by
+// every share entry point. Callers that have a canonical landing-page URL
+// (shareCompletion → /d/…) pass it as overrideUrl; callers without one
+// (shareCorpusFromProfile) fall through to getShareUrl() = store/site.
+async function _shareCorpus(source, text, overrideUrl) {
+  const url = overrideUrl || getShareUrl();
   const full = text + ' ' + url;
   if (navigator.share) {
     try {
@@ -17059,53 +17066,25 @@ async function _shareCorpus(source, text) {
   } catch(e) {}
 }
 
-// FILE share primitive — no guard (caller's responsibility). Generates the
-// card, hands it to navigator.share({ files }) alongside text + URL (the
-// direct App Store / web link from getShareUrl(), NOT a /d/ page). Every
-// failure path silently falls back to _shareCorpus(text). Card generation
-// is behind a 2s budget so the user never waits.
-async function _shareCorpusWithCard(source, text, thinkerId, dayTitle, subject) {
-  const url = getShareUrl();
-  let blob = null;
-  try {
-    blob = await Promise.race([
-      generateShareCard(thinkerId, dayTitle, subject),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('card timeout')), 2000))
-    ]);
-  } catch(e) {
-    console.warn('[shareCard] generation failed, falling back to text', e);
-    return _shareCorpus(source, text);
-  }
-  const file = new File([blob], 'corpus.png', { type: 'image/png' });
-  const payload = { title: 'Corpus', text: text, url: url, files: [file] };
-  const supported = !!(navigator.share && navigator.canShare && navigator.canShare({ files: [file] }));
-  if (!supported) {
-    return _shareCorpus(source, text);
-  }
-  try {
-    await navigator.share(payload);
-    try { posthog.capture('share_initiated', { source: source, method: 'native', card: true }); } catch(e) {}
-    // Post-share follow-up: WhatsApp-style targets accept the image but
-    // drop the accompanying text/url. Copy the URL to clipboard + toast so
-    // the user can paste the link with one more tap. Fires only on the
-    // successful FILE share — text fallback has the URL in the body already.
-    try {
-      await navigator.clipboard.writeText(url);
-      const _isEn = state.lang === 'en';
-      const _msg = _isEn ? 'Link copied, paste it to add' : 'רוצה לצרף קישור? הועתק ללוח';
-      try { showStreakToast(_msg); } catch(e) {}
-    } catch(e) {}
-  } catch(e) {
-    if (e && e.name !== 'AbortError') {
-      return _shareCorpus(source, text);
-    }
-  }
-}
+// Subject → landing-page slug prefix. Must stay in lockstep with the mirror
+// in scripts/generate-share-cards.mjs (_SUBJECT_SLUG); the generator writes
+// files as /d/<prefix>-<weekId>-<dayId>-<lang>.html, and this map is what
+// the in-app share URL builder uses to hit the correct one.
+const _SHARE_SLUG_PREFIX = {
+  philosophy: 'phil',
+  economics:  'econ',
+  psychology: 'psyc',
+};
 
-// Reads state.currentWeek/Day, composes the message, and hands the whole
-// thing to the file-share path when a thinkerId is present. Guarded so the
-// user's rapid double-tap on the completion Share button produces exactly
-// one share sheet.
+// Reads state.currentWeek/Day, composes the message, builds the canonical
+// /d/ landing-page URL, and shares text + URL. WhatsApp/Twitter/etc render
+// the OG card from the landing page; the tap-through JS on that page
+// redirects visitors to the store. No file attachment: sharing a File
+// turns WhatsApp into an image editor and drops the URL, which breaks the
+// preview flow.
+//
+// Guarded so a rapid double-tap on the completion Share button produces
+// exactly one share sheet.
 function shareCompletion() {
   _withShareGuard(async () => {
     const chapter = getW().find(w => w.id === state.currentWeek);
@@ -17134,11 +17113,18 @@ function shareCompletion() {
         ? 'Just finished a dialogue on Corpus. Try Corpus too:'
         : 'סיימתי עכשיו דיאלוג ב-Corpus. נסה גם את Corpus:';
     }
-    if (thinkerId && title) {
-      await _shareCorpusWithCard('completion_modal', text, thinkerId, title, state.subject);
-    } else {
-      await _shareCorpus('completion_modal', text);
+    // Build the /d/ landing-page URL only when the dialogue has both a
+    // thinker (so a page was generated) and current week/day are set.
+    // Otherwise fall through to the profile-style store link — better than
+    // a 404-inducing malformed slug.
+    let overrideUrl;
+    if (thinkerId && state.currentWeek && state.currentDay) {
+      const subject = _subjectForThinker(thinkerId) || state.subject || 'philosophy';
+      const slug = _SHARE_SLUG_PREFIX[subject] || 'phil';
+      const lang = isEn ? 'en' : 'he';
+      overrideUrl = `https://corpusapp.io/d/${slug}-${state.currentWeek}-${state.currentDay}-${lang}.html`;
     }
+    await _shareCorpus('completion_modal', text, overrideUrl);
   });
 }
 
