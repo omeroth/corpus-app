@@ -57,3 +57,8 @@ android/.gradle/
 # GitHub Actions Pages deploy assembly directory (only exists on the runner,
 # but if you ever invoke the workflow locally it lands here).
 _deploy/
+
+# Share-card generator: font TTFs are downloaded locally, not committed
+# (see scripts/fonts/README.md). Generated cards + pages are committed so
+# GitHub Pages can serve them without a CI generation step.
+scripts/fonts/*.ttf
