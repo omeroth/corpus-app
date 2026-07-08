@@ -16904,17 +16904,32 @@ async function generateShareCard(thinkerId, dayTitle) {
       ctx.beginPath();
       ctx.arc(cx, portraitCy, innerR, 0, Math.PI * 2);
       ctx.clip();
-      // Cover-fit: fill the circle regardless of the source aspect ratio.
+      // Face-first crop for tall portrait illustrations. The source images
+      // are painterly full-figure compositions with the face sitting in the
+      // upper portion; a plain cover-fit shows the whole figure and shrinks
+      // the face inside the circle. Instead:
+      //   1. Take a source rectangle that starts ~10% down from the top and
+      //      spans ~58% of the image height (roughly the face + shoulders).
+      //   2. Cover-fit THAT rect into the destination circle.
+      // Tuning knobs — bump PORTRAIT_CROP_TOP_RATIO to shift the crop down,
+      // shrink PORTRAIT_CROP_HEIGHT_RATIO to zoom the face in further.
+      const PORTRAIT_CROP_TOP_RATIO    = 0.10;   // 10% from top of source
+      const PORTRAIT_CROP_HEIGHT_RATIO = 0.58;   // capture top 58% of height
       const iw = img.naturalWidth || img.width;
       const ih = img.naturalHeight || img.height;
-      const scale = Math.max((innerR * 2) / iw, (innerR * 2) / ih);
-      const dw = iw * scale, dh = ih * scale;
+      const sx = 0;
+      const sy = ih * PORTRAIT_CROP_TOP_RATIO;
+      const sw = iw;
+      const sh = ih * PORTRAIT_CROP_HEIGHT_RATIO;
+      // Cover-fit the CROPPED source rect into the innerR*2 destination square
+      // (the clip path already narrows that square to a circle). Horizontal
+      // centering is preserved because sx=0 and sw=iw — the browser scales
+      // the full width uniformly, then dx = cx - dw/2 recenters.
+      const scale = Math.max((innerR * 2) / sw, (innerR * 2) / sh);
+      const dw = sw * scale, dh = sh * scale;
       const dx = cx - dw / 2;
-      // Nudge upward ~10% so faces don't get cropped chin-first (matches
-      // the existing portrait crop in .thinker-intro-portrait CSS which
-      // uses object-position: center 20%).
-      const dy = (portraitCy - dh / 2) - dh * 0.08;
-      ctx.drawImage(img, dx, dy, dw, dh);
+      const dy = portraitCy - dh / 2;
+      ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
       ctx.restore();
     } catch(e) {
       // Portrait failed — plate + rim already drew; continue with a text
