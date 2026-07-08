@@ -48,94 +48,46 @@
     max-width: 720px;
     margin: 0 auto;
     padding: 48px 24px 64px;
-    text-align: right;
+    text-align: center;
   }
   .wordmark {
-    font-family: 'Rubik', sans-serif;
     font-weight: 600;
     font-size: 22px;
     color: var(--wordmark);
     letter-spacing: -.01em;
     margin-bottom: 32px;
   }
-  .portrait-wrap {
-    display: flex;
-    justify-content: center;
-    margin: 24px 0 32px;
+  .card {
+    display: block;
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto 32px;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   }
-  .portrait {
-    width: 180px; height: 180px;
-    border-radius: 50%;
-    background: var(--plate);
-    border: 6px solid var(--rim);
-    background-size: cover;
-    background-position: center 20%;
-  }
-  h1 {
-    font-family: 'Rubik', sans-serif;
-    font-weight: 800;
-    color: var(--question);
-    font-size: clamp(28px, 5vw, 44px);
-    line-height: 1.25;
-    letter-spacing: -.01em;
-    margin-bottom: 20px;
-  }
-  .thinker {
-    font-family: 'Rubik', sans-serif;
-    font-weight: 900;
-    color: var(--name);
-    font-size: 20px;
-  }
-  .era {
-    color: var(--era);
+  .redirecting {
     font-weight: 600;
-    font-size: 15px;
-    margin-bottom: 24px;
-  }
-  .divider {
-    height: 3px; width: 64px;
-    background: var(--rim);
-    margin: 0 0 24px auto;
-    border-radius: 3px;
-  }
-  .teaser {
-    font-size: 17px;
-    line-height: 1.75;
+    font-size: 18px;
     color: var(--name);
-    margin-bottom: 40px;
-    opacity: 0.9;
-  }
-  .cta-row {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+    opacity: 0.75;
   }
   .cta {
     display: inline-flex;
     align-items: center;
-    padding: 12px 20px;
+    padding: 14px 28px;
     border-radius: 999px;
-    font-family: 'Rubik', sans-serif;
     font-weight: 700;
-    font-size: 15px;
+    font-size: 16px;
     text-decoration: none;
-    transition: transform .15s;
-  }
-  .cta.primary {
     background: var(--wordmark);
     color: #FFFFFF;
+    transition: transform .15s;
   }
-  .cta.secondary {
-    background: transparent;
-    color: var(--wordmark);
-    border: 1.5px solid var(--wordmark);
-    opacity: 0.7;
-    cursor: default;
-  }
-  .cta.primary:active { transform: scale(.97); }
+  .cta:active { transform: scale(.97); }
   .url {
+    display: block;
+    margin-top: 32px;
     color: var(--url);
     font-weight: 700;
     font-size: 14px;
@@ -146,19 +98,29 @@
 <body>
 <main>
   <div class="wordmark">Corpus</div>
-  <div class="portrait-wrap">
-    <div class="portrait" style="background-image:url(https://corpusapp.io/images/russell.webp)"></div>
-  </div>
-  <h1>הכלא של הוודאות</h1>
-  <div class="thinker">ברטרנד ראסל</div>
-  <div class="era">1872–1970</div>
-  <div class="divider"></div>
-  <p class="teaser">דמיין אדם שגדל בקהילה שבה ״זמן הוא כסף״. הוא מעולם לא פקפק בזה ופועל כך פשוט כי כולם סביבו עושים זאת. עבורו, מי שנח בצהריים הוא ״עצלן״.</p>
-  <div class="cta-row">
-    <a class="cta primary" href="https://apps.apple.com/app/id6781227385">הורדה מ-App Store</a>
-    <span class="cta secondary">בקרוב ב-Google Play</span>
-  </div>
+  <img class="card" src="https://corpusapp.io/share/cards/he/phil-1-4.png" alt="הכלא של הוודאות — ברטרנד ראסל" width="1200" height="630">
+  <p class="redirecting">פותח את Corpus…</p>
+  <a class="cta" id="manual" href="https://apps.apple.com/app/id6781227385">פתח את Corpus</a>
   <a class="url" href="https://corpusapp.io">corpusapp.io</a>
 </main>
+<script>
+  // Client-side redirect. Preview crawlers (facebookexternalhit, WhatsApp,
+  // Twitterbot, Slackbot, LinkedInBot) don't execute JS, so they only see the
+  // OG tags above — the card renders as a link preview. Human visitors get
+  // bounced to the right store on tap.
+  (function () {
+    var ua = navigator.userAgent || '';
+    var isIOS     = /iPhone|iPad|iPod/i.test(ua);
+    var isAndroid = /Android/i.test(ua);
+    var target = "https://corpusapp.io";
+    if (isIOS)          target = "https://apps.apple.com/app/id6781227385";
+    else if (isAndroid) target = "https://apps.apple.com/app/id6781227385";
+    var manual = document.getElementById('manual');
+    if (manual) manual.href = target;
+    // Delay one tick so the visible fallback flashes long enough to explain
+    // what's happening if the store app takes a moment to open.
+    setTimeout(function () { location.replace(target); }, 250);
+  })();
+</script>
 </body>
 </html>

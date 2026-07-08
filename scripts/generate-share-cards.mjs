@@ -360,7 +360,7 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-function renderPage({ weekId, dayId, thinker, dayTitle, dayIntro, subject, lang }) {
+function renderPage({ weekId, dayId, thinker, dayTitle, subject, lang }) {
   const isEn = lang === 'en';
   const dir = isEn ? 'ltr' : 'rtl';
   const theme = THEMES[subject] || THEMES.philosophy;
@@ -370,15 +370,15 @@ function renderPage({ weekId, dayId, thinker, dayTitle, dayIntro, subject, lang 
   const description = isEn
     ? `A dialogue with ${thinker.name} on Corpus — 5 minutes a day with history's greatest minds.`
     : `דיאלוג עם ${thinker.name} ב-Corpus — 5 דקות ביום עם גדולי ההוגים.`;
-  const teaser = dayIntro
-    ? String(dayIntro).trim().slice(0, 320)
-    : (isEn
-        ? `Corpus turns a dialogue with ${thinker.name} into a 5-minute daily habit — read a scenario, answer questions, and see how the great minds approached the same problem.`
-        : `Corpus הופך דיאלוג עם ${thinker.name} להרגל יומי של חמש דקות — קוראים סצנה, עונים על שאלות, ומגלים איך הוגי הדעות הגדולים ניגשו לאותה בעיה.`);
-  const store = {
-    ios:  isEn ? 'Download on the App Store' : 'הורדה מ-App Store',
-    play: isEn ? 'Coming to Google Play'      : 'בקרוב ב-Google Play',
-  };
+  // Redirect destinations. Play Store listing is not public yet (see
+  // index.html:16655), so Android falls back to the App Store — same as iOS.
+  // Desktop drops back to the marketing site so a shared link on X/Slack
+  // still opens something usable when tapped from a laptop.
+  const IOS_URL     = 'https://apps.apple.com/app/id6781227385';
+  const ANDROID_URL = 'https://apps.apple.com/app/id6781227385';
+  const DESKTOP_URL = 'https://corpusapp.io';
+  const redirectingText = isEn ? 'Opening Corpus…' : 'פותח את Corpus…';
+  const manualCTA       = isEn ? 'Open Corpus'    : 'פתח את Corpus';
   return `<!doctype html>
 <html lang="${lang}" dir="${dir}">
 <head>
@@ -429,94 +429,46 @@ function renderPage({ weekId, dayId, thinker, dayTitle, dayIntro, subject, lang 
     max-width: 720px;
     margin: 0 auto;
     padding: 48px 24px 64px;
-    text-align: ${isEn ? 'left' : 'right'};
+    text-align: center;
   }
   .wordmark {
-    font-family: 'Rubik', sans-serif;
     font-weight: 600;
     font-size: 22px;
     color: var(--wordmark);
     letter-spacing: -.01em;
     margin-bottom: 32px;
   }
-  .portrait-wrap {
-    display: flex;
-    justify-content: center;
-    margin: 24px 0 32px;
+  .card {
+    display: block;
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto 32px;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   }
-  .portrait {
-    width: 180px; height: 180px;
-    border-radius: 50%;
-    background: var(--plate);
-    border: 6px solid var(--rim);
-    background-size: cover;
-    background-position: center 20%;
-  }
-  h1 {
-    font-family: 'Rubik', sans-serif;
-    font-weight: 800;
-    color: var(--question);
-    font-size: clamp(28px, 5vw, 44px);
-    line-height: 1.25;
-    letter-spacing: -.01em;
-    margin-bottom: 20px;
-  }
-  .thinker {
-    font-family: 'Rubik', sans-serif;
-    font-weight: 900;
-    color: var(--name);
-    font-size: 20px;
-  }
-  .era {
-    color: var(--era);
+  .redirecting {
     font-weight: 600;
-    font-size: 15px;
-    margin-bottom: 24px;
-  }
-  .divider {
-    height: 3px; width: 64px;
-    background: var(--rim);
-    margin: ${isEn ? '0 0 24px 0' : '0 0 24px auto'};
-    border-radius: 3px;
-  }
-  .teaser {
-    font-size: 17px;
-    line-height: 1.75;
+    font-size: 18px;
     color: var(--name);
-    margin-bottom: 40px;
-    opacity: 0.9;
-  }
-  .cta-row {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: ${isEn ? 'flex-start' : 'flex-end'};
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+    opacity: 0.75;
   }
   .cta {
     display: inline-flex;
     align-items: center;
-    padding: 12px 20px;
+    padding: 14px 28px;
     border-radius: 999px;
-    font-family: 'Rubik', sans-serif;
     font-weight: 700;
-    font-size: 15px;
+    font-size: 16px;
     text-decoration: none;
-    transition: transform .15s;
-  }
-  .cta.primary {
     background: var(--wordmark);
     color: #FFFFFF;
+    transition: transform .15s;
   }
-  .cta.secondary {
-    background: transparent;
-    color: var(--wordmark);
-    border: 1.5px solid var(--wordmark);
-    opacity: 0.7;
-    cursor: default;
-  }
-  .cta.primary:active { transform: scale(.97); }
+  .cta:active { transform: scale(.97); }
   .url {
+    display: block;
+    margin-top: 32px;
     color: var(--url);
     font-weight: 700;
     font-size: 14px;
@@ -527,20 +479,30 @@ function renderPage({ weekId, dayId, thinker, dayTitle, dayIntro, subject, lang 
 <body>
 <main>
   <div class="wordmark">Corpus</div>
-  <div class="portrait-wrap">
-    <div class="portrait" style="background-image:url(${escapeHtml(thinker.image ? SITE_URL + '/' + thinker.image.replace(/^\.\//, '') : '')})"></div>
-  </div>
-  <h1>${escapeHtml(title)}</h1>
-  <div class="thinker">${escapeHtml(thinker.name)}</div>
-  <div class="era">${escapeHtml(thinker.era || '')}</div>
-  <div class="divider"></div>
-  <p class="teaser">${escapeHtml(teaser)}</p>
-  <div class="cta-row">
-    <a class="cta primary" href="https://apps.apple.com/app/id6781227385">${escapeHtml(store.ios)}</a>
-    <span class="cta secondary">${escapeHtml(store.play)}</span>
-  </div>
+  <img class="card" src="${cardUrl}" alt="${escapeHtml(title)} — ${escapeHtml(thinker.name)}" width="1200" height="630">
+  <p class="redirecting">${escapeHtml(redirectingText)}</p>
+  <a class="cta" id="manual" href="${IOS_URL}">${escapeHtml(manualCTA)}</a>
   <a class="url" href="${SITE_URL}">corpusapp.io</a>
 </main>
+<script>
+  // Client-side redirect. Preview crawlers (facebookexternalhit, WhatsApp,
+  // Twitterbot, Slackbot, LinkedInBot) don't execute JS, so they only see the
+  // OG tags above — the card renders as a link preview. Human visitors get
+  // bounced to the right store on tap.
+  (function () {
+    var ua = navigator.userAgent || '';
+    var isIOS     = /iPhone|iPad|iPod/i.test(ua);
+    var isAndroid = /Android/i.test(ua);
+    var target = ${JSON.stringify(DESKTOP_URL)};
+    if (isIOS)          target = ${JSON.stringify(IOS_URL)};
+    else if (isAndroid) target = ${JSON.stringify(ANDROID_URL)};
+    var manual = document.getElementById('manual');
+    if (manual) manual.href = target;
+    // Delay one tick so the visible fallback flashes long enough to explain
+    // what's happening if the store app takes a moment to open.
+    setTimeout(function () { location.replace(target); }, 250);
+  })();
+</script>
 </body>
 </html>
 `;
@@ -569,10 +531,6 @@ async function main() {
       if (!week || !Array.isArray(week.days)) continue;
       for (const day of week.days) {
         if (!day || !day.thinkerId) continue;
-        // The dialogue's first "idea"/"scenario" section, if any, becomes the
-        // page teaser. Sections shape: [{ type, title, body/intro, ... }].
-        const introSec = (day.sections || []).find(s => s && (s.body || s.intro));
-        const dayIntro = introSec ? (introSec.body || introSec.intro) : '';
 
         for (const lang of ['he', 'en']) {
           const isEn = lang === 'en';
@@ -607,7 +565,6 @@ async function main() {
             dayId:    day.id,
             thinker,
             dayTitle,
-            dayIntro,
             subject,
             lang,
           }));
