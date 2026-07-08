@@ -132,9 +132,9 @@ function _registerFonts() {
     console.warn('[gen:share] scripts/fonts missing — Hebrew will render as tofu.');
     return;
   }
-  const files = fs.readdirSync(fontsDir).filter(f => /\.ttf$/i.test(f));
+  const files = fs.readdirSync(fontsDir).filter(f => /\.(ttf|woff2?)$/i.test(f));
   if (!files.length) {
-    console.warn('[gen:share] no TTFs in scripts/fonts — Hebrew will render as tofu.');
+    console.warn('[gen:share] no font files in scripts/fonts — Hebrew will render as tofu.');
     return;
   }
   const has = name => files.some(f => f.toLowerCase().includes(name.toLowerCase()));
@@ -163,14 +163,14 @@ function _registerFonts() {
     if (has('Rubik-ExtraBold'))  tryReg('Rubik-ExtraBold.ttf',  'Rubik', { weight: '800' });
     if (has('Rubik-Black'))      tryReg('Rubik-Black.ttf',      'Rubik', { weight: '900' });
   }
-  // Nunito — wordmark only, in-app logo weight (Black/900). Variable font
-  // exposes 200–1000 via its wght axis, which @napi-rs/canvas respects.
-  if (has('Nunito-VariableFont')) {
-    tryReg('Nunito-VariableFont_wght.ttf', 'Nunito');
-  } else {
-    if (has('Nunito-Bold'))       tryReg('Nunito-Bold.ttf',       'Nunito', { weight: '700' });
-    if (has('Nunito-ExtraBold'))  tryReg('Nunito-ExtraBold.ttf',  'Nunito', { weight: '800' });
-    if (has('Nunito-Black'))      tryReg('Nunito-Black.ttf',      'Nunito', { weight: '900' });
+  // Nunito Black — wordmark only. The app's .auth-logo-text / .topbar-logo
+  // resolve font-weight: 900 to Nunito-Black in the browser; we register that
+  // exact static Black woff2 (from @fontsource/nunito) as its own family so
+  // the wordmark renders at true Black weight. @napi-rs/canvas's variable-font
+  // wght axis matcher does NOT reach true Black on Nunito's variable file, so
+  // a static Black glyph set is required for a pixel-accurate brand match.
+  if (has('Nunito-Black.woff2')) {
+    tryReg('Nunito-Black.woff2', 'Nunito Black');
   }
 }
 
@@ -306,25 +306,22 @@ async function renderCard({ thinker, dayTitle, subject, lang }) {
 
   let y = 70;
 
-  // Wordmark — matches the in-app .auth-logo-text: Nunito 900, tight tracking.
-  // Nunito is Latin-only, which is fine here because the wordmark string is
-  // always "Corpus"; the family stack still lists Rubik as a fallback so this
-  // stays safe if the Nunito TTF is ever missing from scripts/fonts/.
-  //
-  // fillText + strokeText overlay adds ~1px of effective weight — needed
-  // because @napi-rs/canvas's variable-font wght matching maxes out closer
-  // to a semibold visual than a true Black, so 900-only rendered too light
-  // against the pastel card background.
-  ctx.font = '900 44px Nunito, Rubik, sans-serif';
+  // Wordmark — pixel-accurate match to .auth-logo-text (index.html:3802):
+  //   font-family: 'Nunito'; font-weight: 900; letter-spacing: -1px @ 38px;
+  //   color: var(--accent) (subject accent) on card, matches .topbar-logo /
+  //   .subj-logo tint.
+  // Card renders at 44px, so tracking scales: -1px * 44/38 ≈ -1.16px.
+  // Font family is "Nunito Black" — a static Nunito-Black woff2 registered
+  // above; @napi-rs/canvas's variable-font wght matcher does not reach true
+  // Black on Nunito's variable file, so we bypass it with an explicit static
+  // weight. No strokeText overlay: the app doesn't fake-bold, we shouldn't
+  // either, that would be visibly heavier than the brand mark.
+  ctx.font = '44px "Nunito Black", Rubik, sans-serif';
   ctx.fillStyle = theme.wordmark;
-  ctx.strokeStyle = theme.wordmark;
-  ctx.lineWidth = 1.5;
-  ctx.lineJoin = 'round';
-  ctx.letterSpacing = '-1px';
-  ctx.strokeText('Corpus', colX, y);
+  ctx.letterSpacing = '-1.16px';
   ctx.fillText('Corpus', colX, y);
   ctx.letterSpacing = '0px';
-  y += 72;
+  y += 68;
 
   // Hero question (shrink-to-fit, up to 3 lines)
   const questionText = String(dayTitle || '').trim();
@@ -456,11 +453,12 @@ function renderPage({ weekId, dayId, thinker, dayTitle, subject, lang }) {
     text-align: center;
   }
   .wordmark {
+    /* Mirrors index.html .auth-logo-text — Nunito 900, tight tracking, subject accent. */
     font-family: 'Nunito', 'Rubik', sans-serif;
     font-weight: 900;
     font-size: 26px;
     color: var(--wordmark);
-    letter-spacing: -1px;
+    letter-spacing: -0.7px;
     margin-bottom: 32px;
   }
   .card {
