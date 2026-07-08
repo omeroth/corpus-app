@@ -11,3 +11,8 @@ Shared to social platforms as `https://corpusapp.io/d/…`. The app's
 completion-modal share flow builds this URL and hands it to the OS
 share sheet; the receiving app resolves the OG tags into an inline
 preview card.
+
+Like `share/`, this directory ships to GitHub Pages via `_deploy/` but
+is **intentionally excluded from `www/`** — Capacitor bundles don't
+need the landing pages because the app only ever shares their absolute
+URLs, so including them was pointless bloat.
