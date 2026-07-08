@@ -6335,11 +6335,27 @@ const sb = window._supabaseClient;
 
 let currentUser = null;
 
+// One-place telemetry so a future column drift can't recur invisibly. Every
+// upsert catch calls this with { field, error } — we capture to PostHog so
+// silent 400s show up in the events feed instead of only in console.
+function _reportSyncFailure(field, err) {
+  const msg = (err && (err.message || err.toString())) || 'unknown';
+  const code = (err && err.code) || null;
+  try { console.error('[Sync] user_progress upsert failed for', field, err); } catch(e) {}
+  try {
+    posthog.capture('progress_sync_failed', {
+      field: field,
+      error: msg.slice(0, 300),
+      code: code,
+    });
+  } catch(e) {}
+}
+
 async function syncProgressToSupabase() {
   if (!currentUser) return;
   try {
     const completedDaysArr = Object.keys(state.completedDays);
-    await sb.from('user_progress').upsert({
+    const { error } = await sb.from('user_progress').upsert({
       user_id: currentUser.id,
       xp: state.xp,
       level: getLevel(state.xp),
@@ -6347,42 +6363,67 @@ async function syncProgressToSupabase() {
       completed_days: completedDaysArr,
       unlocked_thinkers: state.unlockedThinkers,
     }, { onConflict: 'user_id' });
-  } catch(e) {}
+    if (error) _reportSyncFailure('base', error);
+  } catch(e) { _reportSyncFailure('base', e); }
   try {
     // Separate upsert so a missing `chapter_complete_shown` column doesn't break the main sync.
     // Requires Supabase column: chapter_complete_shown text[] on user_progress.
-    await sb.from('user_progress').upsert({
+    const { error } = await sb.from('user_progress').upsert({
       user_id: currentUser.id,
       chapter_complete_shown: Object.keys(state.chapterCompleteShown || {}),
     }, { onConflict: 'user_id' });
-  } catch(e) {}
+    if (error) _reportSyncFailure('chapter_complete_shown', error);
+  } catch(e) { _reportSyncFailure('chapter_complete_shown', e); }
   try {
     // Separate upsert so a missing `onboarding_done` column doesn't break the main sync.
     // Requires Supabase column: onboarding_done boolean on user_progress.
-    await sb.from('user_progress').upsert({
+    const { error } = await sb.from('user_progress').upsert({
       user_id: currentUser.id,
       onboarding_done: !!localStorage.getItem('corpus_onboarding_done'),
     }, { onConflict: 'user_id' });
-  } catch(e) {}
-  // NB: daily_reminder and appearance are intentionally NOT synced.
-  //   - daily_reminder embeds `permissionAsked` (per-device OS state) and the
-  //     notification scheduler runs on-device via the LocalNotifications
-  //     plugin, so cross-device sync of the time/enabled fields would fight
-  //     the local scheduler rather than help.
-  //   - appearance is a per-device UI preference (a dark tablet + a light
-  //     phone is a legitimate setup), and `system` mode already follows the
-  //     OS per device, which is the meaningful cross-device story.
-  // Both had try/catch-wrapped upserts here that PostgREST rejected with 400
-  // because the columns don't exist in user_progress — silent 400s in the
-  // console since July 5. Removing the upserts removes the noise; the local
-  // choice persists via saveStateLocal already.
+    if (error) _reportSyncFailure('onboarding_done', error);
+  } catch(e) { _reportSyncFailure('onboarding_done', e); }
+  try {
+    // daily_reminder: added as jsonb column in migration 20260708090000. Server
+    // row acts as backup for a reinstall — the load side prefers local (see
+    // loadProgressFromSupabase) so day-to-day state stays authoritative on-device.
+    const { error } = await sb.from('user_progress').upsert({
+      user_id: currentUser.id,
+      daily_reminder: state.dailyReminder,
+    }, { onConflict: 'user_id' });
+    if (error) _reportSyncFailure('daily_reminder', error);
+  } catch(e) { _reportSyncFailure('daily_reminder', e); }
+  try {
+    // appearance: added as text column in migration 20260708090000. Same "prefer
+    // local" load semantics — server backup, doesn't override device preference.
+    const { error } = await sb.from('user_progress').upsert({
+      user_id: currentUser.id,
+      appearance: state.appearance || 'system',
+    }, { onConflict: 'user_id' });
+    if (error) _reportSyncFailure('appearance', error);
+  } catch(e) { _reportSyncFailure('appearance', e); }
 }
 
 async function loadProgressFromSupabase() {
   if (!currentUser) return;
   try {
+    // Field-wise merge on login (never overwrite):
+    //   xp / streak            : max(local, server)
+    //   completed_days         : union
+    //   unlocked_thinkers      : union
+    //   chapter_complete_shown : union
+    //   onboarding_done        : OR (server true → local true; false leaves alone)
+    //   appearance             : PREFER LOCAL — server row is a backup for
+    //                            reinstalls, not an override. On the current
+    //                            device, whatever the user chose in Settings
+    //                            (persisted via saveStateLocal) always wins.
+    //   daily_reminder         : PREFER LOCAL — same. Notification scheduler
+    //                            runs on-device; syncing server-side value
+    //                            would fight the local schedule.
+    // The reads for the two "prefer local" fields are intentionally omitted
+    // here even though the columns now exist (added in migration 20260708090000).
     const { data } = await sb.from('user_progress')
-      .select('*').eq('user_id', currentUser.id).single();
+      .select('*').eq('user_id', currentUser.id).maybeSingle();
     if (!data) return;
     state.xp = Math.max(state.xp, data.xp || 0);
     state.streak = Math.max(state.streak, data.streak || 0);
@@ -6392,20 +6433,14 @@ async function loadProgressFromSupabase() {
     });
     state.chapterCompleteShown = state.chapterCompleteShown || {};
     (data.chapter_complete_shown || []).forEach(k => { state.chapterCompleteShown[k] = true; });
-    // If Supabase says this user has completed onboarding, mark it locally so
-    // startOnboarding's localStorage check skips the spotlight tour on a new
-    // device / fresh install / cleared browser data.
     if (data.onboarding_done === true) {
       try { localStorage.setItem('corpus_onboarding_done', '1'); } catch(e) {}
     }
-    // NB: appearance and daily_reminder are intentionally not read here —
-    // both are device-local (see syncProgressToSupabase for the why). Reading
-    // undefined from a missing column was harmless but paired confusingly
-    // with the failing write; removing both halves keeps the sync surface
-    // honest about what actually crosses devices.
     migrateCompletedDaysKeys();
     saveStateLocal();
-  } catch(e) {}
+  } catch(e) {
+    _reportSyncFailure('load', e);
+  }
 }
 
 async function loadSubscription() {
