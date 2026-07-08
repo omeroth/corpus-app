@@ -28,10 +28,10 @@
     "@capacitor/local-notifications": "^8.2.0",
     "@capacitor/status-bar": "^8.0.2",
     "@capawesome/capacitor-android-edge-to-edge-support": "^8.0.8",
-    "@capgo/capacitor-social-login": "^8.3.22"
+    "@capgo/capacitor-social-login": "^8.3.22",
+    "@napi-rs/canvas": "^1.0.2"
   },
   "devDependencies": {
-    "@capacitor/assets": "^3.0.5",
-    "canvas": "^2.11.2"
+    "@capacitor/assets": "^3.0.5"
   }
 }

@@ -26,23 +26,33 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// node-canvas is required to render the PNG cards but is NOT required to
-// emit the HTML landing pages. If canvas can't be loaded (native deps
-// missing, fonts unavailable, running in a stripped CI env, etc.), we
-// still write the pages so /d/<slug>-<w>-<d>-<lang>.html resolves to a
-// real file. The pages' og:image will 404 until the cards are generated
-// later, but the URL round-trip works.
+// Two canvas backends supported: @napi-rs/canvas (prebuilt, no cairo needed)
+// and node-canvas (needs cairo/pango via brew). Prefer napi-rs — installs
+// without native compilation on macOS/Linux — fall back to canvas if only
+// that is present. If neither loads, drop through to pages-only mode:
+// HTML pages ship without PNG cards, so /d/<slug>-<w>-<d>-<lang>.html
+// resolves, but the og:image URL will 404 until a run with a working
+// canvas backend writes the PNGs.
 let canvasModule = null;
+let canvasKind = null;  // 'napi' | 'node' | null
 try {
-  canvasModule = await import('canvas');
+  canvasModule = await import('@napi-rs/canvas');
+  canvasKind = 'napi';
 } catch (e) {
-  console.warn('[gen:share] `canvas` not installed — pages only, no PNG cards.');
-  console.warn('            Install with `npm i -D canvas` + drop TTFs in scripts/fonts/');
-  console.warn('            when you want to generate the images.');
+  try {
+    canvasModule = await import('canvas');
+    canvasKind = 'node';
+  } catch (e2) {
+    console.warn('[gen:share] no canvas backend — pages only, no PNG cards.');
+    console.warn('            Install with `npm i -D @napi-rs/canvas`.');
+  }
 }
 const createCanvas   = canvasModule ? canvasModule.createCanvas   : null;
 const loadImage      = canvasModule ? canvasModule.loadImage      : null;
-const registerFont   = canvasModule ? canvasModule.registerFont   : null;
+// Font registration differs between backends: napi uses
+// GlobalFonts.registerFromPath(file, family?), node uses
+// registerFont(file, { family, weight, style }). Handled inside
+// _registerFonts() below.
 const CANVAS_ENABLED = !!canvasModule;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -118,28 +128,39 @@ function _registerFonts() {
     return;
   }
   const files = fs.readdirSync(fontsDir).filter(f => /\.ttf$/i.test(f));
-  const tryReg = (file, opts) => {
-    try { registerFont(path.join(fontsDir, file), opts); }
-    catch (e) { console.warn('[gen:share] registerFont failed for', file, e.message); }
-  };
-  // Match either static per-weight files or a single variable font.
+  if (!files.length) {
+    console.warn('[gen:share] no TTFs in scripts/fonts — falling back to sans-serif.');
+    return;
+  }
   const has = name => files.some(f => f.toLowerCase().includes(name.toLowerCase()));
+  const tryReg = (file, family, opts) => {
+    const p = path.join(fontsDir, file);
+    try {
+      if (canvasKind === 'napi') {
+        canvasModule.GlobalFonts.registerFromPath(p, family);
+      } else {
+        canvasModule.registerFont(p, { family, ...(opts || {}) });
+      }
+    } catch (e) {
+      console.warn('[gen:share] register font failed for', file, e.message);
+    }
+  };
   // Nunito
   if (has('Nunito-VariableFont')) {
-    tryReg('Nunito-VariableFont_wght.ttf', { family: 'Nunito' });
+    tryReg('Nunito-VariableFont_wght.ttf', 'Nunito');
   } else {
-    if (has('Nunito-SemiBold'))   tryReg('Nunito-SemiBold.ttf',   { family: 'Nunito', weight: '600' });
-    if (has('Nunito-Bold'))       tryReg('Nunito-Bold.ttf',       { family: 'Nunito', weight: '700' });
-    if (has('Nunito-ExtraBold'))  tryReg('Nunito-ExtraBold.ttf',  { family: 'Nunito', weight: '800' });
-    if (has('Nunito-Black'))      tryReg('Nunito-Black.ttf',      { family: 'Nunito', weight: '900' });
+    if (has('Nunito-SemiBold'))   tryReg('Nunito-SemiBold.ttf',   'Nunito', { weight: '600' });
+    if (has('Nunito-Bold'))       tryReg('Nunito-Bold.ttf',       'Nunito', { weight: '700' });
+    if (has('Nunito-ExtraBold'))  tryReg('Nunito-ExtraBold.ttf',  'Nunito', { weight: '800' });
+    if (has('Nunito-Black'))      tryReg('Nunito-Black.ttf',      'Nunito', { weight: '900' });
   }
   // DM Sans
   if (has('DMSans-VariableFont')) {
-    tryReg('DMSans-VariableFont_opsz,wght.ttf', { family: 'DM Sans' });
+    tryReg('DMSans-VariableFont_opsz,wght.ttf', 'DM Sans');
   } else {
-    if (has('DMSans-Medium'))     tryReg('DMSans-Medium.ttf',     { family: 'DM Sans', weight: '500' });
-    if (has('DMSans-SemiBold'))   tryReg('DMSans-SemiBold.ttf',   { family: 'DM Sans', weight: '600' });
-    if (has('DMSans-Bold'))       tryReg('DMSans-Bold.ttf',       { family: 'DM Sans', weight: '700' });
+    if (has('DMSans-Medium'))     tryReg('DMSans-Medium.ttf',     'DM Sans', { weight: '500' });
+    if (has('DMSans-SemiBold'))   tryReg('DMSans-SemiBold.ttf',   'DM Sans', { weight: '600' });
+    if (has('DMSans-Bold'))       tryReg('DMSans-Bold.ttf',       'DM Sans', { weight: '700' });
   }
 }
 
@@ -370,6 +391,8 @@ function renderPage({ weekId, dayId, thinker, dayTitle, dayIntro, subject, lang 
 <meta property="og:title" content="${escapeHtml(title)}">
 <meta property="og:description" content="${escapeHtml(description)}">
 <meta property="og:image" content="${cardUrl}">
+<meta property="og:image:secure_url" content="${cardUrl}">
+<meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:url" content="${SITE_URL}/d/${slug}-${weekId}-${dayId}-${lang}.html">
