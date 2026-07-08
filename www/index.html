@@ -16841,12 +16841,39 @@ function _loadCardImage(src, timeoutMs) {
   });
 }
 
+// Which subject does this thinker call home? Searches corpusData (philosophy)
+// and economicsData in order, returning the first hit. Used by the debug
+// hook to default the card palette when no explicit subject is provided.
+// Returns 'philosophy' | 'economics' | 'psychology' | null (thinker not in
+// any data source, e.g. a locked-teaser id).
+function _subjectForThinker(thinkerId) {
+  const sources = [
+    { subject: 'philosophy', data: (typeof corpusData    !== 'undefined') ? corpusData    : null },
+    { subject: 'economics',  data: (typeof economicsData !== 'undefined') ? economicsData : null },
+  ];
+  for (const s of sources) {
+    if (!s.data || !Array.isArray(s.data.weeks)) continue;
+    for (const week of s.data.weeks) {
+      if (!week || !Array.isArray(week.days)) continue;
+      for (const day of week.days) {
+        if (day && day.thinkerId === thinkerId) return s.subject;
+      }
+    }
+  }
+  return null;
+}
+
 // Main entry point. Returns a Promise<Blob> or throws.
-async function generateShareCard(thinkerId, dayTitle) {
+// subject: 'philosophy' | 'economics' | 'psychology' — MUST match the
+//   dialogue's subject, NOT the app's active theme. A user browsing
+//   philosophy who shares a Smith card should still ship the economics
+//   (blue) palette. Falls back to state.subject only if the caller
+//   passes nothing (backward compat + safety).
+async function generateShareCard(thinkerId, dayTitle, subject) {
   const W = 1080, H = 1350;
   const isEn = state.lang === 'en';
-  const subject = state.subject || 'philosophy';
-  const theme = _SHARE_CARD_THEMES[subject] || _SHARE_CARD_THEMES.philosophy;
+  const _subject = subject || state.subject || 'philosophy';
+  const theme = _SHARE_CARD_THEMES[_subject] || _SHARE_CARD_THEMES.philosophy;
   const t = getT().find(x => x.id === thinkerId);
   if (!t) throw new Error('thinker not found');
 
@@ -17008,12 +17035,43 @@ async function generateShareCard(thinkerId, dayTitle) {
 }
 
 // Debug hook — call from DevTools to render a card into the DOM for visual
-// review. Usage: window._debugShareCard('kant', 'What is enlightenment?')
-window._debugShareCard = async function(thinkerId, dayTitle) {
+// review.
+//
+// Signature:
+//   _debugShareCard(thinkerId)
+//   _debugShareCard(thinkerId, subject)                  // subject palette
+//   _debugShareCard(thinkerId, subject, dayTitle)
+//   _debugShareCard(thinkerId, dayTitle)                 // legacy 2-arg form
+//
+// Second arg is treated as a subject when it's exactly one of the three
+// subject names, otherwise as the dialogue title (preserves the earlier
+// invocation pattern documented in the first commit).
+// Default subject when the caller passes only thinkerId:
+//   1. _subjectForThinker(id) — the thinker's home subject if resolvable
+//   2. state.subject           — active app theme as last resort
+// Usage examples:
+//   _debugShareCard('kant')                        // philosophy card (kant's home)
+//   _debugShareCard('smith', 'economics')          // force economics palette
+//   _debugShareCard('kant', 'What is enlightenment?')
+//   _debugShareCard('smith', 'economics', 'The wealth of nations?')
+window._debugShareCard = async function(thinkerId, subjectOrTitle, dayTitle) {
+  const _KNOWN_SUBJECTS = ['philosophy', 'economics', 'psychology'];
+  let subject = null;
+  let title = null;
+  if (typeof subjectOrTitle === 'string' && _KNOWN_SUBJECTS.includes(subjectOrTitle)) {
+    subject = subjectOrTitle;
+    title = dayTitle;
+  } else if (typeof subjectOrTitle === 'string') {
+    // Legacy 2-arg form: second string is a title, subject auto-resolves.
+    title = subjectOrTitle;
+  }
+  if (!subject) {
+    subject = _subjectForThinker(thinkerId) || state.subject || 'philosophy';
+  }
   const t = getT().find(x => x.id === thinkerId);
-  const title = dayTitle || (t && (state.lang === 'en' ? 'What is enlightenment?' : 'מהי הנאורות?')) || 'Sample question';
+  title = title || (t && (state.lang === 'en' ? 'What is enlightenment?' : 'מהי הנאורות?')) || 'Sample question';
   try {
-    const blob = await generateShareCard(thinkerId, title);
+    const blob = await generateShareCard(thinkerId, title, subject);
     document.querySelectorAll('.debug-share-card').forEach(el => el.remove());
     const wrap = document.createElement('div');
     wrap.className = 'debug-share-card';
@@ -17024,7 +17082,7 @@ window._debugShareCard = async function(thinkerId, dayTitle) {
     wrap.appendChild(img);
     wrap.addEventListener('click', () => wrap.remove());
     document.body.appendChild(wrap);
-    console.log('[debugShareCard] blob size', blob.size);
+    console.log('[debugShareCard] subject:', subject, 'blob size', blob.size);
     return blob;
   } catch(e) {
     console.error('[debugShareCard] failed', e);
@@ -17099,7 +17157,12 @@ function shareCompletion() {
       : 'סיימתי עכשיו דיאלוג ב-Corpus. נסה גם את Corpus:';
   }
   if (thinkerId && title) {
-    _shareCorpusWithCard('completion_modal', text, thinkerId, title);
+    // Subject comes from the dialogue's context, not the app's active
+    // theme. In the completion flow they happen to match (you're in the
+    // subject you just completed a dialogue in), but we pass state.subject
+    // explicitly to make the invariant obvious at the call site and so a
+    // future "share past dialogue" surface can pass a different value.
+    _shareCorpusWithCard('completion_modal', text, thinkerId, title, state.subject);
   } else {
     _shareCorpus('completion_modal', text);
   }
@@ -17108,12 +17171,12 @@ function shareCompletion() {
 // Runs the card-generation attempt behind a 2s budget, then routes to
 // navigator.share with the file attached. If any step fails (generation,
 // canShare check, share call), silently falls back to the plain-text share.
-async function _shareCorpusWithCard(source, text, thinkerId, dayTitle) {
+async function _shareCorpusWithCard(source, text, thinkerId, dayTitle, subject) {
   const url = getShareUrl();
   let blob = null;
   try {
     blob = await Promise.race([
-      generateShareCard(thinkerId, dayTitle),
+      generateShareCard(thinkerId, dayTitle, subject),
       new Promise((_, reject) => setTimeout(() => reject(new Error('card timeout')), 2000))
     ]);
   } catch(e) {
