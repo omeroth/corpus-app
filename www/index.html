@@ -16740,112 +16740,20 @@ function showSharePrompt(onDone) {
 // chain continuation.
 
 // ═══════════════════════════════════════════════════════════════════════
-// Share card generator (Level 2 share)
+// Share URL helpers
 // ═══════════════════════════════════════════════════════════════════════
-// Renders an offscreen 1080×1350 canvas per the approved design brief and
-// returns a PNG blob for navigator.share({ files: [...] }). Falls back to
-// the plain-text share silently if:
-//   - the canvas throws
-//   - the portrait fails to load
-//   - navigator.canShare doesn't support files
-//   - generation takes more than 2s
-// Never blocks the share sheet on card failure.
+// The in-app canvas card generator lived here through commits 9423bd7 →
+// 482ab6d. It has been replaced by a Node build-time generator (see
+// scripts/generate-share-cards.mjs) that renders 1200×630 OG images at
+// deploy time; the app now shares a link to https://corpusapp.io/d/<w>-<d>
+// -<lang>.html, and social platforms unfurl that link into the pre-rendered
+// card via OG tags. This removes ~400 lines of runtime canvas code and
+// makes the shared preview work identically on every platform, including
+// Instagram/Snapchat/older Android WebViews that cant navigator.share({files}).
 
-// Per-theme color mapping. Kept as a plain object rather than reading from
-// CSS variables so a device that opened the app in dark mode still gets a
-// light card that reads well on any social feed background.
-const _SHARE_CARD_THEMES = {
-  philosophy: {
-    bg:       '#F0EAFC',
-    wordmark: '#7B4FD4',
-    name:     '#3D2E66',
-    era:      '#9A85C4',
-    question: '#4A3580'
-  },
-  economics: {
-    bg:       '#E8F0FC',
-    wordmark: '#2563EB',
-    name:     '#1E3A66',
-    era:      '#7E9BC8',
-    question: '#1D4ED8'
-  },
-  psychology: {
-    bg:       '#FEF3D8',
-    wordmark: '#F59E0B',
-    name:     '#5C3306',
-    era:      '#B08A45',
-    question: '#92400E'
-  }
-};
-const _SHARE_CARD_PLATE   = '#FDFBF6';   // warm off-white portrait plate
-const _SHARE_CARD_RIM     = '#E5C158';   // muted gold rim + divider
-const _SHARE_CARD_URL_TXT = '#B8860B';   // corpusapp.io line
-
-// Wraps text to fit maxWidth in at most maxLines. Returns the array of lines
-// actually used (may be < maxLines for short text). ctx.font must already be
-// set. Handles both LTR and RTL — canvas bidi renders each line correctly
-// once we've computed the wrap points against ctx.measureText.
-function _wrapCardText(ctx, text, maxWidth, maxLines) {
-  const words = String(text || '').split(/\s+/).filter(Boolean);
-  if (!words.length) return [];
-  const lines = [];
-  let current = '';
-  for (let i = 0; i < words.length; i++) {
-    const test = current ? current + ' ' + words[i] : words[i];
-    if (ctx.measureText(test).width > maxWidth && current) {
-      lines.push(current);
-      current = words[i];
-      if (lines.length === maxLines - 1) {
-        // Last available line: pack the remainder onto it verbatim so we
-        // don't drop tail words — the shrink-to-fit outer loop is what
-        // handles overflow properly.
-        current = words.slice(i).join(' ');
-        break;
-      }
-    } else {
-      current = test;
-    }
-  }
-  if (current) lines.push(current);
-  return lines;
-}
-
-// Shrink-to-fit wrapper for the hero question. Starts at 64px, drops in 4px
-// steps until the text fits in maxLines OR we hit the 40px floor.
-function _fitQuestion(ctx, text, maxWidth, maxLines, fontFamily) {
-  for (let size = 64; size >= 40; size -= 4) {
-    ctx.font = `800 ${size}px ${fontFamily}`;
-    const lines = _wrapCardText(ctx, text, maxWidth, maxLines);
-    if (lines.length <= maxLines) return { size, lines };
-  }
-  // Floor: force-wrap even if it means overflow
-  ctx.font = `800 40px ${fontFamily}`;
-  return { size: 40, lines: _wrapCardText(ctx, text, maxWidth, maxLines) };
-}
-
-// Loads an image with a Promise wrapper + reasonable timeout. Same-origin
-// (thinker portraits ship in the bundle at ./images/*.webp) so no CORS.
-function _loadCardImage(src, timeoutMs) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    let done = false;
-    const t = setTimeout(() => {
-      if (!done) { done = true; reject(new Error('image timeout')); }
-    }, timeoutMs || 1500);
-    img.onload  = () => { if (!done) { done = true; clearTimeout(t); resolve(img); } };
-    img.onerror = e => { if (!done) { done = true; clearTimeout(t); reject(e); } };
-    // Attribute-set of crossOrigin is harmless for same-origin and lets a
-    // future CDN move work without changes.
-    img.crossOrigin = 'anonymous';
-    img.src = src;
-  });
-}
-
-// Which subject does this thinker call home? Searches corpusData (philosophy)
-// and economicsData in order, returning the first hit. Used by the debug
-// hook to default the card palette when no explicit subject is provided.
-// Returns 'philosophy' | 'economics' | 'psychology' | null (thinker not in
-// any data source, e.g. a locked-teaser id).
+// Kept: which subject does this thinker call home? Used by shareCompletion
+// to build the correct dialogue URL when the completion context is missing
+// a subject (defensive — normally state.subject IS the dialogue subject).
 function _subjectForThinker(thinkerId) {
   const sources = [
     { subject: 'philosophy', data: (typeof corpusData    !== 'undefined') ? corpusData    : null },
@@ -16863,321 +16771,61 @@ function _subjectForThinker(thinkerId) {
   return null;
 }
 
-// Main entry point. Returns a Promise<Blob> or throws.
-// subject: 'philosophy' | 'economics' | 'psychology' — MUST match the
-//   dialogue's subject, NOT the app's active theme. A user browsing
-//   philosophy who shares a Smith card should still ship the economics
-//   (blue) palette. Falls back to state.subject only if the caller
-//   passes nothing (backward compat + safety).
-async function generateShareCard(thinkerId, dayTitle, subject) {
-  const W = 1080, H = 1350;
-  const isEn = state.lang === 'en';
-  const _subject = subject || state.subject || 'philosophy';
-  const theme = _SHARE_CARD_THEMES[_subject] || _SHARE_CARD_THEMES.philosophy;
-  const t = getT().find(x => x.id === thinkerId);
-  if (!t) throw new Error('thinker not found');
 
-  // Wait for the app's fonts (Nunito + DM Sans) to have hydrated so the
-  // canvas doesn't fall back to a system substitute mid-generation. Guarded
-  // by a short race so a browser without document.fonts still proceeds.
+// Reentrancy guard — an accidental double-tap on the share button (a real
+// bug on Android emulator with the on-screen keyboard bouncing focus) would
+// previously open two share sheets stacked. One flag, reset in `finally`.
+let _shareInFlight = false;
+
+// Core share primitive. Ships text + a link to the OS share sheet (or
+// clipboard as fallback). When called with an overrideUrl, that URL replaces
+// getShareUrl() as the link — used by shareCompletion to point at a
+// dialogue-specific /d/<w>-<d>-<lang>.html landing page (which carries OG
+// tags so social platforms unfurl into a preview card).
+async function _shareCorpus(source, text, overrideUrl) {
+  if (_shareInFlight) return;
+  _shareInFlight = true;
   try {
-    await Promise.race([
-      document.fonts.ready,
-      new Promise(r => setTimeout(r, 500))
-    ]);
-  } catch(e) {}
-
-  const canvas = document.createElement('canvas');
-  canvas.width = W; canvas.height = H;
-  const ctx = canvas.getContext('2d');
-  ctx.direction = isEn ? 'ltr' : 'rtl';
-  ctx.textBaseline = 'top';
-
-  // ── Background ────────────────────────────────────────────────────────
-  ctx.fillStyle = theme.bg;
-  ctx.fillRect(0, 0, W, H);
-
-  const cx = W / 2;
-  let y = 80;
-
-  // ── Corpus wordmark ───────────────────────────────────────────────────
-  ctx.fillStyle = theme.wordmark;
-  ctx.font = '600 56px Nunito, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('Corpus', cx, y);
-  y += 100;
-
-  // ── Portrait circle ───────────────────────────────────────────────────
-  // ~340px diameter, warm off-white plate, 8px gold rim. Portrait draws
-  // clipped to a circle inset from the plate. If the image fails, we still
-  // draw the plate + rim so the layout below doesn't collapse.
-  const portraitR = 170;   // radius; diameter 340
-  const portraitCy = y + portraitR;
-  // Plate (background disc)
-  ctx.beginPath();
-  ctx.arc(cx, portraitCy, portraitR, 0, Math.PI * 2);
-  ctx.fillStyle = _SHARE_CARD_PLATE;
-  ctx.fill();
-  // Rim
-  ctx.lineWidth = 8;
-  ctx.strokeStyle = _SHARE_CARD_RIM;
-  ctx.stroke();
-  // Portrait (clipped to inner circle so the rim shows on top)
-  if (t.image) {
+    const url = overrideUrl || getShareUrl();
+    const full = text + ' ' + url;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Corpus', text: text, url });
+        try { posthog.capture('share_initiated', { source: source, method: 'native' }); } catch(e) {}
+      } catch(e) {
+        // User cancelled the OS share sheet — normal, no telemetry.
+      }
+      return;
+    }
+    // No navigator.share (older Android / desktop). Clipboard fallback with
+    // a brief in-app toast so the user knows it worked.
     try {
-      const img = await _loadCardImage(t.image, 1500);
-      ctx.save();
-      const innerR = portraitR - 6;
-      ctx.beginPath();
-      ctx.arc(cx, portraitCy, innerR, 0, Math.PI * 2);
-      ctx.clip();
-      // Face-first crop for tall portrait illustrations. The source images
-      // are painterly full-figure compositions with the face sitting in the
-      // upper portion; a plain cover-fit shows the whole figure and shrinks
-      // the face inside the circle. Instead:
-      //   1. Take a source rectangle that starts ~10% down from the top and
-      //      spans ~58% of the image height (roughly the face + shoulders).
-      //   2. Cover-fit THAT rect into the destination circle.
-      // Tuning knobs — bump PORTRAIT_CROP_TOP_RATIO to shift the crop down,
-      // shrink PORTRAIT_CROP_HEIGHT_RATIO to zoom the face in further.
-      const PORTRAIT_CROP_TOP_RATIO    = 0.10;   // 10% from top of source
-      const PORTRAIT_CROP_HEIGHT_RATIO = 0.58;   // capture top 58% of height
-      const iw = img.naturalWidth || img.width;
-      const ih = img.naturalHeight || img.height;
-      const sx = 0;
-      const sy = ih * PORTRAIT_CROP_TOP_RATIO;
-      const sw = iw;
-      const sh = ih * PORTRAIT_CROP_HEIGHT_RATIO;
-      // Cover-fit the CROPPED source rect into the innerR*2 destination square
-      // (the clip path already narrows that square to a circle). Horizontal
-      // centering is preserved because sx=0 and sw=iw — the browser scales
-      // the full width uniformly, then dx = cx - dw/2 recenters.
-      const scale = Math.max((innerR * 2) / sw, (innerR * 2) / sh);
-      const dw = sw * scale, dh = sh * scale;
-      const dx = cx - dw / 2;
-      const dy = portraitCy - dh / 2;
-      ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
-      ctx.restore();
+      await navigator.clipboard.writeText(full);
     } catch(e) {
-      // Portrait failed — plate + rim already drew; continue with a text
-      // fallback badge (first initial) so the composition holds.
-      ctx.fillStyle = theme.wordmark;
-      ctx.font = '800 120px Nunito, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText((t.name || '?').slice(0, 1), cx, portraitCy);
-      ctx.textBaseline = 'top';
+      const ta = document.createElement('textarea');
+      ta.value = full;
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta);
     }
-  }
-  y = portraitCy + portraitR + 60;
-
-  // ── Thinker name ──────────────────────────────────────────────────────
-  ctx.fillStyle = theme.name;
-  ctx.font = '900 48px Nunito, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(t.name, cx, y);
-  y += 62;
-
-  // ── Era ───────────────────────────────────────────────────────────────
-  // Wrap the era string in Unicode LRI/PDI (U+2066 / U+2069) so the numeric
-  // range always reads in logical order regardless of the canvas's paragraph
-  // direction. Without the isolation, Hebrew (ctx.direction='rtl') was
-  // rendering "1723–1790" as "1790–1723" on some Chromium builds — the en
-  // dash counts as a weak neutral, and the surrounding RTL context flipped
-  // the visual order of the two numeric runs.
-  if (t.era) {
-    ctx.fillStyle = theme.era;
-    ctx.font = '600 26px "DM Sans", sans-serif';
-    // ⁦ = LRI (Left-to-Right Isolate), ⁩ = PDI (Pop Directional Isolate)
-    ctx.fillText('⁦' + t.era + '⁩', cx, y);
-    y += 60;
-  } else {
-    y += 20;
-  }
-
-  // ── Hero question (shrink-to-fit, up to 3 lines) ──────────────────────
-  // In RTL languages the manual word-wrap helper produces per-line strings
-  // whose base direction the canvas re-resolves from first strong char.
-  // A Hebrew title ending in "?" (or " ") had the trailing neutral drift
-  // to the visual start of the line because the wrap dropped the paragraph
-  // context. Prefix RTL lines with RLM (U+200F) to lock base direction so
-  // trailing "?", quotes, and other neutrals stay on the visual left.
-  const questionText = String(dayTitle || '').trim();
-  if (questionText) {
-    const maxWidth = W - 160;   // 80px side gutter each side
-    const { size, lines } = _fitQuestion(ctx, questionText, maxWidth, 3, 'Nunito, sans-serif');
-    ctx.fillStyle = theme.question;
-    ctx.font = `800 ${size}px Nunito, sans-serif`;
-    const lineHeight = size * 1.2;
-    const RLM = '‏';       // Right-to-Left Mark — invisible base-direction lock
-    const isRTL = !isEn;
-    for (const line of lines) {
-      const rendered = isRTL ? (RLM + line + RLM) : line;
-      ctx.fillText(rendered, cx, y);
-      y += lineHeight;
-    }
-    y += 20;
-  }
-
-  // ── Gold divider ──────────────────────────────────────────────────────
-  ctx.strokeStyle = _SHARE_CARD_RIM;
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(cx - 60, y);
-  ctx.lineTo(cx + 60, y);
-  ctx.stroke();
-  y += 44;
-
-  // ── Tagline ───────────────────────────────────────────────────────────
-  const tagline = isEn
-    ? "5 minutes a day with history's greatest minds"
-    : '5 דקות ביום עם גדולי ההוגים';
-  ctx.fillStyle = theme.era;
-  ctx.font = '500 24px "DM Sans", sans-serif';
-  ctx.fillText(tagline, cx, y);
-  y += 44;
-
-  // ── CTA pill + URL ────────────────────────────────────────────────────
-  // The plain "corpusapp.io" line read as an afterthought — replaced with
-  // a small rounded pill ("Get Corpus" / "הורידו את Corpus") in the theme
-  // accent color inside a thin gold rim, followed by a subtle corpusapp.io
-  // line beneath. Editorial weight, not a button — no fill, no shadow.
-  const pillText = isEn ? 'Get Corpus' : 'הורידו את Corpus';
-  ctx.font = '700 26px Nunito, sans-serif';
-  const pillPadX = 32;
-  const pillH = 56;
-  const pillW = ctx.measureText(pillText).width + pillPadX * 2;
-  const pillX = cx - pillW / 2;
-  const pillY = y;
-  const pillR = pillH / 2;   // fully rounded ends
-  // Manual rounded rect — CanvasRenderingContext2D.roundRect() is only in
-  // recent Chromium/WebKit and this file targets older Capacitor iOS too.
-  ctx.beginPath();
-  ctx.moveTo(pillX + pillR, pillY);
-  ctx.arcTo(pillX + pillW, pillY,          pillX + pillW, pillY + pillH, pillR);
-  ctx.arcTo(pillX + pillW, pillY + pillH,  pillX,         pillY + pillH, pillR);
-  ctx.arcTo(pillX,         pillY + pillH,  pillX,         pillY,         pillR);
-  ctx.arcTo(pillX,         pillY,          pillX + pillW, pillY,         pillR);
-  ctx.closePath();
-  ctx.strokeStyle = _SHARE_CARD_RIM;
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  // Centered label inside the pill — vertical middle to sit on the geometric
-  // center of the rounded rect, then restore top baseline for the URL line.
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = theme.wordmark;
-  ctx.fillText(pillText, cx, pillY + pillH / 2);
-  ctx.textBaseline = 'top';
-  y = pillY + pillH + 16;
-  // URL as a subtle typographic tag under the pill — muted color, lighter
-  // weight, smaller size. Reads as attribution, not as another CTA.
-  ctx.fillStyle = theme.era;
-  ctx.font = '500 20px "DM Sans", sans-serif';
-  ctx.fillText('corpusapp.io', cx, y);
-
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      blob => blob ? resolve(blob) : reject(new Error('toBlob returned null')),
-      'image/png'
-    );
-  });
-}
-
-// Debug hook — call from DevTools to render a card into the DOM for visual
-// review.
-//
-// Signature:
-//   _debugShareCard(thinkerId)
-//   _debugShareCard(thinkerId, subject)                  // subject palette
-//   _debugShareCard(thinkerId, subject, dayTitle)
-//   _debugShareCard(thinkerId, dayTitle)                 // legacy 2-arg form
-//
-// Second arg is treated as a subject when it's exactly one of the three
-// subject names, otherwise as the dialogue title (preserves the earlier
-// invocation pattern documented in the first commit).
-// Default subject when the caller passes only thinkerId:
-//   1. _subjectForThinker(id) — the thinker's home subject if resolvable
-//   2. state.subject           — active app theme as last resort
-// Usage examples:
-//   _debugShareCard('kant')                        // philosophy card (kant's home)
-//   _debugShareCard('smith', 'economics')          // force economics palette
-//   _debugShareCard('kant', 'What is enlightenment?')
-//   _debugShareCard('smith', 'economics', 'The wealth of nations?')
-window._debugShareCard = async function(thinkerId, subjectOrTitle, dayTitle) {
-  const _KNOWN_SUBJECTS = ['philosophy', 'economics', 'psychology'];
-  let subject = null;
-  let title = null;
-  if (typeof subjectOrTitle === 'string' && _KNOWN_SUBJECTS.includes(subjectOrTitle)) {
-    subject = subjectOrTitle;
-    title = dayTitle;
-  } else if (typeof subjectOrTitle === 'string') {
-    // Legacy 2-arg form: second string is a title, subject auto-resolves.
-    title = subjectOrTitle;
-  }
-  if (!subject) {
-    subject = _subjectForThinker(thinkerId) || state.subject || 'philosophy';
-  }
-  const t = getT().find(x => x.id === thinkerId);
-  title = title || (t && (state.lang === 'en' ? 'What is enlightenment?' : 'מהי הנאורות?')) || 'Sample question';
-  try {
-    const blob = await generateShareCard(thinkerId, title, subject);
-    document.querySelectorAll('.debug-share-card').forEach(el => el.remove());
-    const wrap = document.createElement('div');
-    wrap.className = 'debug-share-card';
-    wrap.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out';
-    const img = document.createElement('img');
-    img.src = URL.createObjectURL(blob);
-    img.style.cssText = 'max-width:100%;max-height:100%;box-shadow:0 20px 60px rgba(0,0,0,0.5)';
-    wrap.appendChild(img);
-    wrap.addEventListener('click', () => wrap.remove());
-    document.body.appendChild(wrap);
-    console.log('[debugShareCard] subject:', subject, 'blob size', blob.size);
-    return blob;
-  } catch(e) {
-    console.error('[debugShareCard] failed', e);
-    throw e;
-  }
-};
-
-async function _shareCorpus(source, text) {
-  const url = getShareUrl();
-  const full = text + ' ' + url;
-  if (navigator.share) {
+    try { posthog.capture('share_initiated', { source: source, method: 'clipboard' }); } catch(e) {}
     try {
-      await navigator.share({ title: 'Corpus', text: text, url });
-      try { posthog.capture('share_initiated', { source: source, method: 'native', card: false }); } catch(e) {}
-    } catch(e) {
-      // User cancelled the OS share sheet — normal, no telemetry, no fallback.
-    }
-    return;
+      const msg = state.lang === 'en' ? 'Link copied!' : 'הקישור הועתק';
+      showStreakToast(msg);
+    } catch(e) {}
+  } finally {
+    _shareInFlight = false;
   }
-  // No navigator.share (older Android / desktop). Clipboard fallback with a
-  // brief in-app toast so the user knows it worked.
-  try {
-    await navigator.clipboard.writeText(full);
-  } catch(e) {
-    const ta = document.createElement('textarea');
-    ta.value = full;
-    ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta);
-  }
-  try { posthog.capture('share_initiated', { source: source, method: 'clipboard', card: false }); } catch(e) {}
-  try {
-    const msg = state.lang === 'en' ? 'Link copied!' : 'הקישור הועתק';
-    showStreakToast(msg);
-  } catch(e) {}
 }
 
 // Reads the current day (state.currentWeek / state.currentDay) to build a
-// contextual completion message. Tries the generated share-card path first
-// when the day has a thinkerId — the OS share sheet then receives an image
-// file plus the text. Falls back to text-only share silently if:
-//   - no thinkerId on the day
-//   - card generation throws
-//   - card generation exceeds a 2s budget
-//   - navigator.canShare doesn't accept files (older Android WebViews)
-// The user must never wait more than 2s on card generation.
+// contextual completion message + the dialogue-specific landing page URL.
+// When the dialogue has a thinkerId + title, we point at the pre-generated
+// /d/<weekId>-<dayId>-<lang>.html page (rendered by
+// scripts/generate-share-cards.mjs at build time). Social platforms unfurl
+// that URL into an OG preview card without needing to attach a file. When
+// the dialogue lacks a thinkerId, we fall back to the generic corpusapp.io
+// link.
 function shareCompletion() {
   const chapter = getW().find(w => w.id === state.currentWeek);
   const day = chapter ? chapter.days.find(d => d.id === state.currentDay) : null;
@@ -17205,65 +16853,12 @@ function shareCompletion() {
       ? 'Just finished a dialogue on Corpus. Try Corpus too:'
       : 'סיימתי עכשיו דיאלוג ב-Corpus. נסה גם את Corpus:';
   }
-  if (thinkerId && title) {
-    // Subject comes from the dialogue's context, not the app's active
-    // theme. In the completion flow they happen to match (you're in the
-    // subject you just completed a dialogue in), but we pass state.subject
-    // explicitly to make the invariant obvious at the call site and so a
-    // future "share past dialogue" surface can pass a different value.
-    _shareCorpusWithCard('completion_modal', text, thinkerId, title, state.subject);
-  } else {
-    _shareCorpus('completion_modal', text);
+  let overrideUrl = null;
+  if (thinkerId && title && state.currentWeek != null && state.currentDay != null) {
+    const lang = isEn ? 'en' : 'he';
+    overrideUrl = `https://corpusapp.io/d/${state.currentWeek}-${state.currentDay}-${lang}.html`;
   }
-}
-
-// Runs the card-generation attempt behind a 2s budget, then routes to
-// navigator.share with the file attached. If any step fails (generation,
-// canShare check, share call), silently falls back to the plain-text share.
-async function _shareCorpusWithCard(source, text, thinkerId, dayTitle, subject) {
-  const url = getShareUrl();
-  let blob = null;
-  try {
-    blob = await Promise.race([
-      generateShareCard(thinkerId, dayTitle, subject),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('card timeout')), 2000))
-    ]);
-  } catch(e) {
-    // Generation failed or timed out — fall through to text share.
-    console.warn('[shareCard] generation failed, falling back to text', e);
-    return _shareCorpus(source, text);
-  }
-  // Feature-detect files support. Safari + modern Chrome/Firefox implement
-  // canShare; older Android WebViews may not — treat as unsupported.
-  const file = new File([blob], 'corpus.png', { type: 'image/png' });
-  const payload = { title: 'Corpus', text: text, url: url, files: [file] };
-  const supported = !!(navigator.share && navigator.canShare && navigator.canShare({ files: [file] }));
-  if (!supported) {
-    return _shareCorpus(source, text);
-  }
-  try {
-    await navigator.share(payload);
-    try { posthog.capture('share_initiated', { source: source, method: 'native', card: true }); } catch(e) {}
-    // Post-share follow-up: some share targets accept the image but drop the
-    // text/url (WhatsApp's "share to a chat" flow is the common case). Copy
-    // getShareUrl() to the clipboard and show a small toast so the user can
-    // paste the link with one more tap if the target didn't carry it. Only
-    // fires on the successful FILE share path — text-only fallback shares
-    // already put the URL in the message body so the toast would be noise.
-    try {
-      const _url = getShareUrl();
-      await navigator.clipboard.writeText(_url);
-      const _isEn = state.lang === 'en';
-      const _msg = _isEn ? 'Link copied, paste it to add' : 'רוצה לצרף קישור? הועתק ללוח';
-      try { showStreakToast(_msg); } catch(e) {}
-    } catch(e) {}
-  } catch(e) {
-    // User cancelled the share sheet, or the OS rejected the file. Cancellation
-    // matches _shareCorpus's silent policy; a rejection retries text-only.
-    if (e && e.name !== 'AbortError') {
-      return _shareCorpus(source, text);
-    }
-  }
+  _shareCorpus('completion_modal', text, overrideUrl);
 }
 
 function shareCorpusFromProfile() {
