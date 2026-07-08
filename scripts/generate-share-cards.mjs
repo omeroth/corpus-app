@@ -16,14 +16,18 @@
 // This is a Node ESM script (.mjs) — run via `npm run gen:share` (see
 // package.json) which uses node-canvas as a devDependency.
 //
-// Fonts: put Nunito + DM Sans TTFs in ./fonts (see fonts/README.md). Missing
-// TTFs fall back to the platform sans-serif with a warning; layout still
-// works, kerning just doesn't match the in-app version.
+// Fonts: Rubik (variable weight TTF) lives in ./fonts and is registered as
+// "Rubik" — used for all text in the cards. Rubik is a bi-script family with
+// both Hebrew and Latin glyphs, so the same font handles both languages
+// without tofu (which is what happens if you register a Latin-only font like
+// Nunito and try to draw Hebrew — @napi-rs/canvas's bundled Noto fallback
+// doesn't cover Hebrew reliably).
 //
 // The script never touches the app itself — pure static generator.
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 // Two canvas backends supported: @napi-rs/canvas (prebuilt, no cairo needed)
@@ -124,12 +128,12 @@ function _registerFonts() {
   if (!CANVAS_ENABLED) return;
   const fontsDir = path.join(__dirname, 'fonts');
   if (!fs.existsSync(fontsDir)) {
-    console.warn('[gen:share] scripts/fonts missing — falling back to sans-serif.');
+    console.warn('[gen:share] scripts/fonts missing — Hebrew will render as tofu.');
     return;
   }
   const files = fs.readdirSync(fontsDir).filter(f => /\.ttf$/i.test(f));
   if (!files.length) {
-    console.warn('[gen:share] no TTFs in scripts/fonts — falling back to sans-serif.');
+    console.warn('[gen:share] no TTFs in scripts/fonts — Hebrew will render as tofu.');
     return;
   }
   const has = name => files.some(f => f.toLowerCase().includes(name.toLowerCase()));
@@ -137,7 +141,8 @@ function _registerFonts() {
     const p = path.join(fontsDir, file);
     try {
       if (canvasKind === 'napi') {
-        canvasModule.GlobalFonts.registerFromPath(p, family);
+        const key = canvasModule.GlobalFonts.registerFromPath(p, family);
+        if (!key) console.warn('[gen:share] register returned null for', file);
       } else {
         canvasModule.registerFont(p, { family, ...(opts || {}) });
       }
@@ -145,22 +150,17 @@ function _registerFonts() {
       console.warn('[gen:share] register font failed for', file, e.message);
     }
   };
-  // Nunito
-  if (has('Nunito-VariableFont')) {
-    tryReg('Nunito-VariableFont_wght.ttf', 'Nunito');
+  // Rubik — single family covers Hebrew + Latin at all weights we use (500–900).
+  // Variable font preferred (one file, full weight range); fall back to statics.
+  if (has('Rubik-VariableFont')) {
+    tryReg('Rubik-VariableFont_wght.ttf', 'Rubik');
   } else {
-    if (has('Nunito-SemiBold'))   tryReg('Nunito-SemiBold.ttf',   'Nunito', { weight: '600' });
-    if (has('Nunito-Bold'))       tryReg('Nunito-Bold.ttf',       'Nunito', { weight: '700' });
-    if (has('Nunito-ExtraBold'))  tryReg('Nunito-ExtraBold.ttf',  'Nunito', { weight: '800' });
-    if (has('Nunito-Black'))      tryReg('Nunito-Black.ttf',      'Nunito', { weight: '900' });
-  }
-  // DM Sans
-  if (has('DMSans-VariableFont')) {
-    tryReg('DMSans-VariableFont_opsz,wght.ttf', 'DM Sans');
-  } else {
-    if (has('DMSans-Medium'))     tryReg('DMSans-Medium.ttf',     'DM Sans', { weight: '500' });
-    if (has('DMSans-SemiBold'))   tryReg('DMSans-SemiBold.ttf',   'DM Sans', { weight: '600' });
-    if (has('DMSans-Bold'))       tryReg('DMSans-Bold.ttf',       'DM Sans', { weight: '700' });
+    if (has('Rubik-Regular'))    tryReg('Rubik-Regular.ttf',    'Rubik', { weight: '400' });
+    if (has('Rubik-Medium'))     tryReg('Rubik-Medium.ttf',     'Rubik', { weight: '500' });
+    if (has('Rubik-SemiBold'))   tryReg('Rubik-SemiBold.ttf',   'Rubik', { weight: '600' });
+    if (has('Rubik-Bold'))       tryReg('Rubik-Bold.ttf',       'Rubik', { weight: '700' });
+    if (has('Rubik-ExtraBold'))  tryReg('Rubik-ExtraBold.ttf',  'Rubik', { weight: '800' });
+    if (has('Rubik-Black'))      tryReg('Rubik-Black.ttf',      'Rubik', { weight: '900' });
   }
 }
 
@@ -280,7 +280,7 @@ async function renderCard({ thinker, dayTitle, subject, lang }) {
     } catch (e) {
       // Fallback: monogram
       ctx.fillStyle = theme.wordmark;
-      ctx.font = '800 140px Nunito, sans-serif';
+      ctx.font = '800 140px Rubik, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText((thinker.name || '?').slice(0, 1), portraitCx, portraitCy);
@@ -297,7 +297,7 @@ async function renderCard({ thinker, dayTitle, subject, lang }) {
   let y = 70;
 
   // Wordmark
-  ctx.font = '600 40px Nunito, sans-serif';
+  ctx.font = '600 40px Rubik, sans-serif';
   ctx.fillStyle = theme.wordmark;
   ctx.fillText('Corpus', colX, y);
   y += 68;
@@ -305,9 +305,9 @@ async function renderCard({ thinker, dayTitle, subject, lang }) {
   // Hero question (shrink-to-fit, up to 3 lines)
   const questionText = String(dayTitle || '').trim();
   if (questionText) {
-    const { size, lines } = fitQuestion(ctx, questionText, colWidth, 3, 'Nunito, sans-serif');
+    const { size, lines } = fitQuestion(ctx, questionText, colWidth, 3, 'Rubik, sans-serif');
     ctx.fillStyle = theme.question;
-    ctx.font = `800 ${size}px Nunito, sans-serif`;
+    ctx.font = `800 ${size}px Rubik, sans-serif`;
     const lineHeight = size * 1.2;
     for (const line of lines) {
       const rendered = !isEn ? (RLM + line + RLM) : line;
@@ -319,14 +319,14 @@ async function renderCard({ thinker, dayTitle, subject, lang }) {
 
   // Thinker name
   ctx.fillStyle = theme.name;
-  ctx.font = '900 34px Nunito, sans-serif';
+  ctx.font = '900 34px Rubik, sans-serif';
   ctx.fillText(thinker.name, colX, y);
   y += 46;
 
   // Era (LRI/PDI wrap so digits never flip in Hebrew context)
   if (thinker.era) {
     ctx.fillStyle = theme.era;
-    ctx.font = '600 22px "DM Sans", sans-serif';
+    ctx.font = '600 22px Rubik, sans-serif';
     ctx.fillText(LRI + thinker.era + PDI, colX, y);
     y += 40;
   }
@@ -344,7 +344,7 @@ async function renderCard({ thinker, dayTitle, subject, lang }) {
 
   // corpusapp.io in the bottom of the text column
   ctx.fillStyle = URL_TXT;
-  ctx.font = '700 22px "DM Sans", sans-serif';
+  ctx.font = '700 22px Rubik, sans-serif';
   ctx.fillText('corpusapp.io', colX, H - 60);
 
   return canvas.toBuffer('image/png');
@@ -404,7 +404,7 @@ function renderPage({ weekId, dayId, thinker, dayTitle, dayIntro, subject, lang 
 <meta name="twitter:description" content="${escapeHtml(description)}">
 <meta name="twitter:image" content="${cardUrl}">
 
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=DM+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -421,7 +421,7 @@ function renderPage({ weekId, dayId, thinker, dayTitle, dayIntro, subject, lang 
   html, body {
     background: var(--bg);
     color: var(--name);
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Rubik', sans-serif;
     min-height: 100dvh;
     -webkit-font-smoothing: antialiased;
   }
@@ -432,7 +432,7 @@ function renderPage({ weekId, dayId, thinker, dayTitle, dayIntro, subject, lang 
     text-align: ${isEn ? 'left' : 'right'};
   }
   .wordmark {
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Rubik', sans-serif;
     font-weight: 600;
     font-size: 22px;
     color: var(--wordmark);
@@ -453,7 +453,7 @@ function renderPage({ weekId, dayId, thinker, dayTitle, dayIntro, subject, lang 
     background-position: center 20%;
   }
   h1 {
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Rubik', sans-serif;
     font-weight: 800;
     color: var(--question);
     font-size: clamp(28px, 5vw, 44px);
@@ -462,7 +462,7 @@ function renderPage({ weekId, dayId, thinker, dayTitle, dayIntro, subject, lang 
     margin-bottom: 20px;
   }
   .thinker {
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Rubik', sans-serif;
     font-weight: 900;
     color: var(--name);
     font-size: 20px;
@@ -498,7 +498,7 @@ function renderPage({ weekId, dayId, thinker, dayTitle, dayIntro, subject, lang 
     align-items: center;
     padding: 12px 20px;
     border-radius: 999px;
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Rubik', sans-serif;
     font-weight: 700;
     font-size: 15px;
     text-decoration: none;
@@ -639,6 +639,40 @@ async function main() {
   if (CANVAS_ENABLED) console.log(`[gen:share] cards → ${path.relative(ROOT, OUT_CARDS)}`);
   console.log(`[gen:share] pages → ${path.relative(ROOT, OUT_PAGES)}`);
   console.log(`[gen:share] manifest → ${path.relative(ROOT, path.join(OUT_CARDS, 'manifest.json'))}`);
+
+  // Post-pass: pngquant compression. Cards render at ~200–330KB uncompressed;
+  // quantizing to 70–90% quality drops that to ~50–100KB with no visible loss,
+  // which keeps every card under the ~300KB WhatsApp/Twitter OG-image soft cap.
+  // Skipped silently if pngquant-bin isn't installed (dev-only devDep).
+  if (CANVAS_ENABLED) _compressCards();
+}
+
+function _compressCards() {
+  // pngquant-bin ships the binary at node_modules/pngquant-bin/vendor/pngquant.
+  // Probe that path directly — avoids ESM/CJS interop for a devDep that only
+  // exposes its binary path.
+  const pngquantBin = path.join(ROOT, 'node_modules', 'pngquant-bin', 'vendor', 'pngquant');
+  if (!fs.existsSync(pngquantBin)) {
+    console.warn('[gen:share] pngquant-bin not installed — skipping compression.');
+    return;
+  }
+  const pngs = [];
+  for (const lang of fs.readdirSync(OUT_CARDS)) {
+    const dir = path.join(OUT_CARDS, lang);
+    if (!fs.statSync(dir).isDirectory()) continue;
+    for (const f of fs.readdirSync(dir)) {
+      if (f.endsWith('.png')) pngs.push(path.join(dir, f));
+    }
+  }
+  if (!pngs.length) return;
+  const before = pngs.reduce((a, p) => a + fs.statSync(p).size, 0);
+  const args = ['--quality=70-90', '--strip', '--force', '--skip-if-larger', '--output'];
+  for (const p of pngs) {
+    spawnSync(pngquantBin, [...args, p, p], { stdio: 'ignore' });
+  }
+  const after  = pngs.reduce((a, p) => a + fs.statSync(p).size, 0);
+  const savedKB = Math.round((before - after) / 1024);
+  console.log(`[gen:share] compressed ${pngs.length} cards → ${Math.round(after / 1024)}KB total (−${savedKB}KB)`);
 }
 
 main().catch(err => {
