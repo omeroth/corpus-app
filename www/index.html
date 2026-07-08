@@ -234,7 +234,10 @@
     --text-muted: #9A8DC0;
     --accent: #9D7AE8;
     --accent-dark: #7B4FD4;
-    --accent-muted: #7A66A8;
+    /* Phase 3a: bumped from #7A66A8 (3.05:1 vs --surface — failed AA) to
+       #A08BD0 (5.4:1 vs --surface — passes AA). Used by .dc-xp-label,
+       .dc-streak-label, .metric-label, .dc-subtitle, .dc-thinker-title. */
+    --accent-muted: #A08BD0;
     --accent-glow: rgba(157, 122, 232, 0.35);
     --accent-rgb: 157, 122, 232;
     --accent-tint: #322152;
@@ -268,7 +271,9 @@
     --text-muted: #8CA0C4;
     --accent: #5B8DF0;
     --accent-dark: #2563EB;
-    --accent-muted: #4A6FB8;
+    /* Phase 3a: bumped from #4A6FB8 (3.35:1 vs --surface — failed AA) to
+       #7A9BD8 (6.3:1 vs --surface — passes AA). */
+    --accent-muted: #7A9BD8;
     --accent-glow: rgba(91, 141, 240, 0.35);
     --accent-rgb: 91, 141, 240;
     --accent-tint: #1D2E4F;
@@ -342,6 +347,42 @@
     --red: #F87171;
     --red-light: rgba(248, 113, 113, 0.14);
   }
+
+  /* Phase 3a: dark-scoped contrast overrides for hardcoded literals that
+     Phase 1 missed. Each target used a color chosen for light-mode legibility
+     (deep purple/grey against white) that inverts to near-invisible on dark
+     surfaces. Fix at the element with the smallest possible dark-scoped
+     override so light mode stays byte-identical.
+     Contrast targets (vs typical background token):
+       - Normal text  ≥ 4.5:1 (WCAG AA)
+       - Large text   ≥ 3:1
+     Ratios listed per override reflect measurement vs --surface
+     (#241B42 philosophy dark; economics/psychology slightly darker so ratios
+     are equal or better). */
+  /* Quiz scenario/quote — italic intro above comprehension questions. Was
+     #4A3580 (1.58:1 vs dark --surface). Now var(--text-2) → 7.5:1. */
+  html.dark .quiz-intro-v2 { color: var(--text-2); }
+  /* Source attribution (small muted caption below quoted excerpts). Was
+     #6B5A8E (2.3:1). Now var(--text-2) → 7.5:1. */
+  html.dark .source-attr { color: var(--text-2); }
+  /* Locked pantheon card front — name + era rendered when a thinker isn't
+     unlocked yet. Was #6B5A8A / #4A3A6A (2.4:1 / 1.7:1 — the era was
+     effectively unreadable). Now var(--text-muted) / rgba to keep the
+     locked hierarchy (name > era) but both above AA. */
+  html.dark .pantheon-card.locked .pantheon-card-name { color: var(--text-muted); }
+  html.dark .pantheon-card.locked .pantheon-card-era { color: rgba(154, 141, 192, 0.7); }
+  /* Learning-card body inner HTML — h1/h2/h3 and blockquote may appear when
+     lesson data embeds Markdown-like structure. Headings were #6366f1 (2.9:1),
+     blockquotes were #4a5568 (1.9:1). Retint to token colors that follow
+     the theme. */
+  html.dark .learning-card-body h1,
+  html.dark .learning-card-body h2,
+  html.dark .learning-card-body h3 { color: var(--accent); }
+  html.dark .learning-card-body blockquote { color: var(--text-2); border-right-color: var(--border-deep); }
+  /* Fallback body color on .learning-card-body was #1a1a1a — masked by
+     .section-body's var(--ink) in normal flow, but if any raw text bleeds
+     through (unstyled span, direct text node), it'd be invisible in dark. */
+  html.dark .learning-card-body { color: var(--text); }
 
   html {
     transition: background-color 350ms ease, color 350ms ease;
