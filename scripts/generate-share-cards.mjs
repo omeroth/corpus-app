@@ -16,12 +16,13 @@
 // This is a Node ESM script (.mjs) — run via `npm run gen:share` (see
 // package.json) which uses node-canvas as a devDependency.
 //
-// Fonts: Rubik (variable weight TTF) lives in ./fonts and is registered as
-// "Rubik" — used for all text in the cards. Rubik is a bi-script family with
-// both Hebrew and Latin glyphs, so the same font handles both languages
-// without tofu (which is what happens if you register a Latin-only font like
-// Nunito and try to draw Hebrew — @napi-rs/canvas's bundled Noto fallback
-// doesn't cover Hebrew reliably).
+// Fonts: two variable-weight TTFs live in ./fonts:
+//   - Rubik    → bi-script (Hebrew + Latin), used for all body text
+//   - Nunito   → Latin only, used ONLY for the "Corpus" wordmark to match
+//                the in-app .auth-logo-text (900 weight, -1px tracking)
+// Rubik covers Hebrew glyphs; @napi-rs/canvas's bundled Noto fallback does
+// not, which is why the Rubik font matters here. Nunito is only ever drawn
+// against the Latin string "Corpus", so its lack of Hebrew glyphs is fine.
 //
 // The script never touches the app itself — pure static generator.
 
@@ -162,6 +163,15 @@ function _registerFonts() {
     if (has('Rubik-ExtraBold'))  tryReg('Rubik-ExtraBold.ttf',  'Rubik', { weight: '800' });
     if (has('Rubik-Black'))      tryReg('Rubik-Black.ttf',      'Rubik', { weight: '900' });
   }
+  // Nunito — wordmark only, in-app logo weight (Black/900). Variable font
+  // exposes 200–1000 via its wght axis, which @napi-rs/canvas respects.
+  if (has('Nunito-VariableFont')) {
+    tryReg('Nunito-VariableFont_wght.ttf', 'Nunito');
+  } else {
+    if (has('Nunito-Bold'))       tryReg('Nunito-Bold.ttf',       'Nunito', { weight: '700' });
+    if (has('Nunito-ExtraBold'))  tryReg('Nunito-ExtraBold.ttf',  'Nunito', { weight: '800' });
+    if (has('Nunito-Black'))      tryReg('Nunito-Black.ttf',      'Nunito', { weight: '900' });
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -296,11 +306,25 @@ async function renderCard({ thinker, dayTitle, subject, lang }) {
 
   let y = 70;
 
-  // Wordmark
-  ctx.font = '600 40px Rubik, sans-serif';
+  // Wordmark — matches the in-app .auth-logo-text: Nunito 900, tight tracking.
+  // Nunito is Latin-only, which is fine here because the wordmark string is
+  // always "Corpus"; the family stack still lists Rubik as a fallback so this
+  // stays safe if the Nunito TTF is ever missing from scripts/fonts/.
+  //
+  // fillText + strokeText overlay adds ~1px of effective weight — needed
+  // because @napi-rs/canvas's variable-font wght matching maxes out closer
+  // to a semibold visual than a true Black, so 900-only rendered too light
+  // against the pastel card background.
+  ctx.font = '900 44px Nunito, Rubik, sans-serif';
   ctx.fillStyle = theme.wordmark;
+  ctx.strokeStyle = theme.wordmark;
+  ctx.lineWidth = 1.5;
+  ctx.lineJoin = 'round';
+  ctx.letterSpacing = '-1px';
+  ctx.strokeText('Corpus', colX, y);
   ctx.fillText('Corpus', colX, y);
-  y += 68;
+  ctx.letterSpacing = '0px';
+  y += 72;
 
   // Hero question (shrink-to-fit, up to 3 lines)
   const questionText = String(dayTitle || '').trim();
@@ -404,7 +428,7 @@ function renderPage({ weekId, dayId, thinker, dayTitle, subject, lang }) {
 <meta name="twitter:description" content="${escapeHtml(description)}">
 <meta name="twitter:image" content="${cardUrl}">
 
-<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -432,10 +456,11 @@ function renderPage({ weekId, dayId, thinker, dayTitle, subject, lang }) {
     text-align: center;
   }
   .wordmark {
-    font-weight: 600;
-    font-size: 22px;
+    font-family: 'Nunito', 'Rubik', sans-serif;
+    font-weight: 900;
+    font-size: 26px;
     color: var(--wordmark);
-    letter-spacing: -.01em;
+    letter-spacing: -1px;
     margin-bottom: 32px;
   }
   .card {

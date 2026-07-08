@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
+    "@fontsource/nunito": "^5.2.7",
     "pngquant-bin": "^9.0.0"
   }
 }
