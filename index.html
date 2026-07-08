@@ -17037,9 +17037,42 @@ async function generateShareCard(thinkerId, dayTitle, subject) {
   ctx.fillText(tagline, cx, y);
   y += 44;
 
-  // ── URL ───────────────────────────────────────────────────────────────
-  ctx.fillStyle = _SHARE_CARD_URL_TXT;
-  ctx.font = '700 24px "DM Sans", sans-serif';
+  // ── CTA pill + URL ────────────────────────────────────────────────────
+  // The plain "corpusapp.io" line read as an afterthought — replaced with
+  // a small rounded pill ("Get Corpus" / "הורידו את Corpus") in the theme
+  // accent color inside a thin gold rim, followed by a subtle corpusapp.io
+  // line beneath. Editorial weight, not a button — no fill, no shadow.
+  const pillText = isEn ? 'Get Corpus' : 'הורידו את Corpus';
+  ctx.font = '700 26px Nunito, sans-serif';
+  const pillPadX = 32;
+  const pillH = 56;
+  const pillW = ctx.measureText(pillText).width + pillPadX * 2;
+  const pillX = cx - pillW / 2;
+  const pillY = y;
+  const pillR = pillH / 2;   // fully rounded ends
+  // Manual rounded rect — CanvasRenderingContext2D.roundRect() is only in
+  // recent Chromium/WebKit and this file targets older Capacitor iOS too.
+  ctx.beginPath();
+  ctx.moveTo(pillX + pillR, pillY);
+  ctx.arcTo(pillX + pillW, pillY,          pillX + pillW, pillY + pillH, pillR);
+  ctx.arcTo(pillX + pillW, pillY + pillH,  pillX,         pillY + pillH, pillR);
+  ctx.arcTo(pillX,         pillY + pillH,  pillX,         pillY,         pillR);
+  ctx.arcTo(pillX,         pillY,          pillX + pillW, pillY,         pillR);
+  ctx.closePath();
+  ctx.strokeStyle = _SHARE_CARD_RIM;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // Centered label inside the pill — vertical middle to sit on the geometric
+  // center of the rounded rect, then restore top baseline for the URL line.
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = theme.wordmark;
+  ctx.fillText(pillText, cx, pillY + pillH / 2);
+  ctx.textBaseline = 'top';
+  y = pillY + pillH + 16;
+  // URL as a subtle typographic tag under the pill — muted color, lighter
+  // weight, smaller size. Reads as attribution, not as another CTA.
+  ctx.fillStyle = theme.era;
+  ctx.font = '500 20px "DM Sans", sans-serif';
   ctx.fillText('corpusapp.io', cx, y);
 
   return new Promise((resolve, reject) => {
@@ -17211,6 +17244,19 @@ async function _shareCorpusWithCard(source, text, thinkerId, dayTitle, subject) 
   try {
     await navigator.share(payload);
     try { posthog.capture('share_initiated', { source: source, method: 'native', card: true }); } catch(e) {}
+    // Post-share follow-up: some share targets accept the image but drop the
+    // text/url (WhatsApp's "share to a chat" flow is the common case). Copy
+    // getShareUrl() to the clipboard and show a small toast so the user can
+    // paste the link with one more tap if the target didn't carry it. Only
+    // fires on the successful FILE share path — text-only fallback shares
+    // already put the URL in the message body so the toast would be noise.
+    try {
+      const _url = getShareUrl();
+      await navigator.clipboard.writeText(_url);
+      const _isEn = state.lang === 'en';
+      const _msg = _isEn ? 'Link copied, paste it to add' : 'רוצה לצרף קישור? הועתק ללוח';
+      try { showStreakToast(_msg); } catch(e) {}
+    } catch(e) {}
   } catch(e) {
     // User cancelled the share sheet, or the OS rejected the file. Cancellation
     // matches _shareCorpus's silent policy; a rejection retries text-only.
