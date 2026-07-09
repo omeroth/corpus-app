@@ -52,6 +52,9 @@ jobs:
           # break in that transitional window.
           if [ -d share ]; then cp -r share _deploy/; fi
           if [ -d d ];     then cp -r d     _deploy/; fi
+          # Static assets referenced by Loops re-engagement emails (bonus
+          # unlocked art, etc). Not consumed by the app itself.
+          if [ -d email ]; then cp -r email _deploy/; fi
           echo "--- _deploy summary ---"
           find _deploy -type f | wc -l
           du -sh _deploy
