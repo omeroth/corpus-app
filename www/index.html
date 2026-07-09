@@ -16508,8 +16508,13 @@ function maybeShowGuestPrompt(callback, trigger) {
 }
 
 let _guestSignupPendingFn = null;
+// Trigger that surfaced the currently-open guest-signup prompt. Read by
+// dismissGuestSignupPrompt and _guestSignupTap so the follow-up analytics
+// events carry the same trigger as the shown event they descend from.
+let _currentGuestTrigger = null;
 function showGuestSignupPrompt(originalFn, trigger) {
   _guestSignupPendingFn = originalFn || null;
+  _currentGuestTrigger = trigger || 'unknown';
   // Reset the tap-dispatch guard so the buttons register again on this new
   // open. Without the reset a modal reused across triggers would ignore taps.
   _guestSignupClosing = false;
@@ -16527,7 +16532,9 @@ function showGuestSignupPrompt(originalFn, trigger) {
   state.guestPrompt.shownTriggers[trigger || 'unknown'] = true;
   state.guestSignupPromptShown = true; // legacy back-compat
   saveStateLocal();
-  document.getElementById('modal-guest-signup').classList.add('active');
+  const _guestModal = document.getElementById('modal-guest-signup');
+  const _guestWasActive = _guestModal.classList.contains('active');
+  _guestModal.classList.add('active');
   // localize — title is constant; body varies with the trigger so the prompt
   // lands on the moment that earned it ("you just leveled up", etc).
   const isEn = state.lang === 'en';
@@ -16560,7 +16567,16 @@ function showGuestSignupPrompt(originalFn, trigger) {
   if (emailBtn) emailBtn.textContent = isEn ? 'Sign up with email' : 'הרשמה עם אימייל';
   const skip = document.getElementById('guest-signup-skip');
   if (skip) skip.textContent = isEn ? 'Maybe later' : 'אולי אחר כך';
-  try { posthog.capture('guest_prompt_shown', { trigger: trigger || 'unknown', total_shown: state.guestPrompt.totalShown }); } catch(e) {}
+  // Fire once per actual appearance — prevents a duplicate shown event
+  // when a re-entrant call finds the modal already up.
+  if (!_guestWasActive) {
+    try {
+      posthog.capture('guest_prompt_shown', Object.assign({
+        trigger: _currentGuestTrigger,
+        total_shown: state.guestPrompt.totalShown,
+      }, _shareEventProps()));
+    } catch(e) {}
+  }
 }
 function closeGuestSignupPrompt() {
   document.getElementById('modal-guest-signup').classList.remove('active');
@@ -16582,7 +16598,12 @@ function closeGuestSignupPrompt() {
 function dismissGuestSignupPrompt() {
   state.guestPrompt.dismissCount += 1;
   saveStateLocal();
-  try { posthog.capture('guest_prompt_dismissed', { dismiss_count: state.guestPrompt.dismissCount }); } catch(e) {}
+  try {
+    posthog.capture('guest_prompt_dismissed', Object.assign({
+      trigger: _currentGuestTrigger,
+      dismiss_count: state.guestPrompt.dismissCount,
+    }, _shareEventProps()));
+  } catch(e) {}
   closeGuestSignupPrompt();
 }
 
@@ -16601,10 +16622,19 @@ let _guestSignupClosing = false;
 function _guestSignupTap(kind) {
   if (_guestSignupClosing) return;
   _guestSignupClosing = true;
-  if (kind === 'google') { closeGuestSignupPrompt(); authWithGoogle(); }
+  if (kind === 'skip') { dismissGuestSignupPrompt(); return; }
+  // google/apple/email — capture the funnel step "signup started from prompt"
+  // so we can attribute a later user_signed_up back to the guest-prompt
+  // trigger that surfaced it. _guestSignupClosing guarantees single fire.
+  try {
+    posthog.capture('guest_prompt_signup_started', Object.assign({
+      method:  kind,
+      trigger: _currentGuestTrigger,
+    }, _shareEventProps()));
+  } catch(e) {}
+  if (kind === 'google')     { closeGuestSignupPrompt(); authWithGoogle(); }
   else if (kind === 'apple') { closeGuestSignupPrompt(); authWithApple(); }
   else if (kind === 'email') { closeGuestSignupPrompt(); setAuthMode('signup'); showAuthScreen(); }
-  else if (kind === 'skip') { dismissGuestSignupPrompt(); }
 }
 
 // Same shape for the share prompt's two actions. doShare and skipShare each
@@ -16723,7 +16753,14 @@ function showSharePrompt(onDone) {
   document.getElementById('share-btn').textContent = isEn ? 'Share Corpus' : 'שתף את Corpus';
   document.getElementById('share-skip').textContent = isEn ? 'Skip' : 'דלג';
   document.getElementById('share-copied').style.display = 'none';
-  document.getElementById('modal-share').classList.add('active');
+  const _shareModal = document.getElementById('modal-share');
+  const _shareWasActive = _shareModal.classList.contains('active');
+  _shareModal.classList.add('active');
+  // Fire once per actual appearance — guards against a stray re-entry firing
+  // a duplicate shown event when the modal is already up.
+  if (!_shareWasActive) {
+    try { posthog.capture('share_prompt_shown', _shareEventProps()); } catch(e) {}
+  }
 }
 
 // Permanent share buttons — separate plumbing from the one-time share PROMPT
@@ -17036,34 +17073,70 @@ function _withShareGuard(fn) {
   });
 }
 
+// Common context props stamped onto every share_*/prompt_* PostHog event so
+// funnels can be sliced by subject/dialogue/lang without joins. Values may be
+// null (e.g. before a dialogue is opened, from the profile row), which is fine
+// — PostHog keeps the property key visible and the segment simply reads NULL.
+function _shareEventProps() {
+  const wk = state.currentWeek;
+  const dy = state.currentDay;
+  return {
+    subject:     state.subject || null,
+    dialogue_id: (wk != null && dy != null) ? `${wk}-${dy}` : null,
+    lang:        state.lang    || null,
+  };
+}
+
 // TEXT + URL share primitive — no guard (caller's responsibility). Used by
 // every share entry point. Callers that have a canonical landing-page URL
 // (shareCompletion → /d/…) pass it as overrideUrl; callers without one
 // (shareCorpusFromProfile) fall through to getShareUrl() = store/site.
-async function _shareCorpus(source, text, overrideUrl) {
+// extraProps ride along with every capture from this call (thinker_id from
+// the completion modal, e.g.).
+//
+// Analytics funnel: share_initiated (tap, unconditional) →
+//   share_completed  (native: navigator.share resolved / clipboard: copy ok)
+//   share_cancelled  (native: AbortError / clipboard: copy failed)
+async function _shareCorpus(source, text, overrideUrl, extraProps) {
   const url = overrideUrl || getShareUrl();
   const full = text + ' ' + url;
+  const method = navigator.share ? 'native' : 'clipboard';
+  const baseProps = Object.assign({ source, method }, _shareEventProps(), extraProps || {});
+  try { posthog.capture('share_initiated', baseProps); } catch(e) {}
+
   if (navigator.share) {
     try {
       await navigator.share({ title: 'Corpus', text: text, url });
-      try { posthog.capture('share_initiated', { source: source, method: 'native', card: false }); } catch(e) {}
-    } catch(e) { /* user cancelled — silent */ }
+      try { posthog.capture('share_completed', baseProps); } catch(e) {}
+    } catch(e) {
+      try { posthog.capture('share_cancelled', Object.assign({ reason: (e && e.name) || 'unknown' }, baseProps)); } catch(_){}
+    }
     return;
   }
+
+  let ok = false;
   try {
     await navigator.clipboard.writeText(full);
+    ok = true;
   } catch(e) {
-    const ta = document.createElement('textarea');
-    ta.value = full;
-    ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta);
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = full;
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta);
+      ok = true;
+    } catch(_) {}
   }
-  try { posthog.capture('share_initiated', { source: source, method: 'clipboard', card: false }); } catch(e) {}
-  try {
-    const msg = state.lang === 'en' ? 'Link copied!' : 'הקישור הועתק';
-    showStreakToast(msg);
-  } catch(e) {}
+  if (ok) {
+    try { posthog.capture('share_completed', baseProps); } catch(e) {}
+    try {
+      const msg = state.lang === 'en' ? 'Link copied!' : 'הקישור הועתק';
+      showStreakToast(msg);
+    } catch(e) {}
+  } else {
+    try { posthog.capture('share_cancelled', Object.assign({ reason: 'copy_failed' }, baseProps)); } catch(e) {}
+  }
 }
 
 // Subject → landing-page slug prefix. Must stay in lockstep with the mirror
@@ -17124,7 +17197,7 @@ function shareCompletion() {
       const lang = isEn ? 'en' : 'he';
       overrideUrl = `https://corpusapp.io/d/${slug}-${state.currentWeek}-${state.currentDay}-${lang}.html`;
     }
-    await _shareCorpus('completion_modal', text, overrideUrl);
+    await _shareCorpus('completion_modal', text, overrideUrl, { thinker_id: thinkerId || null });
   });
 }
 
@@ -17138,6 +17211,9 @@ function shareCorpusFromProfile() {
 }
 
 async function doShare() {
+  // Share-prompt Share tap — funnel step "shared" from the one-time popup.
+  // _sharePromptClosing (set by _shareModalTap) guarantees single fire per tap.
+  try { posthog.capture('share_prompt_shared', _shareEventProps()); } catch(e) {}
   const url = getShareUrl();
   const shareText = state.lang === 'he'
     ? 'הרעיונות הגדולים בהיסטוריה ב-5 דקות ביום'
@@ -17171,6 +17247,9 @@ async function doShare() {
 }
 
 function skipShare() {
+  // Share-prompt Skip tap — funnel step "dismissed" from the one-time popup.
+  // _sharePromptClosing guarantees single fire per tap.
+  try { posthog.capture('share_prompt_dismissed', _shareEventProps()); } catch(e) {}
   try { localStorage.setItem(`corpus_share_shown_${state.subject || 'philosophy'}`, '1'); } catch(e) {}
   document.getElementById('modal-share').classList.remove('active');
   _finishSharePrompt();
