@@ -6396,6 +6396,11 @@ async function syncProgressToSupabase() {
   if (!currentUser) return;
   try {
     const completedDaysArr = Object.keys(state.completedDays);
+    // last_active_at + last_subject are the re-engagement signals the
+    // notify_loops_progress trigger forwards to Loops. Only the base upsert
+    // touches last_active_at, so the trigger fires once per sync session
+    // (preference upserts below don't disturb it). See
+    // supabase/migrations/20260709210000_loops_progress.sql.
     const { error } = await sb.from('user_progress').upsert({
       user_id: currentUser.id,
       xp: state.xp,
@@ -6403,6 +6408,8 @@ async function syncProgressToSupabase() {
       streak: state.streak,
       completed_days: completedDaysArr,
       unlocked_thinkers: state.unlockedThinkers,
+      last_active_at: new Date().toISOString(),
+      last_subject: state.subject || 'philosophy',
     }, { onConflict: 'user_id' });
     if (error) _reportSyncFailure('base', error);
   } catch(e) { _reportSyncFailure('base', e); }

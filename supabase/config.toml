@@ -15,3 +15,9 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/loops-signup/deno.json"
 entrypoint = "./functions/loops-signup/index.ts"
+
+[functions.loops-progress]
+enabled = true
+verify_jwt = false
+import_map = "./functions/loops-progress/deno.json"
+entrypoint = "./functions/loops-progress/index.ts"
