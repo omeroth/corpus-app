@@ -21,3 +21,9 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/loops-progress/deno.json"
 entrypoint = "./functions/loops-progress/index.ts"
+
+[functions.backfill-loops-progress]
+enabled = true
+verify_jwt = false
+import_map = "./functions/backfill-loops-progress/deno.json"
+entrypoint = "./functions/backfill-loops-progress/index.ts"
