@@ -39,6 +39,7 @@ jobs:
           mkdir -p _deploy
           cp index.html            _deploy/
           cp Onboarding_new.html   _deploy/
+          cp delete-account.html   _deploy/
           cp manifest.json         _deploy/
           cp CNAME                 _deploy/
           cp version.json          _deploy/
