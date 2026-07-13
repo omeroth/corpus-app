@@ -16542,34 +16542,67 @@ function showGuestSignupPrompt(originalFn, trigger) {
   const _guestModal = document.getElementById('modal-guest-signup');
   const _guestWasActive = _guestModal.classList.contains('active');
   _guestModal.classList.add('active');
-  // localize — title is constant; body varies with the trigger so the prompt
-  // lands on the moment that earned it ("you just leveled up", etc).
+  // Title + body vary per-trigger AND interpolate live state (streak, level,
+  // just-met thinker) so the prompt names what the user has to lose. Values
+  // are all read here rather than passed in so a future trigger doesn't need
+  // to plumb them through maybeShowGuestPrompt.
   const isEn = state.lang === 'en';
+  const _level     = getLevel(state.xp || 0);                                    // 1..8
+  const _lvlNameEn = (LEVELS[_level - 1] && LEVELS[_level - 1].name) || '';
+  // LEVELS has English name only (LEVELS_EN === LEVELS) — skip the level name
+  // in Hebrew so we don't drop 'Reasoner' into an otherwise-Hebrew sentence.
+  const _levelName = isEn ? _lvlNameEn : '';
+  const _lvlSuffix = _levelName ? ', ' + _levelName : '';
+  const _streak    = state.dailyStreak || 0;
+  // Just-met thinker for first_completion. state.currentWeek/Day still point
+  // at the completed lesson when closeCompleteModal's chain fires this
+  // (openReader was the last thing to write them, and goHome fires AFTER the
+  // prompt chain resolves). getW() returns already-localized names.
+  let _thinkerName = '';
+  try {
+    const _wk = getW().find(w => w.id === state.currentWeek);
+    const _dy = _wk && _wk.days ? _wk.days.find(d => d.id === state.currentDay) : null;
+    if (_dy && _dy.thinker) _thinkerName = _dy.thinker;
+  } catch (e) {}
+
+  const TITLES = {
+    level_up:         { en: 'Level up!',                he: 'עלית רמה!' },
+    streak_milestone: { en: `${_streak}-day streak!`,   he: `רצף של ${_streak} ימים!` },
+    first_completion: { en: 'Nice start!',              he: 'התחלה יפה!' },
+    chapter_complete: { en: 'Chapter complete!',        he: 'סיימת פרק!' },
+    _default:         { en: 'Save your progress',       he: 'שמרו על ההתקדמות' },
+  };
   const BODIES = {
-    first_completion: {
-      en: 'Nice start. Create a free account so your progress is always here.',
-      he: 'התחלה יפה. צרו חשבון חינם כדי שההתקדמות תמיד תחכה לכם.'
-    },
-    chapter_complete: {
-      en: "You completed a chapter. Sign in so your progress is always safe.",
-      he: 'סיימת פרק. התחבר כדי שההתקדמות תישמר.'
-    },
     level_up: {
-      en: "You just leveled up. Sign in so you don't lose your progress.",
-      he: 'עלית רמה. התחבר כדי לא לאבד את ההתקדמות.'
+      en: `You reached Level ${_level}${_lvlSuffix}. Sign in so you never lose it.`,
+      he: `הגעת לרמה ${_level}${_lvlSuffix}. התחברו כדי לא לאבד אותה.`,
     },
     streak_milestone: {
-      en: "You're on a streak. Sign in to keep it safe across devices.",
-      he: 'יש לך רצף יפה. התחבר כדי לשמור עליו בכל מכשיר.'
+      en: `You're on a ${_streak}-day streak. Don't lose it, sign in to keep it safe.`,
+      he: `אתם על רצף של ${_streak} ימים. אל תאבדו אותו, התחברו כדי לשמור עליו.`,
+    },
+    first_completion: _thinkerName ? {
+      en: `You just met ${_thinkerName}. Sign in so your progress is always saved.`,
+      he: `הרגע פגשתם את ${_thinkerName}. התחברו כדי שההתקדמות תישמר תמיד.`,
+    } : {
+      // Fallback when the day lookup misses (e.g. subject swap between finish
+      // and prompt) — no visible {placeholder} leaks through.
+      en: 'Great start. Sign in so your progress is always saved.',
+      he: 'התחלה מצוינת. התחברו כדי שההתקדמות תישמר תמיד.',
+    },
+    chapter_complete: {
+      en: 'You finished a whole chapter. Sign in so all your progress stays safe.',
+      he: 'סיימתם פרק שלם. התחברו כדי שכל ההתקדמות תישאר בטוחה.',
     },
     _default: {
       en: 'Sign in to save your progress.',
-      he: 'התחבר כדי לשמור על ההתקדמות שלך.'
-    }
+      he: 'התחבר כדי לשמור על ההתקדמות שלך.',
+    },
   };
-  const copy = BODIES[trigger] || BODIES._default;
-  document.getElementById('guest-signup-title').textContent = isEn ? 'Save your progress' : 'שמרו על ההתקדמות';
-  document.getElementById('guest-signup-body').textContent = isEn ? copy.en : copy.he;
+  const titles = TITLES[trigger] || TITLES._default;
+  const bodies = BODIES[trigger] || BODIES._default;
+  document.getElementById('guest-signup-title').textContent = isEn ? titles.en : titles.he;
+  document.getElementById('guest-signup-body').textContent  = isEn ? bodies.en : bodies.he;
   const emailBtn = document.getElementById('guest-signup-email-btn');
   if (emailBtn) emailBtn.textContent = isEn ? 'Sign up with email' : 'הרשמה עם אימייל';
   const skip = document.getElementById('guest-signup-skip');
