@@ -14095,7 +14095,7 @@ function defaultState() {
     chapterXPByWeek: {},      // XP tallied per chapter for chapter-complete metrics
     guestSignupPromptShown: false,  // legacy single-shot flag — kept for back-compat; migrated into guestPrompt below on load
     // Guest sign-in prompt cadence. Local-only (never uploaded to Supabase — gated by guest mode).
-    // shownTriggers: per-trigger lifetime flag so first_completion / third_completion
+    // shownTriggers: per-trigger lifetime flag so first_completion / bonus_unlock
     // fire at most once each. Cadence (lastShownDate, dismissCount) still applies on top.
     guestPrompt: { totalShown: 0, lastShownDate: '', dismissCount: 0, permanentlyDismissed: false, shownTriggers: {} },
     settingsExpanded: false,   // Profile → Settings collapsible; persisted with the rest of state.
@@ -14757,6 +14757,18 @@ function closeUnlockOverlay() {
       }
     });
   });
+  // Guest signup nudge on bonus unlock. Per-account once via
+  // shownTriggers.bonus_unlock — bonus unlocks happen at most twice per
+  // account (philosophy + economics), so if the user dismisses on the
+  // first subject we don't badger them on the second. 400ms delay mirrors
+  // chapter_complete: past the scroll/pulse/toast so the modal lands on a
+  // settled home. If the user opens the bonus reader before this fires,
+  // _shouldShowGuestPrompt's reader-guard drops the show silently and no
+  // cadence date is stamped.
+  const _shown = (state.guestPrompt && state.guestPrompt.shownTriggers) || {};
+  if (!currentUser && !_shown.bonus_unlock) {
+    setTimeout(() => maybeShowGuestPrompt(null, 'bonus_unlock'), 400);
+  }
 }
 
 // === Chapter-complete overlay (reuses .dc-screen aesthetic) ===
@@ -16570,6 +16582,7 @@ function showGuestSignupPrompt(originalFn, trigger) {
     streak_milestone: { en: `${_streak}-day streak!`,   he: `רצף של ${_streak} ימים!` },
     first_completion: { en: 'Nice start!',              he: 'התחלה יפה!' },
     chapter_complete: { en: 'Chapter complete!',        he: 'סיימת פרק!' },
+    bonus_unlock:     { en: 'Bonus unlocked!',          he: 'פתחת בונוס!' },
     _default:         { en: 'Save your progress',       he: 'שמור על ההתקדמות' },
   };
   // Hebrew is consistently SINGULAR (2nd-person masculine) across every
@@ -16597,6 +16610,10 @@ function showGuestSignupPrompt(originalFn, trigger) {
     chapter_complete: {
       en: "You finished a whole chapter. Sign in so you don't lose your progress.",
       he: 'סיימת פרק שלם. התחבר כדי לא לאבד את ההתקדמות שלך.',
+    },
+    bonus_unlock: {
+      en: "You've earned the bonus chapter. Sign in so it's always here for you.",
+      he: 'פתחת את פרק הבונוס. התחבר כדי שהוא יישאר שלך תמיד.',
     },
     _default: {
       en: 'Sign in to save your progress.',
