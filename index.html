@@ -6021,7 +6021,7 @@
     <div class="pf-card pf-user-card">
       <div class="pf-avatar" id="pf-avatar"></div>
       <div>
-        <div class="pf-name" id="pf-name">טוען...</div>
+        <div class="pf-name" id="pf-name"></div>
         <div class="pf-email" id="pf-email"></div>
         <div class="pf-since" id="pf-since"></div>
       </div>
@@ -6037,7 +6037,13 @@
         <span class="pf-xp-level" id="pf-level-name"></span>
       </div>
       <div class="pf-current-badge">
-        <img id="pf-current-badge-img" src="" alt="Current level badge"/>
+        <!-- Default src is the Novice badge so the image renders on first
+             paint even before renderProfile runs; renderProfile then swaps
+             it to the actual current-level icon. Empty alt because the
+             .pf-xp-level label right above already names the level; leaving
+             alt as a stray English placeholder ('Current level badge')
+             leaks it into the UI on any transient load failure. -->
+        <img id="pf-current-badge-img" src="./images/levels/level1-novice.webp" alt=""/>
       </div>
       <div class="pf-xp-track">
         <div class="pf-xp-fill" id="pf-xp-fill"></div>
@@ -18826,7 +18832,13 @@ function renderProfile() {
   }
 
   const user = currentUser;
-  const fullName = user?.user_metadata?.full_name || user?.user_metadata?.name || (isEn ? 'Philosopher' : 'פילוסוף');
+  // Guest identity: show 'אורח' / 'Guest' explicitly rather than the
+  // signed-in fallback 'פילוסוף' / 'Philosopher' so the profile header
+  // reads as a real state, not a stalled "טוען..." placeholder. Signed-in
+  // users with no user_metadata still get the 'Philosopher' flavor label.
+  const fullName = user
+    ? (user.user_metadata?.full_name || user.user_metadata?.name || (isEn ? 'Philosopher' : 'פילוסוף'))
+    : (isEn ? 'Guest' : 'אורח');
   const email = user?.email || '';
   const avatarUrl = user?.user_metadata?.avatar_url || '';
   const createdAt = user?.created_at || '';
