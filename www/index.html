@@ -1090,6 +1090,30 @@
   .pf-share-btn:active { transform: scale(0.98); }
   .pf-share-btn > svg:first-child { color: var(--accent); flex-shrink: 0; }
   .pf-share-btn > span { flex: 1; }
+  /* Guest "Save your progress" row — same visual shape as .pf-share-btn so
+     the profile's row rhythm holds. Only rendered when currentUser is null;
+     renderProfile toggles display and label based on state.lang. */
+  .pf-guest-signup-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: calc(100% - 32px);
+    margin: 12px 16px 0;
+    padding: 14px 20px;
+    background: var(--surface);
+    border: 1.5px solid rgba(var(--accent-rgb), 0.18);
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent-dark);
+    font-family: inherit;
+    text-align: start;
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .pf-guest-signup-btn:active { transform: scale(0.98); }
+  .pf-guest-signup-btn > svg:first-child { color: var(--accent); flex-shrink: 0; }
+  .pf-guest-signup-btn > span { flex: 1; }
   .pf-settings-chevron {
     color: var(--accent-muted);
     flex-shrink: 0;
@@ -5978,6 +6002,20 @@
   <div id="screen-profile" class="screen">
     <!-- (profile topbar removed — replaced by the global topbar at #app level) -->
   <div class="scroll-content">
+
+    <!-- Guest signup CTA — top of profile for guests only. Hidden by default;
+         renderProfile flips display + label when !currentUser. Tapping opens
+         the guest signup modal via _openGuestSignupFromProfile, which routes
+         around _shouldShowGuestPrompt's cadence gates so a user actively
+         asking to save always gets the flow. -->
+    <button class="pf-guest-signup-btn" id="pf-guest-signup-btn" onclick="_openGuestSignupFromProfile()" style="display:none;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        <line x1="12" y1="7" x2="12" y2="13"/>
+        <line x1="9" y1="10" x2="15" y2="10"/>
+      </svg>
+      <span id="pf-guest-signup-label">שמור על ההתקדמות שלך ←</span>
+    </button>
 
     <!-- Profile Card -->
     <div class="pf-card pf-user-card">
@@ -14968,7 +15006,7 @@ function renderHome() {
     const signinBtn = document.getElementById('topbar-signin-btn');
     if (signinBtn) {
       signinBtn.style.display = currentUser ? 'none' : 'inline-flex';
-      signinBtn.textContent = 'Sign in';
+      signinBtn.textContent = state.lang === 'en' ? 'Sign in' : 'התחברות';
     }
   } catch(e) {}
 
@@ -16572,6 +16610,17 @@ function maybeShowGuestPrompt(callback, trigger) {
   showGuestSignupPrompt(callback, trigger);
 }
 
+// Profile-screen "Save your progress →" tap. USER-INITIATED — bypasses every
+// cadence gate in _shouldShowGuestPrompt (permanentlyDismissed, dismiss cap,
+// once-per-day) so a user actively asking to save their progress always gets
+// the flow, even after having dismissed 3 pushed prompts. Signed-in users
+// don't see the row at all (visibility toggled in renderProfile), but the
+// early return here defends the invariant.
+function _openGuestSignupFromProfile() {
+  if (currentUser) return;
+  showGuestSignupPrompt(null, 'profile');
+}
+
 let _guestSignupPendingFn = null;
 // Trigger that surfaced the currently-open guest-signup prompt. Read by
 // dismissGuestSignupPrompt and _guestSignupTap so the follow-up analytics
@@ -16629,6 +16678,7 @@ function showGuestSignupPrompt(originalFn, trigger) {
     first_completion: { en: 'Nice start!',              he: 'התחלה יפה!' },
     chapter_complete: { en: 'Chapter complete!',        he: 'סיימת פרק!' },
     bonus_unlock:     { en: 'Well done!',               he: 'כל הכבוד!' },
+    profile:          { en: 'Save your progress',       he: 'שמור על ההתקדמות שלך' },
     _default:         { en: 'Save your progress',       he: 'שמור על ההתקדמות' },
   };
   // Hebrew is consistently SINGULAR (2nd-person masculine) across every
@@ -16660,6 +16710,10 @@ function showGuestSignupPrompt(originalFn, trigger) {
     bonus_unlock: {
       en: "You've unlocked the bonus chapter. Sign in to keep it.",
       he: 'פתחת את פרק הבונוס. התחבר כדי לשמור עליו.',
+    },
+    profile: {
+      en: 'Sign in to save your XP, streak, and unlocked thinkers.',
+      he: 'התחבר כדי לשמור את ה-XP, הרצף וההוגים שפתחת.',
     },
     _default: {
       en: 'Sign in to save your progress.',
@@ -18759,6 +18813,17 @@ function showPantheonScreen() {
 
 function renderProfile() {
   const isEn = state.lang === 'en';
+
+  // Guest signup CTA — visible only when the user is a guest. Arrow
+  // direction flips with lang so it always points forward for the reader.
+  const guestSignupBtn = document.getElementById('pf-guest-signup-btn');
+  if (guestSignupBtn) {
+    guestSignupBtn.style.display = currentUser ? 'none' : 'flex';
+    const guestSignupLabel = document.getElementById('pf-guest-signup-label');
+    if (guestSignupLabel) {
+      guestSignupLabel.textContent = isEn ? 'Save your progress →' : 'שמור על ההתקדמות שלך ←';
+    }
+  }
 
   const user = currentUser;
   const fullName = user?.user_metadata?.full_name || user?.user_metadata?.name || (isEn ? 'Philosopher' : 'פילוסוף');
