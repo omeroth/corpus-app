@@ -5835,10 +5835,10 @@
       <button class="auth-mode-btn" id="auth-signup-tab" onclick="setAuthMode('signup')">Sign Up</button>
     </div>
     <button class="auth-btn auth-btn-social" onclick="authWithGoogle()">
-      <span class="auth-social-icon">G</span> Continue with Google
+      <span class="auth-social-icon">G</span> <span id="auth-google-text">Continue with Google</span>
     </button>
     <button class="auth-btn auth-btn-social auth-btn-apple" onclick="authWithApple()">
-      <span class="auth-social-icon"><svg width="14" height="17" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg></span> Continue with Apple
+      <span class="auth-social-icon"><svg width="14" height="17" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg></span> <span id="auth-apple-text">Continue with Apple</span>
     </button>
     <div class="auth-divider"><span>or</span></div>
     <div class="auth-error" id="auth-error"></div>
@@ -6283,10 +6283,10 @@
     <div class="modal-title" id="guest-signup-title">Save your progress</div>
     <div class="modal-subtitle" id="guest-signup-body">Nice start. Create a free account so your progress is always here.</div>
     <button class="nav-btn auth-btn-social" id="guest-signup-google-btn" onclick="_guestSignupTap('google')" style="margin-top:16px;">
-      <span class="auth-social-icon">G</span> Continue with Google
+      <span class="auth-social-icon">G</span> <span id="guest-signup-google-text">Continue with Google</span>
     </button>
     <button class="nav-btn auth-btn-social auth-btn-apple" id="guest-signup-apple-btn" onclick="_guestSignupTap('apple')" style="margin-top:8px;">
-      <span class="auth-social-icon"><svg width="14" height="17" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg></span> Continue with Apple
+      <span class="auth-social-icon"><svg width="14" height="17" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg></span> <span id="guest-signup-apple-text">Continue with Apple</span>
     </button>
     <button class="nav-btn" id="guest-signup-email-btn" onclick="_guestSignupTap('email')" style="margin-top:10px;">Sign up with email</button>
     <button type="button" class="share-modal-skip" id="guest-signup-skip" onclick="_guestSignupTap('skip')">Maybe later</button>
@@ -6534,6 +6534,32 @@ function showAuthScreen() {
   document.getElementById('app').style.display = 'none';
   const nav = document.getElementById('bottom-nav');
   if (nav) nav.style.display = 'none';
+  _localizeAuthScreen();
+}
+
+// Swaps every English label on #screen-auth for its Hebrew counterpart
+// when state.lang === 'he'. Called from showAuthScreen so the labels
+// always match the current language on entry. Google + Apple keep their
+// brand names verbatim; the guest-link arrow flips to ← in RTL because
+// it visually points "forward" in the reader's direction.
+function _localizeAuthScreen() {
+  const isEn = state.lang === 'en';
+  const signInTab = document.getElementById('auth-signin-tab');
+  const signUpTab = document.getElementById('auth-signup-tab');
+  if (signInTab) signInTab.textContent = isEn ? 'Sign In'  : 'התחברות';
+  if (signUpTab) signUpTab.textContent = isEn ? 'Sign Up'  : 'הרשמה';
+  const submitBtn = document.getElementById('auth-submit-btn');
+  if (submitBtn) {
+    submitBtn.textContent = authMode === 'signup'
+      ? (isEn ? 'Sign Up' : 'הרשמה')
+      : (isEn ? 'Sign In' : 'התחברות');
+  }
+  const gTxt = document.getElementById('auth-google-text');
+  if (gTxt) gTxt.textContent = isEn ? 'Continue with Google' : 'המשך עם Google';
+  const aTxt = document.getElementById('auth-apple-text');
+  if (aTxt) aTxt.textContent = isEn ? 'Continue with Apple'  : 'המשך עם Apple';
+  const guestLink = document.querySelector('.auth-guest-link');
+  if (guestLink) guestLink.textContent = isEn ? 'Continue as guest →' : 'המשך כאורח ←';
 }
 
 function hideAuthScreen() {
@@ -6556,7 +6582,10 @@ function setAuthMode(mode) {
   authMode = mode;
   document.getElementById('auth-signin-tab').classList.toggle('active', mode === 'signin');
   document.getElementById('auth-signup-tab').classList.toggle('active', mode === 'signup');
-  document.getElementById('auth-submit-btn').textContent = mode === 'signin' ? 'Sign In' : 'Sign Up';
+  const isEn = state.lang === 'en';
+  document.getElementById('auth-submit-btn').textContent = mode === 'signin'
+    ? (isEn ? 'Sign In' : 'התחברות')
+    : (isEn ? 'Sign Up' : 'הרשמה');
   const errEl = document.getElementById('auth-error');
   errEl.textContent = '';
   errEl.style.color = '';
@@ -6567,6 +6596,7 @@ async function handleAuthSubmit() {
   const password = document.getElementById('auth-password').value;
   const btn = document.getElementById('auth-submit-btn');
   const errEl = document.getElementById('auth-error');
+  const isEn = state.lang === 'en';
   if (!email || !password) { errEl.textContent = 'Please enter your email and password.'; return; }
   btn.disabled = true;
   btn.textContent = '...';
@@ -6577,7 +6607,7 @@ async function handleAuthSubmit() {
     if (error) {
       errEl.textContent = error.message;
       btn.disabled = false;
-      btn.textContent = 'Sign In';
+      btn.textContent = isEn ? 'Sign In' : 'התחברות';
       return;
     }
     appStarted = false; // allow enterApp to run
@@ -6602,7 +6632,7 @@ async function handleAuthSubmit() {
     if (error) {
       errEl.textContent = error.message;
       btn.disabled = false;
-      btn.textContent = 'Sign Up';
+      btn.textContent = isEn ? 'Sign Up' : 'הרשמה';
       return;
     }
     if (data.session && data.session.user) {
@@ -6614,7 +6644,7 @@ async function handleAuthSubmit() {
       errEl.style.color = 'var(--auth-success)';
       errEl.textContent = 'We sent you a verification email. Click the link in the email to enter the app.';
       btn.disabled = false;
-      btn.textContent = 'Sign Up';
+      btn.textContent = isEn ? 'Sign Up' : 'הרשמה';
     } else {
       // Fallback: try to use whatever user data came back
       appStarted = false;
@@ -6625,7 +6655,11 @@ async function handleAuthSubmit() {
 
 async function authWithGoogle() {
   const btn = document.querySelector('.auth-btn-social');
-  if (btn) { btn.disabled = true; btn.textContent = 'Signing in...'; }
+  const isEn = state.lang === 'en';
+  const gTxt = document.getElementById('auth-google-text');
+  // Update the inner text span, not the button itself, so the "G" icon
+  // survives the transient state.
+  if (btn) { btn.disabled = true; if (gTxt) gTxt.textContent = isEn ? 'Signing in...' : 'מתחבר...'; }
   const errEl0 = document.getElementById('auth-error');
   if (errEl0) errEl0.textContent = '';
   const _isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
@@ -6664,13 +6698,21 @@ async function authWithGoogle() {
     console.error('[Auth] Google sign-in error:', e);
     const errEl = document.getElementById('auth-error');
     if (errEl) errEl.textContent = 'Sign in failed. Please try again.';
-    if (btn) { btn.disabled = false; btn.innerHTML = '<span class="auth-social-icon">G</span> Continue with Google'; }
+    if (btn) {
+      btn.disabled = false;
+      // Prefer restoring via the still-in-DOM text span; fall back to the
+      // full innerHTML rebuild if the span has been removed for any reason.
+      if (gTxt) gTxt.textContent = isEn ? 'Continue with Google' : 'המשך עם Google';
+      else btn.innerHTML = '<span class="auth-social-icon">G</span> <span id="auth-google-text">' + (isEn ? 'Continue with Google' : 'המשך עם Google') + '</span>';
+    }
   }
 }
 
 async function authWithApple() {
   const btn = document.querySelector('.auth-btn-apple');
-  if (btn) { btn.disabled = true; btn.textContent = 'Signing in...'; }
+  const isEn = state.lang === 'en';
+  const aTxt = document.getElementById('auth-apple-text');
+  if (btn) { btn.disabled = true; if (aTxt) aTxt.textContent = isEn ? 'Signing in...' : 'מתחבר...'; }
   const errEl = document.getElementById('auth-error'); if (errEl) errEl.textContent = '';
   const _isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
   try {
@@ -6688,7 +6730,11 @@ async function authWithApple() {
   } catch(e) {
     console.error('[Auth] Apple sign-in error:', e);
     if (errEl) errEl.textContent = 'Sign in failed. Please try again.';
-    if (btn) { btn.disabled = false; btn.innerHTML = '<span class="auth-social-icon"></span> Continue with Apple'; }
+    if (btn) {
+      btn.disabled = false;
+      if (aTxt) aTxt.textContent = isEn ? 'Continue with Apple' : 'המשך עם Apple';
+      else btn.innerHTML = '<span class="auth-social-icon"></span> <span id="auth-apple-text">' + (isEn ? 'Continue with Apple' : 'המשך עם Apple') + '</span>';
+    }
   }
 }
 
@@ -16628,6 +16674,12 @@ function showGuestSignupPrompt(originalFn, trigger) {
   if (emailBtn) emailBtn.textContent = isEn ? 'Sign up with email' : 'הרשמה עם אימייל';
   const skip = document.getElementById('guest-signup-skip');
   if (skip) skip.textContent = isEn ? 'Maybe later' : 'אולי אחר כך';
+  // Google + Apple text spans — icon SVG is a sibling so we update the
+  // text span only (matches the auth screen's localization pattern).
+  const gTxt = document.getElementById('guest-signup-google-text');
+  if (gTxt) gTxt.textContent = isEn ? 'Continue with Google' : 'המשך עם Google';
+  const aTxt = document.getElementById('guest-signup-apple-text');
+  if (aTxt) aTxt.textContent = isEn ? 'Continue with Apple'  : 'המשך עם Apple';
   // Fire once per actual appearance — prevents a duplicate shown event
   // when a re-entrant call finds the modal already up.
   if (!_guestWasActive) {
