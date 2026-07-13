@@ -16570,29 +16570,33 @@ function showGuestSignupPrompt(originalFn, trigger) {
     streak_milestone: { en: `${_streak}-day streak!`,   he: `רצף של ${_streak} ימים!` },
     first_completion: { en: 'Nice start!',              he: 'התחלה יפה!' },
     chapter_complete: { en: 'Chapter complete!',        he: 'סיימת פרק!' },
-    _default:         { en: 'Save your progress',       he: 'שמרו על ההתקדמות' },
+    _default:         { en: 'Save your progress',       he: 'שמור על ההתקדמות' },
   };
+  // Hebrew is consistently SINGULAR (2nd-person masculine) across every
+  // trigger — matching the singular imperative used elsewhere in the app
+  // (הרשמה עם אימייל, אולי אחר כך). No plural verb forms (התחברו/סיימתם/
+  // אתם/אל תאבדו/פגשתם) should appear anywhere in this map.
   const BODIES = {
     level_up: {
       en: `You reached Level ${_level}${_lvlSuffix}. Sign in so you never lose it.`,
-      he: `הגעת לרמה ${_level}${_lvlSuffix}. התחברו כדי לא לאבד אותה.`,
+      he: `הגעת לרמה ${_level}${_lvlSuffix}. התחבר כדי לא לאבד אותה.`,
     },
     streak_milestone: {
       en: `You're on a ${_streak}-day streak. Don't lose it, sign in to keep it safe.`,
-      he: `אתם על רצף של ${_streak} ימים. אל תאבדו אותו, התחברו כדי לשמור עליו.`,
+      he: `אתה על רצף של ${_streak} ימים. אל תאבד אותו, התחבר כדי לשמור עליו.`,
     },
     first_completion: _thinkerName ? {
       en: `You just met ${_thinkerName}. Sign in so your progress is always saved.`,
-      he: `הרגע פגשתם את ${_thinkerName}. התחברו כדי שההתקדמות תישמר תמיד.`,
+      he: `הרגע פגשת את ${_thinkerName}. התחבר כדי שההתקדמות תישמר תמיד.`,
     } : {
       // Fallback when the day lookup misses (e.g. subject swap between finish
       // and prompt) — no visible {placeholder} leaks through.
       en: 'Great start. Sign in so your progress is always saved.',
-      he: 'התחלה מצוינת. התחברו כדי שההתקדמות תישמר תמיד.',
+      he: 'התחלה מצוינת. התחבר כדי שההתקדמות תישמר תמיד.',
     },
     chapter_complete: {
       en: 'You finished a whole chapter. Sign in so all your progress stays safe.',
-      he: 'סיימתם פרק שלם. התחברו כדי שכל ההתקדמות תישאר בטוחה.',
+      he: 'סיימת פרק שלם. התחבר כדי שכל ההתקדמות תישאר בטוחה.',
     },
     _default: {
       en: 'Sign in to save your progress.',
