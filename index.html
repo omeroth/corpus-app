@@ -16493,6 +16493,12 @@ function showThinkerCardScreen(thinker, chapter, day) {
   }
   document.getElementById('modal-continue-btn').textContent = isEn ? 'Back to Home' : 'חזרה לבית';
 
+  // Re-activate modal-complete. Under the celebration-queue flow
+  // (introduced in 9228d92), _wrapWithQueuePlay removes .active from
+  // modal-complete before playing the queue; the sub-screen switch below
+  // would otherwise happen inside a hidden modal and never render.
+  document.getElementById('modal-complete').classList.add('active');
+
   // Switch screens
   document.getElementById('dc-stats-screen').style.display = 'none';
   document.getElementById('dc-thinker-screen').style.display = 'flex';
