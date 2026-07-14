@@ -14199,6 +14199,11 @@ function defaultState() {
     // after the user finishes their first lesson (not during onboarding). Until permission
     // is granted, the toggle reflects intent but no notification is actually scheduled.
     dailyReminder: { enabled: true, time: '19:00', permissionAsked: false },
+    // Ordered queue of celebration overlays waiting to play. finishDay pushes
+    // { type: 'level_up' | 'chapter_complete' | 'bonus_unlock', … } here;
+    // _playNextCelebration drains it one at a time. Persisted so an app close
+    // mid-queue resumes on next entry. See _resumeCelebrationsIfPending.
+    pendingCelebrations: [],
   };
 }
 let state = defaultState();
@@ -14251,6 +14256,10 @@ function loadState() {
   if (!state.guestPrompt.shownTriggers || typeof state.guestPrompt.shownTriggers !== 'object') {
     state.guestPrompt.shownTriggers = {};
   }
+  // Ensure pendingCelebrations is always an array (predates this field for
+  // existing users). Corrupt shapes get reset to empty rather than crashing
+  // the queue player.
+  if (!Array.isArray(state.pendingCelebrations)) state.pendingCelebrations = [];
   if (state.guestSignupPromptShown) {
     // Ensure totalShown reflects "they've seen the welcome prompt before" so
     // first_completion doesn't re-fire. Leave lastShownDate EMPTY — the legacy
@@ -14783,6 +14792,170 @@ function getBonusProgress() {
   return total > 0 ? completed / total : 0;
 }
 
+// === Celebration queue ============================================
+// Sequences the three celebration overlays (level_up → chapter_complete →
+// bonus_unlock) one at a time so they never stack. finishDay builds
+// state.pendingCelebrations without touching lifetime flags; each overlay's
+// show function (or, for bonus_unlock, its dismiss) flips its own flag.
+// The queue is persisted, so a mid-queue app close resumes cleanly on next
+// entry — see _resumeCelebrationsIfPending, hooked into enterApp.
+
+// Continuation to invoke once the queue drains — normally the Thinker Card
+// opener or closeCompleteModal, wrapped by _wrapWithQueuePlay when the Stats
+// Reveal's continue button is bound.
+let _pendingPostQueueFn = null;
+
+// Items actually played (not skipped) this session. Terminal handler reads
+// this to fire the same guest-signup nudges the individual closers used to
+// fire — daily-cap gate inside maybeShowGuestPrompt dedupes.
+let _playedCelebrations = [];
+
+// Prompt-modal deferral — pausing the queue when a prompt is up prevents
+// a celebration overlay from landing on top of guest-signup / share / quiz
+// feedback. Resumed by the drainer calls in every prompt-close path.
+function _promptModalActiveForCelebrations() {
+  const ids = ['modal-guest-signup', 'modal-share', 'modal-quiz-feedback'];
+  return ids.some(id => {
+    const el = document.getElementById(id);
+    return !!(el && el.classList.contains('active'));
+  });
+}
+
+// Wraps the Stats Reveal continue button so the queue plays BEFORE the
+// original continuation (Thinker Card / closeCompleteModal / goToNextLesson).
+function _wrapWithQueuePlay(fn) {
+  return function() {
+    const q = state.pendingCelebrations || [];
+    if (!q.length) { fn.apply(this, arguments); return; }
+    _pendingPostQueueFn = fn;
+    // Hide the day-complete modal so celebrations don't stack on top of it.
+    // Terminal handler will invoke fn (which may re-open modal-complete for
+    // the Thinker Card, or call closeCompleteModal to fire the prompt chain).
+    document.getElementById('modal-complete').classList.remove('active');
+    setTimeout(_playNextCelebration, 250);
+  };
+}
+
+function _playNextCelebration() {
+  if (_promptModalActiveForCelebrations()) return;  // resumed via prompt-close paths
+  const q = state.pendingCelebrations || [];
+  if (!q.length) {
+    _onCelebrationQueueEmpty();
+    return;
+  }
+  const item = q[0];
+  let rendered = false;
+  try {
+    if (item.type === 'level_up') {
+      rendered = !!showLevelUp(item.levelIndex);
+    } else if (item.type === 'chapter_complete') {
+      const chapter = getW().find(w => w.id === item.weekId);
+      rendered = !!showChapterCompleteOverlay(chapter);
+    } else if (item.type === 'bonus_unlock') {
+      rendered = !!showUnlockOverlay();
+    }
+  } catch (e) {
+    console.error('[celebration] render failed', item, e);
+    rendered = false;
+  }
+  if (!rendered) {
+    // Idempotent skip — flag was already set from a prior mid-show close.
+    // Pop and try the next item.
+    state.pendingCelebrations.shift();
+    saveStateLocal();
+    setTimeout(_playNextCelebration, 0);
+  }
+  // If rendered: wait for user dismiss → _onCelebrationDismissed → next.
+}
+
+function _onCelebrationDismissed() {
+  const q = state.pendingCelebrations || [];
+  if (q.length) {
+    const popped = q.shift();
+    if (popped) _playedCelebrations.push(popped);
+    saveStateLocal();
+  }
+  // Small settle between overlays so animations don't collide.
+  setTimeout(_playNextCelebration, 250);
+}
+
+function _onCelebrationQueueEmpty() {
+  const played = _playedCelebrations.slice();
+  _playedCelebrations = [];
+
+  // Bonus-card highlight (was in closeUnlockOverlay) — only if bonus_unlock
+  // actually played this session.
+  if (played.some(p => p.type === 'bonus_unlock')) {
+    _highlightBonusCardOnHome();
+  }
+
+  // Guest-signup nudges — same triggers each individual closer used to
+  // fire. Iterated in REVERSE queue order so the last-played celebration
+  // (bonus_unlock, the once-per-lifetime peak) wins the daily-cap over a
+  // recurring level_up when they co-occur. maybeShowGuestPrompt's
+  // daily-cap gate ensures at most one succeeds; whichever runs first
+  // stamps lastShownDate=today and subsequent calls silently bail.
+  if (!currentUser) {
+    for (const p of played.slice().reverse()) {
+      if (p.type === 'level_up') {
+        maybeShowGuestPrompt(null, 'level_up');
+      } else if (p.type === 'chapter_complete') {
+        maybeShowGuestPrompt(null, 'chapter_complete');
+      } else if (p.type === 'bonus_unlock') {
+        const _shown = (state.guestPrompt && state.guestPrompt.shownTriggers) || {};
+        if (!_shown.bonus_unlock) maybeShowGuestPrompt(null, 'bonus_unlock');
+      }
+    }
+  }
+
+  const fn = _pendingPostQueueFn;
+  _pendingPostQueueFn = null;
+  if (typeof fn === 'function') {
+    // Small settle so the last overlay's fade completes before Thinker
+    // Card / closeCompleteModal takes over.
+    setTimeout(fn, 250);
+  }
+}
+
+// Extracted from the old closeUnlockOverlay so the terminal handler can
+// fire it independently of when bonus_unlock actually dismisses.
+function _highlightBonusCardOnHome() {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const bonusCard = document.querySelector('.bonus-carousel-item');
+      const carousel = document.getElementById('thinker-carousel');
+      if (!bonusCard || !carousel) return;
+      try {
+        bonusCard.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+      } catch (e) {}
+      bonusCard.classList.add('just-unlocked');
+      setTimeout(() => bonusCard.classList.remove('just-unlocked'), 2800);
+      if (typeof showJourneyToast === 'function') {
+        const isEn = state.lang === 'en';
+        showJourneyToast(isEn ? 'Tap to start your bonus chapter' : 'הקישו כדי להתחיל את פרק הבונוס');
+      }
+    });
+  });
+}
+
+// Session-scoped guard so the resume only fires once per app open. Called
+// from enterApp after renderHome commits.
+let _celebrationResumeChecked = false;
+function _resumeCelebrationsIfPending() {
+  if (_celebrationResumeChecked) return;
+  _celebrationResumeChecked = true;
+  // Don't fire over onboarding — home has to be the "settled" state.
+  if (!localStorage.getItem('corpus_onboarding_done')) return;
+  const q = state.pendingCelebrations || [];
+  if (!q.length) return;
+  setTimeout(_playNextCelebration, 500);
+}
+// === End celebration queue =========================================
+
+// bonus_unlock — the emotional peak. Its lifetime flag flips ON DISMISS
+// (closeUnlockOverlay), not here at render, so an app close mid-overlay
+// leaves the flag false and the queue-persist path re-shows it next entry.
+// Returns true for the queue player.
 function showUnlockOverlay() {
   const isEn = state.lang === 'en';
   const titleEl = document.getElementById('unlock-title');
@@ -14820,51 +14993,34 @@ function showUnlockOverlay() {
     s.offsetHeight;
     s.style.animation = '';
   });
+  return true;
 }
 
 function closeUnlockOverlay() {
   document.getElementById('unlock-overlay').style.display = 'none';
-  goHome();
-  // After the home re-renders, surface the bonus card: scroll-into-view + pulse + toast.
-  // Two RAFs let renderHome() + populateCarousel() commit before we query/scroll.
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      const bonusCard = document.querySelector('.bonus-carousel-item');
-      const carousel = document.getElementById('thinker-carousel');
-      if (!bonusCard || !carousel) return; // not on philosophy / carousel not rendered → skip silently
-      // scrollIntoView({ inline: 'center' }) is direction-aware: works for RTL and LTR
-      // without manual scrollLeft math (which differs across browser RTL modes).
-      try {
-        bonusCard.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-      } catch(e) {}
-      // One-shot celebratory pulse on top of the existing infinite bonusHalo.
-      bonusCard.classList.add('just-unlocked');
-      setTimeout(() => bonusCard.classList.remove('just-unlocked'), 2800);
-      // Toast pointing the user to interact with the card.
-      if (typeof showJourneyToast === 'function') {
-        const isEn = state.lang === 'en';
-        showJourneyToast(isEn ? 'Tap to start your bonus chapter' : 'הקישו כדי להתחיל את פרק הבונוס');
-      }
-    });
-  });
-  // Guest signup nudge on bonus unlock. Per-account once via
-  // shownTriggers.bonus_unlock — bonus unlocks happen at most twice per
-  // account (philosophy + economics), so if the user dismisses on the
-  // first subject we don't badger them on the second. 400ms delay mirrors
-  // chapter_complete: past the scroll/pulse/toast so the modal lands on a
-  // settled home. If the user opens the bonus reader before this fires,
-  // _shouldShowGuestPrompt's reader-guard drops the show silently and no
-  // cadence date is stamped.
-  const _shown = (state.guestPrompt && state.guestPrompt.shownTriggers) || {};
-  if (!currentUser && !_shown.bonus_unlock) {
-    setTimeout(() => maybeShowGuestPrompt(null, 'bonus_unlock'), 400);
-  }
+  // Flip the lifetime flag ON DISMISS (not on render) so an app close
+  // mid-overlay preserves the queue's ability to re-show this on relaunch.
+  state.bonusUnlockShown = state.bonusUnlockShown || {};
+  state.bonusUnlockShown[state.subject] = true;
+  saveStateLocal();
+  // Bonus-card highlight + toast + guest-signup nudge all moved to the
+  // terminal handler (_onCelebrationQueueEmpty). Just advance the queue.
+  _onCelebrationDismissed();
 }
 
 // === Chapter-complete overlay (reuses .dc-screen aesthetic) ===
+// Returns true if the overlay rendered, false if it was silently skipped
+// (idempotent guard for a queue-driven relaunch where the flag is already
+// set from a prior mid-show close). See _playNextCelebration.
 function showChapterCompleteOverlay(chapter) {
   const overlay = document.getElementById('chapter-complete-overlay');
-  if (!overlay || !chapter) return;
+  if (!overlay || !chapter) return false;
+  // Idempotent guard + flag flip AT RENDER TIME (moved out of finishDay so
+  // the flag only turns on when the user actually sees the overlay).
+  if (state.chapterCompleteShown && state.chapterCompleteShown[chapter.id]) return false;
+  state.chapterCompleteShown = state.chapterCompleteShown || {};
+  state.chapterCompleteShown[chapter.id] = true;
+  saveStateLocal();
   const isEn = state.lang === 'en';
   const weekNumber = typeof chapter.id === 'number' ? chapter.id : '';
   const title = isEn ? `Chapter ${weekNumber} Completed!` : `פרק ${weekNumber} הושלם!`;
@@ -14901,7 +15057,15 @@ function showChapterCompleteOverlay(chapter) {
   const continueBtn = document.getElementById('chapter-continue-btn');
   continueBtn.textContent = isEn ? 'Continue to Next Chapter' : 'המשך לפרק הבא';
   continueBtn.onclick = () => {
+    // Hard-exit path: user opts into the next chapter. Pop only THIS item
+    // from the queue; leave anything remaining (e.g. a bonus_unlock that
+    // was going to play next) in state.pendingCelebrations so it resumes
+    // on the next home render rather than being silently dropped.
     closeChapterCompleteOverlay();
+    if (state.pendingCelebrations && state.pendingCelebrations.length) {
+      state.pendingCelebrations.shift();
+      saveStateLocal();
+    }
     document.getElementById('modal-complete').classList.remove('active');
     const allWeeks = getW();
     const currentIndex = allWeeks.findIndex(w => w.id === chapter.id);
@@ -14916,17 +15080,15 @@ function showChapterCompleteOverlay(chapter) {
   const homeBtn = document.getElementById('chapter-back-home-btn');
   homeBtn.textContent = isEn ? 'Back to Home' : 'חזרה לבית';
   homeBtn.onclick = () => {
+    // Standard dismiss — advance the queue. Terminal handler fires the
+    // guest-signup nudge for 'chapter_complete' (same trigger as today,
+    // daily-cap gate dedupes across the played celebrations).
     closeChapterCompleteOverlay();
-    document.getElementById('modal-complete').classList.remove('active');
-    goHome();
-    // Guest sign-in nudge AFTER navigating home so the prompt lands on the
-    // home screen, not on top of the chapter-complete celebration. Cadence is
-    // gated by maybeShowGuestPrompt. Continue-to-next-chapter intentionally
-    // does NOT prompt — that path means the user is in flow, don't interrupt.
-    setTimeout(() => maybeShowGuestPrompt(null, 'chapter_complete'), 400);
+    _onCelebrationDismissed();
   };
 
   overlay.style.display = 'flex';
+  return true;
 }
 
 function closeChapterCompleteOverlay() {
@@ -16203,8 +16365,8 @@ function closeQuizFeedbackModal() {
         // never leave the page in a pointer-events: none state.
         document.body.style.pointerEvents = '';
       }
-      // Drain any level-up that was deferred while the quiz-feedback was up.
-      try { _tryFirePendingLevelUp(); } catch(e) {}
+      // Resume the celebration queue if it was paused while quiz-feedback was up.
+      try { _playNextCelebration(); } catch(e) {}
     }, 120);
   });
 }
@@ -16263,15 +16425,19 @@ function _showDcStats(titleText, subtitleText, xpAmount, streakCount, onContinue
   const backHomeBtn = document.getElementById('dc-stats-back-home');
   const next = getNextLessonInfo();
 
+  // Wrap the continue handlers so any pending celebration overlays play
+  // BEFORE the Thinker Card / Back-to-Home / Next-Dialogue action fires.
+  // Stats Reveal stays at t=0 as today; the user taps continue → queue
+  // drains → the original fn runs from _onCelebrationQueueEmpty.
   if (next.hasNext && onContinue.fn === closeCompleteModal) {
     continueBtn.textContent = isEn ? 'Next Dialogue' : 'הדיאלוג הבא';
-    continueBtn.onclick = goToNextLesson;
+    continueBtn.onclick = _wrapWithQueuePlay(goToNextLesson);
     backHomeBtn.textContent = isEn ? 'Back to Home' : 'חזרה לבית';
-    backHomeBtn.onclick = closeCompleteModal;
+    backHomeBtn.onclick = _wrapWithQueuePlay(closeCompleteModal);
     backHomeBtn.style.display = '';
   } else {
     continueBtn.textContent = onContinue.label;
-    continueBtn.onclick = onContinue.fn;
+    continueBtn.onclick = _wrapWithQueuePlay(onContinue.fn);
     backHomeBtn.style.display = 'none';
   }
 
@@ -16422,23 +16588,33 @@ function finishDay() {
     if (completedInWeek === totalDays) posthog.capture('week_completed', { chapter: state.currentWeek });
   } catch(e) {}
 
-  if (state.currentWeek === 1 && isWeekCompleted(1) && !state.bonusUnlockShown[state.subject]) {
-    state.bonusUnlockShown[state.subject] = true;
-    saveStateLocal();
-    try { posthog.capture('bonus_unlocked', { user_id: currentUser?.id || null, subject: state.subject }); } catch(e) {}
-    setTimeout(() => showUnlockOverlay(), 1000);
+  // Build the celebration queue for this completion. Gate conditions are
+  // evaluated NOW, but lifetime flags are NOT touched here — each overlay's
+  // own show function (or dismiss handler, for bonus_unlock) flips its flag
+  // when the user actually sees it. Persisting the queue via saveStateLocal
+  // means a mid-queue app close resumes cleanly on next entry (see
+  // _resumeCelebrationsIfPending).
+  //
+  // Order: level_up → chapter_complete → bonus_unlock (biggest wins first).
+  const _newCelebrations = [];
+  if (newLevel > prevLevel) {
+    _newCelebrations.push({ type: 'level_up', levelIndex: newLevel - 1 });
   }
-
-  // Chapter-complete celebration overlay — fires once per chapter when the last day completes the chapter
   const currentWeekId = state.currentWeek;
   const completedWeek = getW().find(w => w.id === currentWeekId);
-  if (completedWeek && completedWeek.days && completedWeek.days.length > 0 &&
+  const _chapterQualifies = completedWeek && completedWeek.days && completedWeek.days.length > 0 &&
       completedWeek.days.every(d => state.completedDays[dayKey(completedWeek.id, d.id)]) &&
-      !(state.chapterCompleteShown && state.chapterCompleteShown[completedWeek.id])) {
-    state.chapterCompleteShown = state.chapterCompleteShown || {};
-    state.chapterCompleteShown[completedWeek.id] = true;
+      !(state.chapterCompleteShown && state.chapterCompleteShown[completedWeek.id]);
+  if (_chapterQualifies) {
+    _newCelebrations.push({ type: 'chapter_complete', weekId: completedWeek.id });
+  }
+  if (state.currentWeek === 1 && isWeekCompleted(1) && !state.bonusUnlockShown[state.subject]) {
+    try { posthog.capture('bonus_unlocked', { user_id: currentUser?.id || null, subject: state.subject }); } catch(e) {}
+    _newCelebrations.push({ type: 'bonus_unlock', subject: state.subject });
+  }
+  if (_newCelebrations.length) {
+    state.pendingCelebrations = (state.pendingCelebrations || []).concat(_newCelebrations);
     saveStateLocal();
-    setTimeout(() => showChapterCompleteOverlay(completedWeek), 1000);
   }
 
   const thinker = getT().find(t => t.id === thinkerId);
@@ -16454,10 +16630,6 @@ function finishDay() {
       ? { label: isEn ? 'A new thinker awaits →' : 'הוגה חדש מחכה ←', fn: () => showThinkerCardScreen(thinker, chapter, day) }
       : { label: isEn ? 'Back to Home' : 'חזרה לבית', fn: closeCompleteModal }
   );
-
-  if (newLevel > prevLevel) {
-    setTimeout(() => showLevelUp(newLevel - 1), 3500);
-  }
 }
 
 // closeCompleteModal(opts?)
@@ -16762,8 +16934,8 @@ function closeGuestSignupPrompt() {
   const fn = _guestSignupPendingFn;
   _guestSignupPendingFn = null;
   if (typeof fn === 'function') fn();   // continue the original post-dialogue flow
-  // Drain any level-up that was deferred while this prompt was up.
-  try { _tryFirePendingLevelUp(); } catch(e) {}
+  // Resume the celebration queue if it was paused while this prompt was up.
+  try { _playNextCelebration(); } catch(e) {}
 }
 // Tap-handler for the "Maybe later" link — distinct from the sign-in paths so
 // only an explicit dismiss increments the dismiss counter (sign-in paths route
@@ -16881,8 +17053,8 @@ function _finishSharePrompt() {
   const fn = _sharePromptPendingFn;
   _sharePromptPendingFn = null;
   if (typeof fn === 'function') fn();
-  // Drain any level-up that was deferred while this prompt was up.
-  try { _tryFirePendingLevelUp(); } catch(e) {}
+  // Resume the celebration queue if it was paused while this prompt was up.
+  try { _playNextCelebration(); } catch(e) {}
 }
 
 function showSharePrompt(onDone) {
@@ -18382,6 +18554,9 @@ async function enterApp(user) {
   _homeExpandedWeekId = undefined;
   renderHome();
   showScreen('home');
+  // Resume any celebration queue persisted from a prior session that
+  // closed mid-play. Session-guarded so this fires at most once per open.
+  try { _resumeCelebrationsIfPending(); } catch(e) {}
   showIntro();
   // If intro already done, handle routing now; otherwise closeIntro() handles it
   if (localStorage.getItem('corpus_intro_done')) {
@@ -19235,36 +19410,17 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 // === Level-up treasure chest modal ===
 let currentLevelUpData = null;
 
-// If showLevelUp fires while a prompt modal (guest signup / share / quiz
-// feedback) is open, we DEFER it — otherwise the celebration overlay lands
-// on top of the prompt at z=9999, covering it entirely. Drained by
-// _tryFirePendingLevelUp() from every prompt-close path.
-let _pendingLevelUpIdx = null;
-function _tryFirePendingLevelUp() {
-  if (_pendingLevelUpIdx == null) return;
-  const idx = _pendingLevelUpIdx;
-  _pendingLevelUpIdx = null;
-  // Small settle delay so the prompt's fade / display: none commits before
-  // the level-up overlay grabs pointer-events.
-  setTimeout(() => showLevelUp(idx), 200);
-}
+// Superseded by the celebration queue. See _playNextCelebration —
+// prompt-modal deferral is centralized there and applies to every
+// celebration overlay, not just level-up.
 
 function showLevelUp(newLevelIndex) {
   const levelData = LEVELS[newLevelIndex];
-  if (!levelData) return;
+  if (!levelData) return false;
 
-  // Coexistence gate — if a prompt modal is active, queue for after close.
-  // Preferring deferral over z-index juggling: an invisible-but-clickable
-  // level-up overlay was the reported "Maybe later dead" root cause.
-  const _busyIds = ['modal-guest-signup', 'modal-share', 'modal-quiz-feedback'];
-  const _busy = _busyIds.some(id => {
-    const el = document.getElementById(id);
-    return !!(el && el.classList.contains('active'));
-  });
-  if (_busy) {
-    _pendingLevelUpIdx = newLevelIndex;
-    return;
-  }
+  // Prompt-modal coexistence is now handled by _playNextCelebration (which
+  // pauses the queue if a prompt modal is up and resumes via the same
+  // prompt-close paths that used to drain _pendingLevelUpIdx).
 
   // If a previous hide is still mid-close (its deferred reset hasn't fired),
   // cancel that pending reset so it can't clobber the state we're about to set.
@@ -19329,6 +19485,7 @@ function showLevelUp(newLevelIndex) {
   overlay.setAttribute('data-subject', state.subject || 'philosophy');
 
   overlay.classList.add('active');
+  return true;
 }
 
 // Holds the deferred internal-reset timer from hideLevelUp so showLevelUp can
@@ -19360,19 +19517,9 @@ function hideLevelUp() {
     if (chest) chest.classList.remove('dismissing');
   }, 350);
 
-  // Guest sign-in nudge AFTER the celebration closes. NEVER navigates the
-  // user — showLevelUp is scheduled setTimeout(..., 3500) from finishDay
-  // (see line ~15302), so by the time the user taps the chest they may have
-  // already started a NEW dialogue. Calling goHome() from here would yank
-  // them mid-dialogue to show a signup prompt, which is worse than missing
-  // the prompt. Only fire when the user is verifiably sitting on home with
-  // no day-complete modal open. Cadence still gated by maybeShowGuestPrompt.
-  setTimeout(() => {
-    const completeModal = document.getElementById('modal-complete');
-    if (completeModal && completeModal.classList.contains('active')) return;
-    if (state.currentScreen !== 'home') return;
-    maybeShowGuestPrompt(null, 'level_up');
-  }, 400);
+  // Queue-driven dismiss — advance to the next celebration (or the terminal
+  // handler, which fires the guest-signup nudges that used to live here).
+  _onCelebrationDismissed();
 }
 
 function addXP(amount) {
