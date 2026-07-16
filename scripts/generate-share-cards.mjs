@@ -225,10 +225,25 @@ function wrapText(ctx, text, maxWidth, maxLines) {
 }
 
 function fitQuestion(ctx, text, maxWidth, maxLines, fontFamily) {
-  for (let size = 60; size >= 32; size -= 4) {
+  // Ceiling 80, floor 32, 4px steps. At each candidate size, the wrap MUST
+  // (a) produce ≤ maxLines AND (b) every resulting line must actually
+  // measure within maxWidth. Point (b) exists because wrapText's greedy
+  // last-line dump ignores width when it hits maxLines − 1 — a long
+  // titles like the section-title stress case "Science Is Not Absolute
+  // Truth - It Is an Attempt at Refutation" (63 chars) can produce a
+  // last line that lies outside the column even though .length ≤ maxLines.
+  // Measure per line here so nothing ever bleeds into the portrait; if
+  // no size in the loop clears both checks, floor at 32 wins as the hard
+  // stop (rare visual overflow at 32 is still preferable to a build fail).
+  for (let size = 80; size >= 32; size -= 4) {
     ctx.font = `800 ${size}px ${fontFamily}`;
     const lines = wrapText(ctx, text, maxWidth, maxLines);
-    if (lines.length <= maxLines) return { size, lines };
+    if (lines.length > maxLines) continue;
+    let overflows = false;
+    for (const line of lines) {
+      if (ctx.measureText(line).width > maxWidth) { overflows = true; break; }
+    }
+    if (!overflows) return { size, lines };
   }
   ctx.font = `800 32px ${fontFamily}`;
   return { size: 32, lines: wrapText(ctx, text, maxWidth, maxLines) };
@@ -250,9 +265,17 @@ async function renderCard({ thinker, dayTitle, subject, lang }) {
   ctx.fillStyle = theme.bg;
   ctx.fillRect(0, 0, W, H);
 
-  // Portrait — RIGHT third for LTR, LEFT third for RTL
-  const portraitR = 200;
-  const portraitCx = isEn ? (W - 60 - portraitR) : (60 + portraitR);
+  // Portrait — RIGHT third for LTR, LEFT third for RTL.
+  // Radius trimmed 200 → 180 and portrait-side margin trimmed 60 → 40
+  // to widen the text column, which is what actually gives the title
+  // and thinker name room to breathe at thumbnail scale (raising the
+  // font-size floor alone would overflow the longest day titles).
+  const portraitR = 180;
+  const OUTER_MARGIN_TEXT     = 60;   // outer margin on the text side
+  const OUTER_MARGIN_PORTRAIT = 40;   // outer margin on the portrait side
+  const GUTTER                = 80;   // space between text column and portrait
+  const portraitCx = isEn ? (W - OUTER_MARGIN_PORTRAIT - portraitR)
+                          : (OUTER_MARGIN_PORTRAIT + portraitR);
   const portraitCy = H / 2;
 
   // Plate
@@ -298,30 +321,28 @@ async function renderCard({ thinker, dayTitle, subject, lang }) {
     }
   }
 
-  // Text column — opposite side from portrait
-  const colX      = isEn ? 60 : (W - 60);
-  const colWidth  = W - 60 - (portraitR * 2 + 120) - 60;   // gutter between column and portrait
+  // Text column — opposite side from portrait. Anchored to OUTER_MARGIN_TEXT
+  // (60) on its outer side; width = card − text-margin − portrait diameter
+  // − gutter − portrait-margin = 1200 − 60 − 360 − 80 − 40 = 660.
+  const colX      = isEn ? OUTER_MARGIN_TEXT : (W - OUTER_MARGIN_TEXT);
+  const colWidth  = W - OUTER_MARGIN_TEXT - (portraitR * 2) - GUTTER - OUTER_MARGIN_PORTRAIT;
   const align     = isEn ? 'left' : 'right';
   ctx.textAlign = align;
 
   let y = 70;
 
-  // Wordmark — pixel-accurate match to .auth-logo-text (index.html:3802):
-  //   font-family: 'Nunito'; font-weight: 900; letter-spacing: -1px @ 38px;
-  //   color: var(--accent) (subject accent) on card, matches .topbar-logo /
-  //   .subj-logo tint.
-  // Card renders at 44px, so tracking scales: -1px * 44/38 ≈ -1.16px.
-  // Font family is "Nunito Black" — a static Nunito-Black woff2 registered
-  // above; @napi-rs/canvas's variable-font wght matcher does not reach true
-  // Black on Nunito's variable file, so we bypass it with an explicit static
-  // weight. No strokeText overlay: the app doesn't fake-bold, we shouldn't
-  // either, that would be visibly heavier than the brand mark.
-  ctx.font = '44px "Nunito Black", Rubik, sans-serif';
+  // Wordmark — Nunito Black, tracking scaled from the app's .auth-logo-text
+  // reference: -1px @ 38px → -1 * 50/38 ≈ -1.32px at card size. Bumped 44
+  // → 50 to gain a touch of thumbnail legibility without competing with the
+  // title (which is the hero at 80). See earlier note on the "Nunito Black"
+  // family — static woff2 required because the variable Nunito's wght axis
+  // matcher does not reach true Black in @napi-rs/canvas.
+  ctx.font = '50px "Nunito Black", Rubik, sans-serif';
   ctx.fillStyle = theme.wordmark;
-  ctx.letterSpacing = '-1.16px';
+  ctx.letterSpacing = '-1.32px';
   ctx.fillText('Corpus', colX, y);
   ctx.letterSpacing = '0px';
-  y += 68;
+  y += 74;
 
   // Hero question (shrink-to-fit, up to 3 lines)
   const questionText = String(dayTitle || '').trim();
@@ -338,11 +359,12 @@ async function renderCard({ thinker, dayTitle, subject, lang }) {
     y += 24;
   }
 
-  // Thinker name
+  // Thinker name — bumped 34 → 46 so the person's name reads at
+  // thumbnail scale in feeds (LinkedIn/Threads/X shrink the card).
   ctx.fillStyle = theme.name;
-  ctx.font = '900 34px Rubik, sans-serif';
+  ctx.font = '900 46px Rubik, sans-serif';
   ctx.fillText(thinker.name, colX, y);
-  y += 46;
+  y += 58;
 
   // Era (LRI/PDI wrap so digits never flip in Hebrew context)
   if (thinker.era) {
@@ -388,9 +410,13 @@ function renderPage({ weekId, dayId, thinker, dayTitle, subject, lang }) {
   const slug = _SUBJECT_SLUG[subject] || 'phil';
   const cardUrl = `${SITE_URL}/share/cards/${lang}/${slug}-${weekId}-${dayId}.png`;
   const title = dayTitle || 'Corpus';
+  // "Corpus" intentionally omitted from the description — the card image
+  // carries the wordmark and the preview UI shows the domain, so mentioning
+  // it in prose is redundant. Dropping it also eliminates the RTL-mixed-
+  // script run (ב-Corpus … 5 …) that WhatsApp bidi-reordered.
   const description = isEn
-    ? `A dialogue with ${thinker.name} on Corpus — 5 minutes a day with history's greatest minds.`
-    : `דיאלוג עם ${thinker.name} ב-Corpus — 5 דקות ביום עם גדולי ההוגים.`;
+    ? `A dialogue with ${thinker.name}. 5 minutes a day with history's greatest minds.`
+    : `דיאלוג עם ${thinker.name}. 5 דקות ביום עם גדולי ההוגים.`;
   // Redirect destinations. Play Store listing is not public yet (see
   // index.html:16655), so Android falls back to the App Store — same as iOS.
   // Desktop drops back to the marketing site so a shared link on X/Slack
