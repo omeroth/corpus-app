@@ -86,11 +86,19 @@
   .rail{position:absolute;inset:0;display:flex;width:300%;
     transition:transform .65s cubic-bezier(.7,0,.2,1);will-change:transform}
   .rail.is-still{transition:transform 0s}
+  /* padding-bottom prefers the parent-app's --android-safe-bottom bridge
+     (set by _pushInsetsToIntroIframe on Android edge-to-edge builds) and
+     falls back to env() on iOS, which honors it natively. Ensures the CTA
+     button never sits behind the Android nav bar. */
   .slide{flex:0 0 33.3333%;height:100%;position:relative;overflow:hidden;
-    display:flex;flex-direction:column;justify-content:flex-end;padding:24px 28px 32px}
+    display:flex;flex-direction:column;justify-content:flex-end;
+    padding:24px 28px calc(32px + var(--android-safe-bottom, env(safe-area-inset-bottom, 0px)))}
 
-  /* ===== Top chrome (progress + skip) ===== */
-  .top{position:absolute;top:calc(18px + env(safe-area-inset-top));left:0;right:0;padding:0 22px;
+  /* ===== Top chrome (progress + skip) =====
+     Same var-then-env pattern for top inset so the dots/skip row clears the
+     Android status bar (which env() alone can't detect inside the iframe). */
+  .top{position:absolute;top:calc(18px + var(--android-safe-top, env(safe-area-inset-top, 0px)));
+    left:0;right:0;padding:0 22px;
     display:flex;align-items:center;justify-content:space-between;z-index:30}
   .dots{display:flex;gap:7px}
   .dot{width:24px;height:5px;border-radius:99px;background:rgba(255,255,255,.28);

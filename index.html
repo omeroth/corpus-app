@@ -18514,6 +18514,31 @@ function _initSubjCarousel() {
 }
 // === End Subject Select ===
 
+// Pushes the parent's cached Android safe-area insets into the intro-iframe's
+// documentElement so CSS inside Onboarding_new.html can consume them via
+// var(--android-safe-*, env(...)). Called both when EdgeToEdge.getInsets()
+// resolves in the parent AND on the iframe's `load` event — whichever order
+// fires first, the iframe eventually gets the values. Same-origin so
+// contentDocument access is unrestricted; noop if the iframe isn't in the
+// DOM yet, hasn't loaded, or the parent hasn't cached insets yet.
+function _pushInsetsToIntroIframe() {
+  try {
+    const i = window._latestAndroidInsets;
+    if (!i) return;
+    const f = document.getElementById('intro-iframe');
+    if (!f || !f.contentDocument) return;
+    const rs = f.contentDocument.documentElement.style;
+    rs.setProperty('--android-safe-top',    i.top    + 'px');
+    rs.setProperty('--android-safe-bottom', i.bottom + 'px');
+    rs.setProperty('--android-safe-left',   i.left   + 'px');
+    rs.setProperty('--android-safe-right',  i.right  + 'px');
+  } catch (e) {
+    // Same-origin should not throw, but cross-frame access can fail
+    // during navigations; log and move on.
+    console.warn('[EdgeToEdge] iframe push failed:', e);
+  }
+}
+
 let appStarted = false;
 async function enterApp(user) {
   if (appStarted) return;
@@ -18766,6 +18791,14 @@ function initUI() {
                 document.documentElement.style.setProperty('--android-safe-bottom', b + 'px');
                 document.documentElement.style.setProperty('--android-safe-left',   l + 'px');
                 document.documentElement.style.setProperty('--android-safe-right',  r + 'px');
+                // Cache latest resolved CSS-px insets so cross-frame consumers
+                // (currently the intro-iframe running Onboarding_new.html) can
+                // pull them at any point — including on the "iframe loaded but
+                // insets not yet resolved" cold-entry race, where the load
+                // handler fires _pushInsetsToIntroIframe() as a no-op and this
+                // function re-pushes when the getInsets() promise resolves.
+                window._latestAndroidInsets = { top: t, bottom: b, left: l, right: r };
+                _pushInsetsToIntroIframe();
                 console.log('[EdgeToEdge] insets device-px:', JSON.stringify(insets),
                             'dpr:', dpr, 'CSS-px: t=' + t + ' b=' + b + ' l=' + l + ' r=' + r);
               } catch(e) {
@@ -18773,8 +18806,26 @@ function initUI() {
               }
             };
             await _applyAndroidInsets();
-            // Re-apply on resize (orientation change, keyboard, system bar visibility).
+            // Re-apply on resize (orientation change, keyboard, system bar
+            // visibility). Also re-pushes to the intro iframe if it's still
+            // mounted, so a rotation mid-intro doesn't leave stale insets.
             window.addEventListener('resize', _applyAndroidInsets);
+            // Iframe-load handshake: whichever order resolves first, the
+            // insets always reach Onboarding_new.html's documentElement.
+            //   - If insets resolve before the iframe loads: _latestAndroidInsets
+            //     is set; the iframe's `load` fires _pushInsetsToIntroIframe
+            //     which reads it and writes to contentDocument.
+            //   - If the iframe loads before insets resolve: the `load` push is
+            //     a no-op (nothing cached); the subsequent _applyAndroidInsets
+            //     resolution pushes the values then.
+            const _introIframe = document.getElementById('intro-iframe');
+            if (_introIframe) {
+              _introIframe.addEventListener('load', _pushInsetsToIntroIframe);
+              // Cover the case where the iframe already loaded before this
+              // listener attached (fast fetch on cold entry). Push now if we
+              // have insets AND the contentDocument is reachable.
+              _pushInsetsToIntroIframe();
+            }
           } catch(e) {
             console.error('[EdgeToEdge] enable failed:', e);
           }
