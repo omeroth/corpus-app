@@ -17459,10 +17459,11 @@ async function _shareCorpus(source, text, overrideUrl, extraProps) {
     try {
       await navigator.share({ title: 'Corpus', text: text, url });
       try { posthog.capture('share_completed', baseProps); } catch(e) {}
+      return true;
     } catch(e) {
       try { posthog.capture('share_cancelled', Object.assign({ reason: (e && e.name) || 'unknown' }, baseProps)); } catch(_){}
+      return false;
     }
-    return;
   }
 
   let ok = false;
@@ -17485,8 +17486,10 @@ async function _shareCorpus(source, text, overrideUrl, extraProps) {
       const msg = state.lang === 'en' ? 'Link copied!' : 'הקישור הועתק';
       showStreakToast(msg);
     } catch(e) {}
+    return true;
   } else {
     try { posthog.capture('share_cancelled', Object.assign({ reason: 'copy_failed' }, baseProps)); } catch(e) {}
+    return false;
   }
 }
 
@@ -17555,46 +17558,32 @@ function shareCompletion() {
 function shareCorpusFromProfile() {
   _withShareGuard(async () => {
     const text = state.lang === 'en'
-      ? "History's biggest ideas in 5 minutes a day — check out Corpus:"
-      : 'הרעיונות הגדולים בהיסטוריה ב-5 דקות ביום — תראו את Corpus:';
+      ? "History's biggest ideas in 5 minutes a day. Check out Corpus:"
+      : 'הרעיונות הגדולים בהיסטוריה ב-5 דקות ביום. תראו את Corpus:';
     await _shareCorpus('profile', text);
   });
 }
 
 async function doShare() {
-  // Share-prompt Share tap — funnel step "shared" from the one-time popup.
-  // _sharePromptClosing (set by _shareModalTap) guarantees single fire per tap.
+  // Share-prompt tap — funnel step "shared" from the one-time popup. Also
+  // routed through _shareCorpus so the standard share_initiated /
+  // share_completed / share_cancelled funnel fires with source='share_prompt',
+  // matching the completion-modal and profile surfaces. Success/cancel is
+  // read from _shareCorpus's return so the modal only closes when the share
+  // actually went through (native cancel keeps the modal open for retry).
   try { posthog.capture('share_prompt_shared', _shareEventProps()); } catch(e) {}
-  const url = getShareUrl();
   const shareText = state.lang === 'he'
     ? 'הרעיונות הגדולים בהיסטוריה ב-5 דקות ביום'
     : "History's biggest ideas in 5 minutes a day";
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: 'Corpus', text: shareText, url });
-      try { localStorage.setItem(`corpus_share_shown_${state.subject || 'philosophy'}`, '1'); } catch(e) {}
-      document.getElementById('modal-share').classList.remove('active');
-      _finishSharePrompt();
-    } catch(e) { /* user cancelled - don\'t dismiss, keep pending fn for next attempt */ }
-  } else {
-    try {
-      await navigator.clipboard.writeText(`${shareText} ${url}`);
-    } catch(e) {
-      const ta = document.createElement('textarea');
-      ta.value = `${shareText} ${url}`;
-      ta.style.position = 'fixed'; ta.style.opacity = '0';
-      document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-      document.body.removeChild(ta);
-    }
-    const copied = document.getElementById('share-copied');
-    copied.textContent = state.lang === 'en' ? 'Link copied!' : 'הקישור הועתק';
-    copied.style.display = 'block';
+  const success = await _shareCorpus('share_prompt', shareText);
+  if (success) {
     try { localStorage.setItem(`corpus_share_shown_${state.subject || 'philosophy'}`, '1'); } catch(e) {}
-    setTimeout(() => {
-      document.getElementById('modal-share').classList.remove('active');
-      _finishSharePrompt();
-    }, 1800);
+    document.getElementById('modal-share').classList.remove('active');
+    _finishSharePrompt();
   }
+  // On cancel/failure: keep modal open. Behavior parity with the pre-refactor
+  // native path; clipboard-fallback used to always close after a 1800ms
+  // toast, that's now covered by _shareCorpus's streak-toast on success.
 }
 
 function skipShare() {

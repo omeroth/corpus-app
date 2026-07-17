@@ -106,21 +106,80 @@
   <a class="url" href="https://corpusapp.io">corpusapp.io</a>
 </main>
 <script>
-  // Client-side redirect. Preview crawlers (facebookexternalhit, WhatsApp,
-  // Twitterbot, Slackbot, LinkedInBot) don't execute JS, so they only see the
-  // OG tags above — the card renders as a link preview. Human visitors get
-  // bounced to the right store on tap.
+  // Client-side redirect + PostHog beacon telemetry.
+  //
+  // Crawlers (facebookexternalhit, WhatsApp, Twitterbot, Slackbot,
+  // LinkedInBot) don't execute JS — they only read the OG tags above,
+  // so the events below fire ONLY for real human visits. That's why
+  // no is_bot flag is emitted; it'd be false on 100% of records.
+  //
+  // Direct capture via navigator.sendBeacon rather than loading the
+  // PostHog SDK from CDN: the 250ms redirect timer is faster than the
+  // SDK can hydrate on mobile data, so landing_page_view would be
+  // silently undercounted. Beacon queues the request in the background
+  // and survives location.replace by spec. text/plain blob avoids the
+  // CORS preflight while PostHog's /i/v0/e/ endpoint still parses the
+  // JSON body.
   (function () {
+    var POSTHOG_KEY = 'phc_vUupVqSRdBay7mQ4Aswudhu8mFHnych6PKNRpP6BHoS4';
+    var POSTHOG_URL = 'https://us.i.posthog.com/i/v0/e/';
+    // Ephemeral distinct_id, per page load. Both events from this
+    // visit (view + cta click) share it so the in-visit micro-funnel
+    // joins; we deliberately don't persist across visits or stitch
+    // into the app — see the scoped-attribution decision in the audit.
+    var distinctId = (window.crypto && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : ('anon-' + Date.now() + '-' + Math.random().toString(36).slice(2));
+
     var ua = navigator.userAgent || '';
     var isIOS     = /iPhone|iPad|iPod/i.test(ua);
     var isAndroid = /Android/i.test(ua);
-    var target = "https://corpusapp.io";
-    if (isIOS)          target = "https://apps.apple.com/app/id6781227385";
-    else if (isAndroid) target = "https://apps.apple.com/app/id6781227385";
+    var target     = "https://corpusapp.io";
+    var targetKind = 'desktop';
+    if (isIOS)          { target = "https://apps.apple.com/app/id6781227385";     targetKind = 'ios'; }
+    else if (isAndroid) { target = "https://apps.apple.com/app/id6781227385"; targetKind = 'android'; }
+
+    var baseProps = {
+      dialogue_id: "bonusEcon1-4",
+      subject:     "economics",
+      lang:        "he",
+      target:      targetKind,
+      referrer:    document.referrer || null,
+      // Suppress Person creation on PostHog server side. The distinct_id
+      // is a fresh UUID per page load, so without this every landing
+      // would materialize a phantom Person — hundreds per day of empty
+      // profiles polluting the project. identified_only in the app's
+      // SDK init does not apply here since the beacon bypasses the SDK.
+      $process_person_profile: false
+    };
+
+    function beacon(event, extraProps) {
+      var props = extraProps ? Object.assign({}, baseProps, extraProps) : baseProps;
+      var payload = {
+        api_key:     POSTHOG_KEY,
+        event:       event,
+        distinct_id: distinctId,
+        properties:  props,
+        timestamp:   new Date().toISOString()
+      };
+      try {
+        var blob = new Blob([JSON.stringify(payload)], { type: 'text/plain' });
+        navigator.sendBeacon(POSTHOG_URL, blob);
+      } catch (e) { /* never block the redirect on capture failure */ }
+    }
+
+    beacon('landing_page_view');
+
     var manual = document.getElementById('manual');
-    if (manual) manual.href = target;
-    // Delay one tick so the visible fallback flashes long enough to explain
-    // what's happening if the store app takes a moment to open.
+    if (manual) {
+      manual.href = target;
+      manual.addEventListener('click', function () {
+        beacon('landing_cta_click');
+      });
+    }
+
+    // Delay one tick so the visible fallback flashes long enough to
+    // explain what's happening if the store app takes a moment to open.
     setTimeout(function () { location.replace(target); }, 250);
   })();
 </script>
