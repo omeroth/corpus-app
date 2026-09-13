@@ -12099,10 +12099,21 @@ async function handleAuthSubmit() {
       const _confirmRedirectTo = _isNativeSignup ? 'https://corpusapp.io/' : (window.location.origin + '/');
       let res;
       try {
+        // options.data → auth.users.raw_user_meta_data on INSERT, which
+        // loops-signup reads at trigger fire-time. Setting lang here lets
+        // the Loops contact land WITH `language` on first create, so
+        // welcome emails go out in the right language before any
+        // user_progress sync has happened. Resolves via the same fallback
+        // chain everywhere else uses. Non-empty strings only.
+        const _signupLang = state.lang || localStorage.getItem('corpus_lang') || null;
+        const _signupData = _signupLang ? { lang: _signupLang } : undefined;
         res = await _authRace(sb.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: _confirmRedirectTo }
+          options: {
+            emailRedirectTo: _confirmRedirectTo,
+            ...(_signupData ? { data: _signupData } : {}),
+          }
         }), 10000);
       } catch(e) {
         if (e === _AUTH_HANG_SENTINEL) {

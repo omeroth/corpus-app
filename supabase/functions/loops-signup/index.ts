@@ -153,9 +153,20 @@ serve(async (req: Request): Promise<Response> => {
   const appMeta = (record.raw_app_meta_data || {}) as Record<string, unknown>;
   const provider = typeof appMeta.provider === "string" ? appMeta.provider : "";
 
+  // Language pick from onboarding step 1. Email signup passes it explicitly
+  // via signUp({ options: { data: { lang } } }) — see the client at the
+  // handleAuthSubmit signup branch — so raw_user_meta_data.lang carries the
+  // pick when this trigger fires. OAuth signups can't inject app-side meta
+  // pre-INSERT (the provider owns raw_user_meta_data), so lang stays absent
+  // for those; loops-progress heals them on their first successful sync.
+  // Only included when present — a missing/empty lang omits the property so
+  // Loops keeps whatever value it currently has (rather than clearing it).
+  const lang = typeof meta.lang === "string" && meta.lang ? meta.lang : "";
+
   const body: Record<string, string> = { email, source: "app_signup" };
-  if (firstName) body.firstName = firstName;
-  if (provider) body.signupMethod = provider;
+  if (firstName) body.firstName    = firstName;
+  if (provider)  body.signupMethod = provider;
+  if (lang)      body.language     = lang;
 
   const loopsHeaders = {
     "Content-Type": "application/json",

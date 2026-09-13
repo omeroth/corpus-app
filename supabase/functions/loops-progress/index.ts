@@ -73,6 +73,26 @@ async function getWebhookSecret(): Promise<string | null> {
   return _cachedSecret;
 }
 
+// Validates a candidate first-name string against a minimal "is this
+// plausibly a name?" rule. No length floor — single-letter names are
+// normal in Chinese and Korean, and two-letter names appear across
+// many languages. Rejecting them would tell real people their name
+// is invalid. We reject only what's clearly not a name: empty,
+// whitespace-only, or containing no letters at all in any script.
+// Cap at 40 chars to match the client-side .slice(0, 40) in the
+// onboarding name capture — never send more than the client allowed.
+// Returns the cleaned name (trimmed + capped) or null if it fails.
+function cleanFirstName(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  // \p{L} matches any Unicode letter (Latin, Hebrew, CJK, Cyrillic,
+  // Arabic, etc.). A candidate with zero letters is a numeric string,
+  // punctuation, or symbols — not a name.
+  if (!/\p{L}/u.test(trimmed)) return null;
+  return trimmed.slice(0, 40);
+}
+
 // Derives the Loops contact properties from the user_progress row snapshot.
 // Kept pure so it's trivial to unit-test if we ever add a test harness.
 function deriveProgressProps(record: Record<string, unknown>) {
@@ -92,6 +112,19 @@ function deriveProgressProps(record: Record<string, unknown>) {
 
   const bonusUnlocked = completedDays.some((k) => typeof k === "string" && k.startsWith("bonus"));
 
+  // First name from onboarding capture. onboarding_answers is a jsonb
+  // column (migration 20260826150000). Loops' /contacts/update is an
+  // idempotent PATCH, so re-sending the same firstName every sync is
+  // harmless. When onboarding_answers.name fails validation, firstName
+  // is omitted from the payload — Loops keeps whatever value was set
+  // at signup from OAuth's raw_user_meta_data.full_name. This is by
+  // design: a bad onboarding input shouldn't overwrite a good OAuth
+  // name, and there's no harm in leaving one field alone.
+  const onboardingAnswers = (record.onboarding_answers && typeof record.onboarding_answers === "object")
+    ? (record.onboarding_answers as Record<string, unknown>)
+    : {};
+  const firstName = cleanFirstName(onboardingAnswers.name);
+
   // language: forwarded from user_progress.lang (added in migration
   // 20260730120000_user_progress_lang.sql). Only included in the derived
   // props when the record has a non-empty string — null / missing stays
@@ -106,6 +139,7 @@ function deriveProgressProps(record: Record<string, unknown>) {
   };
   if (typeof record.lang === "string" && record.lang) props.language = record.lang;
   if (typeof record.platform === "string" && record.platform) props.platform = record.platform;
+  if (firstName) props.firstName = firstName;
   return props;
 }
 
@@ -171,11 +205,12 @@ serve(async (req: Request): Promise<Response> => {
     bonusUnlocked:     derived.bonusUnlocked,
     chaptersCompleted: derived.chaptersCompleted,
   };
-  // language: forwarded only when deriveProgressProps included it (i.e. the
-  // record had a non-empty lang). Omitting on null keeps a previously-set
-  // Loops language from being cleared by a partial sync.
-  if (typeof derived.language === "string") body.language = derived.language;
-  if (typeof derived.platform === "string") body.platform = derived.platform;
+  // language / platform / firstName: forwarded only when deriveProgressProps
+  // included them. Omitting on null keeps a previously-set Loops value from
+  // being cleared by a partial sync — same treatment for all three.
+  if (typeof derived.language  === "string") body.language  = derived.language;
+  if (typeof derived.platform  === "string") body.platform  = derived.platform;
+  if (typeof derived.firstName === "string") body.firstName = derived.firstName;
 
   try {
     const updateRes = await fetch(LOOPS_UPDATE_URL, {

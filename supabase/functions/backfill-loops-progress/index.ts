@@ -41,6 +41,17 @@ function timingSafeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
+// Validation mirror of cleanFirstName in loops-progress. Reject empty,
+// whitespace-only, or letter-less strings; no length floor (single-letter
+// names are normal in some languages). Cap at 40 chars.
+function cleanFirstName(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  if (!/\p{L}/u.test(trimmed)) return null;
+  return trimmed.slice(0, 40);
+}
+
 // Same derivation as supabase/functions/loops-progress/index.ts. Kept
 // duplicated intentionally — cross-function imports in Supabase edge
 // functions add deploy complexity for a one-off script.
@@ -54,6 +65,14 @@ function deriveProgressProps(record: Record<string, unknown> | null | undefined)
   if (hasPhilosophy && hasEconomics) subjectsStarted = "both";
   else if (hasPhilosophy)            subjectsStarted = "philosophy";
   else if (hasEconomics)             subjectsStarted = "economics";
+  // firstName: pulled from user_progress.onboarding_answers.name (jsonb,
+  // migration 20260826150000). Validated by cleanFirstName above. Omitted
+  // when invalid so the spread at the callsite doesn't clear an existing
+  // Loops firstName that was set at signup from OAuth meta.
+  const onboardingAnswers = (rec.onboarding_answers && typeof rec.onboarding_answers === "object")
+    ? (rec.onboarding_answers as Record<string, unknown>)
+    : {};
+  const firstName = cleanFirstName(onboardingAnswers.name);
   // language: forwarded from user_progress.lang (migration 20260730120000).
   // Kept out of the returned object when the value is null / empty so the
   // spread at the callsite (body = { email, ...props }) omits the property
@@ -70,6 +89,7 @@ function deriveProgressProps(record: Record<string, unknown> | null | undefined)
   };
   if (typeof rec.lang === "string" && rec.lang) props.language = rec.lang;
   if (typeof rec.platform === "string" && rec.platform) props.platform = rec.platform;
+  if (firstName) props.firstName = firstName;
   return props;
 }
 
@@ -114,7 +134,7 @@ serve(async (req: Request): Promise<Response> => {
 
   const { data: progressRows, error: progressErr } = await admin
     .from("user_progress")
-    .select("user_id, last_active_at, last_subject, completed_days, chapter_complete_shown, lang, platform");
+    .select("user_id, last_active_at, last_subject, completed_days, chapter_complete_shown, lang, platform, onboarding_answers");
   if (progressErr) {
     console.error("[backfill] user_progress fetch failed:", progressErr);
     return jsonResponse({ ok: false, error: "Progress fetch failed" }, 500);
