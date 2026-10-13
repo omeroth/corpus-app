@@ -63,6 +63,30 @@ if (!DRY_RUN && !LOOPS_API_KEY) {
   process.exit(1);
 }
 
+// Current UTC offset for an IANA timezone, as "+HH:MM" / "-HH:MM".
+// Byte-identical to the helpers in supabase/functions/loops-progress/
+// index.ts AND supabase/functions/loops-inactive-sweep/index.ts —
+// three copies total, same output shape, same null-on-failure. Edge
+// Functions don't share modules and this is a plain Node file, so the
+// function is duplicated rather than imported. If you edit one, edit
+// all three.
+function computeUtcOffset(timezone, when = new Date()) {
+  try {
+    const dtf = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      timeZoneName: 'longOffset',
+    });
+    const parts = dtf.formatToParts(when);
+    const tzPart = parts.find(p => p.type === 'timeZoneName')?.value ?? '';
+    const m = tzPart.match(/^GMT([+-]\d{2}:\d{2})$/);
+    if (m) return m[1];
+    if (tzPart === 'GMT' || tzPart === 'UTC') return '+00:00';
+    return null;
+  } catch (_) {
+    return null;
+  }
+}
+
 // -- Derivation: byte-identical to loops-progress Edge Function --------------
 function deriveProgressProps(record) {
   const completedDays        = Array.isArray(record.completed_days)        ? record.completed_days        : [];
@@ -103,6 +127,19 @@ function deriveProgressProps(record) {
     inactive14d,
   };
   if (typeof record.lang === 'string' && record.lang) props.language = record.lang;
+  // timezone / utcOffset: both included only when the stored zone is
+  // non-null AND computeUtcOffset succeeds. Matches the loops-progress
+  // Edge Function's omit-on-null convention — avoids clearing a
+  // previously-set Loops field when a user_progress row lacks the
+  // column (predates the migration, or Intl was unavailable on their
+  // device).
+  if (typeof record.timezone === 'string' && record.timezone) {
+    const _off = computeUtcOffset(record.timezone);
+    if (_off) {
+      props.timezone  = record.timezone;
+      props.utcOffset = _off;
+    }
+  }
   return props;
 }
 
@@ -124,7 +161,7 @@ async function fetchAllUsers() {
     if (list.length < 1000) break;
     page += 1;
   }
-  const progressRes = await fetch(`${SUPABASE_URL}/rest/v1/user_progress?select=user_id,last_active_at,last_subject,completed_days,chapter_complete_shown,lang`, {
+  const progressRes = await fetch(`${SUPABASE_URL}/rest/v1/user_progress?select=user_id,last_active_at,last_subject,completed_days,chapter_complete_shown,lang,timezone`, {
     headers: admin,
   });
   if (!progressRes.ok) throw new Error(`user_progress fetch: ${progressRes.status} ${await progressRes.text()}`);

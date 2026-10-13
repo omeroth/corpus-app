@@ -87,6 +87,41 @@ async function getWebhookSecret(): Promise<string | null> {
   return _cachedSecret;
 }
 
+// Current UTC offset for an IANA timezone, as "+HH:MM" / "-HH:MM".
+// Recomputed on every sync so DST transitions correct automatically —
+// no stored offset to go stale. Uses Intl's 'longOffset' timeZoneName
+// style ("GMT±HH:MM"), parses to the sign+colon format Loops expects,
+// no arithmetic, no DST tables. Returns null when the zone name is
+// bad or the runtime rejects it; the caller omits the property
+// entirely in that case rather than sending null (Loops reads null
+// as "clear this field").
+//
+// Lives in three places: here, supabase/functions/loops-inactive-sweep
+// /index.ts, and scripts/backfill-loops-progress.mjs. Edge Functions
+// don't share modules and the backfill is a plain Node file, so the
+// function is duplicated rather than imported. Keep all three copies
+// byte-identical — a divergence would silently send different offsets
+// from different code paths.
+function computeUtcOffset(timezone: string, when: Date = new Date()): string | null {
+  try {
+    const dtf = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      timeZoneName: "longOffset",
+    });
+    const parts = dtf.formatToParts(when);
+    const tzPart = parts.find((p) => p.type === "timeZoneName")?.value ?? "";
+    // longOffset emits "GMT+HH:MM" / "GMT-HH:MM" for offset zones.
+    // Bare "GMT" / "UTC" render for the zero-offset zones (UTC, Etc/
+    // UTC, Africa/Abidjan in winter, etc.) — normalize to "+00:00".
+    const m = tzPart.match(/^GMT([+-]\d{2}:\d{2})$/);
+    if (m) return m[1];
+    if (tzPart === "GMT" || tzPart === "UTC") return "+00:00";
+    return null;
+  } catch (_) {
+    return null;
+  }
+}
+
 // Validates a candidate first-name string against a minimal "is this
 // plausibly a name?" rule. No length floor — single-letter names are
 // normal in Chinese and Korean, and two-letter names appear across
@@ -164,6 +199,22 @@ function deriveProgressProps(record: Record<string, unknown>) {
   if (typeof record.lang === "string" && record.lang) props.language = record.lang;
   if (typeof record.platform === "string" && record.platform) props.platform = record.platform;
   if (firstName) props.firstName = firstName;
+  // timezone / utcOffset: added together, both omitted when the zone is
+  // null. Omitting (vs sending null) keeps Loops' previously-set value
+  // alive instead of clearing it — matches the convention above for
+  // language / platform / firstName. utcOffset is recomputed here from
+  // the current time, not cached, so a stale user_progress row (user
+  // hasn't opened the app in weeks) still sends the right offset for
+  // today's DST state — this function is what loops-inactive-sweep calls
+  // through for the daily DST-drift refresh too.
+  if (typeof record.timezone === "string" && record.timezone) {
+    const _tz = record.timezone;
+    const _off = computeUtcOffset(_tz);
+    if (_off) {
+      props.timezone = _tz;
+      props.utcOffset = _off;
+    }
+  }
   return props;
 }
 
@@ -237,6 +288,8 @@ serve(async (req: Request): Promise<Response> => {
   if (typeof derived.language  === "string") body.language  = derived.language;
   if (typeof derived.platform  === "string") body.platform  = derived.platform;
   if (typeof derived.firstName === "string") body.firstName = derived.firstName;
+  if (typeof derived.timezone  === "string") body.timezone  = derived.timezone;
+  if (typeof derived.utcOffset === "string") body.utcOffset = derived.utcOffset;
 
   try {
     const updateRes = await fetch(LOOPS_UPDATE_URL, {

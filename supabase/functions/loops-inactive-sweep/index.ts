@@ -68,6 +68,30 @@ function timingSafeEqual(a: string, b: string): boolean {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+// Current UTC offset for an IANA timezone, as "+HH:MM" / "-HH:MM".
+// Byte-identical copy of the helper that lives in loops-progress AND
+// scripts/backfill-loops-progress.mjs — three copies total. Edge
+// Functions don't share modules and the backfill script is a plain
+// Node file, so the function is duplicated across sites rather than
+// imported. If you edit one, edit all three. See loops-progress/
+// index.ts for the detailed docblock; keep every copy in lockstep.
+function computeUtcOffset(timezone: string, when: Date = new Date()): string | null {
+  try {
+    const dtf = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      timeZoneName: "longOffset",
+    });
+    const parts = dtf.formatToParts(when);
+    const tzPart = parts.find((p) => p.type === "timeZoneName")?.value ?? "";
+    const m = tzPart.match(/^GMT([+-]\d{2}:\d{2})$/);
+    if (m) return m[1];
+    if (tzPart === "GMT" || tzPart === "UTC") return "+00:00";
+    return null;
+  } catch (_) {
+    return null;
+  }
+}
+
 serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS_HEADERS });
   if (req.method !== "POST")    return jsonResponse({ ok: false, error: "Method not allowed" }, 405);
@@ -206,6 +230,60 @@ serve(async (req: Request): Promise<Response> => {
     await sleep(100);
   }
 
+  // ── Pass 2: unconditional timezone + utcOffset refresh ────────────
+  // DST drift self-heal. loops-progress writes BOTH timezone and
+  // utcOffset on every state save, but a user who doesn't open the
+  // app across a DST transition keeps the stale offset in Loops, and
+  // would get a 20:00-local campaign an hour off. Daily refresh for
+  // every row where timezone is set, with both properties sent in
+  // one PATCH — not just the offset. Sending both every time self-
+  // heals contacts that predate this change (no timezone in Loops at
+  // all) and contacts whose loops-progress sync 502'd (timezone
+  // never landed; writing only the offset would stamp a floating
+  // offset onto a contact with no zone to interpret it against).
+  //
+  // No diff check. Change detection would skip exactly the failure
+  // cases we need to catch: when loops-progress 502'd at some
+  // earlier sync, the already-wrong value in Loops matches the same
+  // already-wrong computation and never corrects. Unconditional is
+  // slightly more API traffic but cannot miss its own earlier miss.
+  //
+  // Not merged into Pass 1 because the two row sets differ: Pass 1
+  // is users who've been inactive 7–60 days; Pass 2 is every user
+  // with a timezone, regardless of activity. Deliberate second
+  // query, shared email map and patch helper.
+  const tzT0 = Date.now();
+  let tzUpdated = 0, tzFailed = 0, tzNoEmail = 0, tzOffsetFailed = 0;
+  const tzErrors: Array<{ email: string; status: number; error: string }> = [];
+  const { data: tzRows, error: tzErr } = await admin
+    .from("user_progress")
+    .select("user_id, timezone")
+    .not("timezone", "is", null);
+  if (tzErr) {
+    console.error("[sweep] timezone fetch failed:", tzErr);
+    // Fall through — Pass 1 already succeeded; report what we have.
+  } else {
+    for (const r of (tzRows || []) as Array<{ user_id: string; timezone: string }>) {
+      const email = emailById.get(r.user_id);
+      if (!email) { tzNoEmail += 1; continue; }
+      const off = computeUtcOffset(r.timezone);
+      if (!off) {
+        // Zone the IANA DB in this runtime doesn't recognise. Log so
+        // we see it; don't PATCH null (would clear in Loops).
+        tzOffsetFailed += 1;
+        tzErrors.push({ email, status: 0, error: `bad timezone "${r.timezone}"` });
+        continue;
+      }
+      const res = await patch(email, { timezone: r.timezone, utcOffset: off });
+      if (res.ok) { tzUpdated += 1; }
+      else {
+        tzFailed += 1;
+        tzErrors.push({ email, status: res.status, error: res.error });
+      }
+      await sleep(100);
+    }
+  }
+
   return jsonResponse({
     ok: true,
     mode: "live",
@@ -217,6 +295,15 @@ serve(async (req: Request): Promise<Response> => {
       fourteen_day:    fourteenCount,    // { inactive7d: true, inactive14d: true  }
       elapsed_seconds: Math.round((Date.now() - t0) / 1000),
     },
+    timezone_refresh: {
+      candidates:      (tzRows || []).length,
+      updated:         tzUpdated,
+      failed:          tzFailed,
+      no_email:        tzNoEmail,
+      bad_timezone:    tzOffsetFailed,
+      elapsed_seconds: Math.round((Date.now() - tzT0) / 1000),
+    },
     errors_sample: errors.slice(0, 10),
+    tz_errors_sample: tzErrors.slice(0, 10),
   }, 200);
 });
