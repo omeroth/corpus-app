@@ -14368,6 +14368,30 @@ async function syncProgressToSupabase() {
     }
   } catch(e) { _reportSyncFailure('lang', e); }
   try {
+    // timezone: IANA zone id captured via Intl.DateTimeFormat().
+    // resolvedOptions().timeZone. Written on every state save so a user
+    // who travels gets corrected on their next session; stored as null
+    // when Intl is missing or throws (never guessed, never defaulted to
+    // Asia/Jerusalem) so campaign segments like "20:00 local time" can
+    // distinguish real zones from unknown ones.
+    //
+    // Column added by migration 20261013000000_user_progress_timezone.
+    // sql. The notify_loops_progress trigger's row_to_json(NEW) picks
+    // it up automatically; loops-progress derives both `timezone` and
+    // `utcOffset` Loops contact properties from it, omitting both when
+    // this column is null.
+    let _tz = null;
+    try {
+      _tz = (typeof Intl !== 'undefined' && Intl.DateTimeFormat
+        && Intl.DateTimeFormat().resolvedOptions().timeZone) || null;
+    } catch (_) { _tz = null; }
+    const { error } = await sb.from('user_progress').upsert({
+      user_id: currentUser.id,
+      timezone: _tz,
+    }, { onConflict: 'user_id' });
+    if (error) _reportSyncFailure('timezone', error);
+  } catch(e) { _reportSyncFailure('timezone', e); }
+  try {
     // platform: added as text column in migration 20260910120000_user_progress
     // _platform.sql. Forwarded by the loops-progress trigger (row_to_json(NEW))
     // to Loops as the `platform` contact property so the pipeline can segment
